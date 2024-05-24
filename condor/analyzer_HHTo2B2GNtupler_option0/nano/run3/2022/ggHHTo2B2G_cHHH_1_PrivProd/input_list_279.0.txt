@@ -1,1 +1,0 @@
-root://cmsxrootd.fnal.gov//store/group/lpcdihiggsboost/NANOAOD/Run3Summer22/ggHHTo2B2G_cHHH_1/batch1/v1/ggHHTo2B2G_cHHH_1/crab_PrivateProduction_Summer22_DR_step5_NANOAODSIM_ggHHTo2B2G_cHHH_1_batch1_v1/240203_140042/0000/HIG-Run3Summer22EENanoAODv12-00078_253.root

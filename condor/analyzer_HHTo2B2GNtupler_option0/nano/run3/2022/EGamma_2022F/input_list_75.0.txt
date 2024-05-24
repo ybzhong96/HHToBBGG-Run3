@@ -1,1 +1,0 @@
-root://cmsxrootd.fnal.gov//store/group/lpcdihiggsboost/NanoAOD_v12/sixie/2022EE/EGamma/EGamma/EGamma_Run2022F/240506_185226/0000/Data_NanoAODv12_276.root
