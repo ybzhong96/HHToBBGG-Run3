@@ -1,0 +1,1 @@
+root://cmsxrootd.fnal.gov//store/data/Run2022C/EGamma/NANOAOD/ReRecoNanoAODv11-v1/50000/5f895356-e2d4-4488-9572-3957efc8552f.root

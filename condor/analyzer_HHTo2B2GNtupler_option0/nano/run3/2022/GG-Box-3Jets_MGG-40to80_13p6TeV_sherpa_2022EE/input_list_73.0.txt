@@ -1,0 +1,1 @@
+root://cmsxrootd.fnal.gov//store/mc/Run3Summer22EENanoAODv12/GG-Box-3Jets_MGG-40to80_13p6TeV_sherpa/NANOAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/2540000/de25e147-86b4-421b-8382-bb94e27f932a.root

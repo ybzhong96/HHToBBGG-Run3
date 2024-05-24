@@ -1,0 +1,1 @@
+root://cmsxrootd.fnal.gov//store/mc/Run3Summer22EENanoAODv12/VHtoGG_M-120_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8/NANOAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/40000/91778825-0f59-424f-a357-737892bf569d.root

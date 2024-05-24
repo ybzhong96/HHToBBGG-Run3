@@ -1,0 +1,1 @@
+root://cmsxrootd.fnal.gov//store/mc/Run3Summer22EENanoAODv12/GJet_PT-40_DoubleEMEnriched_TuneCP5_13p6TeV_pythia8/NANOAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/60000/e9d14e11-ca42-41c5-a43a-97e4d4a9c0f7.root

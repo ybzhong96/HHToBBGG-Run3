@@ -1,0 +1,74 @@
+######################################
+## Cross section in pb for datasets
+##
+#
+# 13.6 TeV signals
+# Cross sections from Guillemo
+# https://ceballos.web.cern.ch/ceballos/random/xs_13p6tev.png
+#
+#
+
+
+
+#From XSDB
+#QCD_Pt_5to10_TuneCUETP8M1_13TeV_pythia8                                   
+#QCD_Pt_10to15_TuneCUETP8M1_13TeV_pythia8                                   
+#QCD_Pt_15to30_TuneCUETP8M1_13TeV_pythia8                                   
+#QCD_Pt_30to50_TuneCUETP8M1_13TeV_pythia8                                    
+#QCD_Pt_50to80_TuneCUETP8M1_13TeV_pythia8                                     
+QCD_Pt_80to120_TuneCUETP8M1_13TeV_pythia8                                     2534000.0
+QCD_Pt_120to170_TuneCUETP8M1_13TeV_pythia8                                     445800.0 
+QCD_Pt_170to300_TuneCUETP8M1_13TeV_pythia8                                     113700.0
+QCD_Pt_300to470_TuneCUETP8M1_13TeV_pythia8                                       7589.0 
+QCD_Pt_470to600_TuneCUETP8M1_13TeV_pythia8                                        626.4
+QCD_Pt_600to800_TuneCUETP8M1_13TeV_pythia8                                        178.6
+QCD_Pt_800to1000_TuneCUETP8M1_13TeV_pythia8                                        30.57
+QCD_Pt_1000to1400_TuneCUETP8M1_13TeV_pythia8                                        8.92
+QCD_Pt_1400to1800_TuneCUETP8M1_13TeV_pythia8                                        0.8103
+QCD_Pt_1800to2400_TuneCUETP8M1_13TeV_pythia8                                        0.1148
+QCD_Pt_2400to3200_TuneCUETP8M1_13TeV_pythia8                                        0.007542
+QCD_Pt_3200toInf_TuneCUETP8M1_13TeV_pythia8                                         0.0002331
+#2022EE Signal
+GluGlutoHHto2B2G_kl-1p00_kt-1p00_c2-0p00_TuneCP5_13p6TeV_powheg-pythia8             0.02964
+#2022EE 13.6 TeV Bkg
+GG-Box-3Jets_MGG-0to40_13p6TeV_sherpa                                             786.6
+GG-Box-3Jets_MGG-40to80_13p6TeV_sherpa                                            318.1
+GG-Box-3Jets_MGG-80_13p6TeV_sherpa                                                 88.75
+GJet_PT-10to40_DoubleEMEnriched_TuneCP5_13p6TeV_pythia8                          5485.0
+GJet_PT-40_DoubleEMEnriched_TuneCP5_13p6TeV_pythia8                              2052.0
+GluGluHtoGG_M-120_TuneCP5_13p6TeV_amcatnloFXFX-pythia8                             42.23
+GluGluHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-pythia8                             39.91
+GluGluHtoGG_M-130_TuneCP5_13p6TeV_amcatnloFXFX-pythia8                             36.75
+VHtoGG_M-120_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8                           3.943
+VHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8                           2.556
+VHtoGG_M-130_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8                           2.288
+VBFHtoGG_M-120_TuneCP5_13p6TeV_amcatnlo-pythia8                                     4.539
+VBFHtoGG_M-125_TuneCP5_13p6TeV_amcatnlo-pythia8                                     4.359
+VBFHtoGG_M-130_TuneCP5_13p6TeV_amcatnlo-pythia8                                     4.208
+ttHtoGG_M-120_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8                          0.6409
+ttHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8                          0.5687
+ttHtoGG_M-130_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8                          0.5008
+
+
+#https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO
+TTto4Q                                                                              923.6*0.667*0.667
+TTtoLNu2Q                                                                           923.6*2*(0.667*0.333)
+WW                                                                                  80.23
+WZ                                                                                  29.1
+ZZ                                                                                  12.75
+
+#SX: Just took the 13 TeV number and increased it by a few percent
+#More info here: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MATRIXCrossSectionsat13p6TeV
+WtoLNu                                                                              (9046 + 12171)*3
+DYToLL_M50                                                                           2113.4*3
+
+#SX: took XSDB NLO number (0.5246) and multiplied it by the NNLO/NLO ratio for inclusive ggH from 13 TeV
+ggHto2B_Pt200ToInf                                                                   0.5246*(43.92/27.8)*5.824e-01
+#from here: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHWG136TeVxsec_extrap
+VBFHto2B                                                                             4.078*5.824e-01
+WminusH_Hto2B_Wto2Q                                                                  0.8889*5.824e-01*0.676
+WplusH_Hto2B_Wto2Q                                                                   0.5677*5.824e-01*0.676
+ZH_Hto2B_Zto2Q                                                                       0.8079*5.824e-01*0.69911
+ggZH_Hto2B_Zto2Q                                                                     0.1360*5.824e-01*0.69911
+ttH_Hto2B                                                                            0.5700*5.824e-01
+ggHH_cHHH_1_TSG                                                                      34.43e-3*5.824e-01*5.824e-01

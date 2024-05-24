@@ -1,0 +1,2857 @@
+#include "HHTo2B2GNtupler.h"
+#include <stdlib.h> 
+#include "JetTree.h"
+#include "JetCorrectorParameters.h"
+#include "JetCorrectionUncertainty.h"
+#include <TFile.h>
+//C++ includes
+
+//ROOT includes
+#include "TH1F.h"
+
+using namespace std;
+
+double HHTo2B2GNtupler::getTriggerEff3D( TH2F *triggerEffHist_Xbb0p0To0p9, 
+				     TH2F *triggerEffHist_Xbb0p9To0p95, 
+				     TH2F *triggerEffHist_Xbb0p95To0p98, 
+				     TH2F *triggerEffHist_Xbb0p98To1p0, 
+				     double pt, double mass, double PNetXbb ) {
+  double result = 0.0;
+  double tmpMass = 0;
+  double tmpPt = 0;
+  double tmpPNetXbb = 0;
+  TH2F* trigEffHist = 0;
+  if (PNetXbb < 0.9) {
+    trigEffHist = triggerEffHist_Xbb0p0To0p9;
+  } else if (PNetXbb < 0.95) {
+    trigEffHist = triggerEffHist_Xbb0p9To0p95;    
+  } else if (PNetXbb < 0.98) {
+    trigEffHist = triggerEffHist_Xbb0p95To0p98;    
+  } else {
+    trigEffHist = triggerEffHist_Xbb0p98To1p0;    
+  }
+  
+  if (trigEffHist) {
+    // constrain to histogram bounds
+    if( mass > trigEffHist->GetXaxis()->GetXmax() * 0.999 ) {
+      tmpMass = trigEffHist->GetXaxis()->GetXmax() * 0.999;
+    } else if ( mass < 0 ) {
+      tmpMass = 0.001;
+      //cout << "Warning: mass=" << mass << " is negative and unphysical\n";
+    } else {
+      tmpMass = mass;
+    }
+    
+    if( pt > trigEffHist->GetYaxis()->GetXmax() * 0.999 ) {
+      tmpPt = trigEffHist->GetYaxis()->GetXmax() * 0.999;
+    } else if (pt < 0) {
+      tmpPt = 0.001;
+      cout << "Warning: pt=" << pt << " is negative and unphysical\n";
+    } else {
+      tmpPt = pt;
+    }
+    
+    result = trigEffHist->GetBinContent(
+					trigEffHist->GetXaxis()->FindFixBin( tmpMass ),
+					trigEffHist->GetYaxis()->FindFixBin( tmpPt )
+					);  
+  } else {
+    std::cout << "Error: expected a histogram, got a null pointer" << std::endl;
+    return 0;
+  }
+  //cout << "mass = " << mass << " , pt = " << pt << " : trigEff = " << result << "\n";
+
+  return result; 
+}
+
+
+
+
+double HHTo2B2GNtupler::getTriggerEff( TH2F *trigEffHist , double pt, double mass ) {
+  double result = 0.0;
+  double tmpMass = 0;
+  double tmpPt = 0;
+
+  if (trigEffHist) {
+      // constrain to histogram bounds
+      if( mass > trigEffHist->GetXaxis()->GetXmax() * 0.999 ) {
+	tmpMass = trigEffHist->GetXaxis()->GetXmax() * 0.999;
+      } else if ( mass < 0 ) {
+	tmpMass = 0.001;
+	//cout << "Warning: mass=" << mass << " is negative and unphysical\n";
+      } else {
+	tmpMass = mass;
+      }
+
+      if( pt > trigEffHist->GetYaxis()->GetXmax() * 0.999 ) {
+	tmpPt = trigEffHist->GetYaxis()->GetXmax() * 0.999;
+      } else if (pt < 0) {
+	tmpPt = 0.001;
+	cout << "Warning: pt=" << pt << " is negative and unphysical\n";
+      } else {
+	tmpPt = pt;
+      }
+
+      result = trigEffHist->GetBinContent(
+				 trigEffHist->GetXaxis()->FindFixBin( tmpMass ),
+				 trigEffHist->GetYaxis()->FindFixBin( tmpPt )
+				 );  
+         
+  } else {
+    std::cout << "Error: expected a histogram, got a null pointer" << std::endl;
+    return 0;
+  }
+  
+  //cout << "mass = " << mass << " , pt = " << pt << " : trigEff = " << result << "\n";
+
+  return result; 
+}
+
+
+void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, string year, string pileupWeightName)
+{ 
+    cout << "Initializing..." << endl;
+
+    //----------------------------------------
+    //Load auxiliary information
+    //----------------------------------------  
+    TH2F *triggerEffHist = 0;    
+    TH2F *triggerEffHist_Xbb0p0To0p9 = 0;    
+    TH2F *triggerEffHist_Xbb0p9To0p95 = 0;    
+    TH2F *triggerEffHist_Xbb0p95To0p98 = 0;    
+    TH2F *triggerEffHist_Xbb0p98To1p0 = 0;    
+    TH2F *triggerEffMCHist = 0;    
+    TH2F *triggerEffMCHist_Xbb0p0To0p9 = 0;    
+    TH2F *triggerEffMCHist_Xbb0p9To0p95 = 0;    
+    TH2F *triggerEffMCHist_Xbb0p95To0p98 = 0;    
+    TH2F *triggerEffMCHist_Xbb0p98To1p0 = 0;    
+
+    TH1F *pileupWeightHist = 0;
+    TH1F *pileupWeightUpHist = 0;
+    TH1F *pileupWeightDownHist = 0;
+    
+    string CMSSWDir = std::getenv("CMSSW_BASE");
+    if (!isData) {
+      string triggerEffFilename = "";
+      string triggerEffMCFilename = "";
+      if (year == "2016") {
+	triggerEffFilename = CMSSWDir + "/src/HHBoostedAnalyzer/data/JetHTTriggerEfficiency_2016.root";
+	triggerEffMCFilename = CMSSWDir + "/src/HHBoostedAnalyzer/data/JetHTTriggerEfficiency_Summer16.root";
+      } else if (year == "2017") {
+	triggerEffFilename = CMSSWDir + "/src/HHBoostedAnalyzer/data/JetHTTriggerEfficiency_2017.root";
+	triggerEffMCFilename = CMSSWDir + "/src/HHBoostedAnalyzer/data/JetHTTriggerEfficiency_Fall17.root";
+      } else if (year == "2018") {
+	triggerEffFilename = CMSSWDir + "/src/HHBoostedAnalyzer/data/JetHTTriggerEfficiency_2018.root";
+	triggerEffMCFilename = CMSSWDir + "/src/HHBoostedAnalyzer/data/JetHTTriggerEfficiency_Fall18.root";
+      } else if (year == "2022"){
+        triggerEffFilename = CMSSWDir + "/src/HHBoostedAnalyzer/data/JetHTTriggerEfficiency_2018.root";
+        triggerEffMCFilename = CMSSWDir + "/src/HHBoostedAnalyzer/data/JetHTTriggerEfficiency_Fall18.root";
+      }
+        else {
+	cout << "[HHTo2B2GNtupler] Warning: year " << year << " is not supported. \n";
+      }
+      TFile *triggerEffFile = new TFile(triggerEffFilename.c_str(),"READ");
+      TFile *triggerEffMCFile = new TFile(triggerEffMCFilename.c_str(),"READ");
+
+      if (!triggerEffFile) {
+	cout << "Warning : triggerEffFile " << triggerEffFilename << " could not be opened.\n";
+      } else {
+	cout << "Opened triggerEffFile " << triggerEffFilename << "\n";
+      }
+      if (triggerEffFile) {
+	triggerEffHist = (TH2F*)triggerEffFile->Get("efficiency_ptmass");  
+	triggerEffHist_Xbb0p0To0p9 = (TH2F*)triggerEffFile->Get("efficiency_ptmass_Xbb0p0To0p9");  
+	triggerEffHist_Xbb0p9To0p95 = (TH2F*)triggerEffFile->Get("efficiency_ptmass_Xbb0p9To0p95");  
+	triggerEffHist_Xbb0p95To0p98 = (TH2F*)triggerEffFile->Get("efficiency_ptmass_Xbb0p95To0p98");  
+	triggerEffHist_Xbb0p98To1p0 = (TH2F*)triggerEffFile->Get("efficiency_ptmass_Xbb0p98To1p0");    
+      } else {
+	cout << "Warning : could not open file " << triggerEffFilename << "\n";
+      }
+      if (triggerEffHist) cout << "Found triggerEffHist in file " << triggerEffFilename << "\n";
+      if (triggerEffHist_Xbb0p0To0p9) cout << "Found triggerEffHist_Xbb0p0To0p9 in file " << triggerEffFilename << "\n";
+      if (triggerEffHist_Xbb0p9To0p95) cout << "Found triggerEffHist_Xbb0p9To0p95 in file " << triggerEffFilename << "\n";
+      if (triggerEffHist_Xbb0p95To0p98) cout << "Found triggerEffHist_Xbb0p95To0p98 in file " << triggerEffFilename << "\n";
+      if (triggerEffHist_Xbb0p98To1p0) cout << "Found triggerEffHist_Xbb0p98To1p0 in file " << triggerEffFilename << "\n";
+
+      if (!triggerEffMCFile) {
+	cout << "Warning : triggerEffMCFile " << triggerEffMCFilename << " could not be opened.\n";
+      } else {
+	cout << "Opened triggerEffMCFile " << triggerEffMCFilename << "\n";
+      }
+      if (triggerEffMCFile) {
+	triggerEffMCHist = (TH2F*)triggerEffMCFile->Get("efficiency_ptmass");    
+	triggerEffMCHist_Xbb0p0To0p9 = (TH2F*)triggerEffMCFile->Get("efficiency_ptmass_Xbb0p0To0p9");  
+	triggerEffMCHist_Xbb0p9To0p95 = (TH2F*)triggerEffMCFile->Get("efficiency_ptmass_Xbb0p9To0p95");  
+	triggerEffMCHist_Xbb0p95To0p98 = (TH2F*)triggerEffMCFile->Get("efficiency_ptmass_Xbb0p95To0p98");  
+	triggerEffMCHist_Xbb0p98To1p0 = (TH2F*)triggerEffMCFile->Get("efficiency_ptmass_Xbb0p98To1p0");    
+      } else {
+	cout << "Warning : could not open file " << triggerEffMCFilename << "\n";
+      }
+      if (triggerEffMCHist) cout << "Found triggerEffMCHist in file " << triggerEffMCFilename << "\n";
+      if (triggerEffMCHist_Xbb0p0To0p9) cout << "Found triggerEffMCHist_Xbb0p0To0p9 in file " << triggerEffMCFilename << "\n";
+      if (triggerEffMCHist_Xbb0p9To0p95) cout << "Found triggerEffMCHist_Xbb0p9To0p95 in file " << triggerEffMCFilename << "\n";
+      if (triggerEffMCHist_Xbb0p95To0p98) cout << "Found triggerEffMCHist_Xbb0p95To0p98 in file " << triggerEffMCFilename << "\n";
+      if (triggerEffMCHist_Xbb0p98To1p0) cout << "Found triggerEffMCHist_Xbb0p98To1p0 in file " << triggerEffMCFilename << "\n";
+ 
+      string pileupWeightFilename = CMSSWDir + "/src/HHBoostedAnalyzer/data/PileupWeights/PileupWeights.root";
+      TFile *pileupWeightFile = new TFile(pileupWeightFilename.c_str(),"READ");
+      if (!pileupWeightFile) {
+	cout << "Warning : pileupWeightFile " << pileupWeightFile << " could not be opened.\n";  
+      } else {
+	cout << "Opened pileupWeightFile " << pileupWeightFilename << "\n"; 
+      }
+      string pileupWeightHistname = "PUWeight_" + pileupWeightName + "_" + year;
+      if (pileupWeightFile) {
+	pileupWeightHist = (TH1F*)pileupWeightFile->Get(pileupWeightHistname.c_str());
+	pileupWeightUpHist = (TH1F*)pileupWeightFile->Get((pileupWeightHistname+"_SysUp").c_str());
+	pileupWeightDownHist = (TH1F*)pileupWeightFile->Get((pileupWeightHistname+"_SysDown").c_str());
+      } 
+      if (pileupWeightHist) {
+	cout << "Found pileupWeightHist " << pileupWeightHistname << "in file " << pileupWeightFilename << "\n";
+      } else {
+	cout << "Warning :  could not find pileupWeightHist named " 
+	     << pileupWeightHistname 
+	     << " in file " << pileupWeightFilename << "\n";
+      }
+      if (pileupWeightUpHist) {
+	cout << "Found pileupWeightUpHist " << pileupWeightHistname+"_SysUp" << "in file " << pileupWeightFilename << "\n";
+      } else {
+	cout << "Warning :  could not find pileupWeightUpHist named " 
+	     << pileupWeightHistname +"_SysUp"
+	     << " in file " << pileupWeightFilename << "\n";
+      }
+      if (pileupWeightDownHist) {
+	cout << "Found pileupWeightDownHist " << pileupWeightHistname+"_SysDown" << "in file " << pileupWeightFilename << "\n";
+      } else {
+	cout << "Warning :  could not find pileupWeightDownHist named " 
+	     << pileupWeightHistname +"_SysDown"
+	     << " in file " << pileupWeightFilename << "\n";
+      }
+    
+    }
+
+    //----------------------------------------
+    //Jet Mass Scale: https://github.com/cms-nanoAOD/nanoAOD-tools/blob/a4b3c03ca5d8f4b8fbebc145ddcd605c7553d767/python/postprocessing/modules/jme/jetmetHelperRun2.py#L45-L58
+    //----------------------------------------
+    float* jmsValues;//{nominal, down, up}
+    if(year == "2016")
+      {
+	float tmp_jms[] = {1.00, 0.9906, 1.0094};
+	jmsValues = tmp_jms;
+      }
+    else if(year == "2017")
+      {
+	//float tmp_jms[] = {0.982, 0.978, 0.986};
+	float tmp_jms[] = {1.0016, 0.978, 0.986}; //Tuned to our Top control region
+	jmsValues = tmp_jms;
+      }
+    else if(year == "2018")
+      {
+	float tmp_jms[] = {0.997, 0.993, 1.001};
+	jmsValues = tmp_jms;
+      }
+    else if(year == "2022")
+      {
+	float tmp_jms[] = {0.997, 0.993, 1.001};
+	jmsValues = tmp_jms;
+      }
+    else if(year == "2023")
+      {
+	float tmp_jms[] = {0.997, 0.993, 1.001};
+	jmsValues = tmp_jms;
+      }
+    else
+      {
+	std::cout << "year is not acceptable! Use: 2016, 2017, 2018" << std::endl;
+	exit(EXIT_FAILURE);
+      }
+
+    //----------------------------------------
+    //Jet Mass Resolution: https://github.com/cms-nanoAOD/nanoAOD-tools/blob/a4b3c03ca5d8f4b8fbebc145ddcd605c7553d767/python/postprocessing/modules/jme/jetmetHelperRun2.py#L45-L58
+    //----------------------------------------
+    float* jmrValues;//{nominal, down, up}
+    if(year == "2016")
+      {
+	//float tmp_jmr[] = {1.00, 1.0, 1.2};
+	float tmp_jmr[] = {1.00, 1.0, 1.09}; //Tuned to our Top control region
+	jmrValues = tmp_jmr;
+      }
+    else if(year == "2017")
+      {
+	//float tmp_jmr[] = {1.09, 1.04, 1.14};
+	float tmp_jmr[] = {1.03, 1.00, 1.07};  //Tuned to our Top control region
+        jmrValues = tmp_jmr;
+      }
+    else if(year == "2018")
+      {
+	//float tmp_jmr[] = {1.24, 1.20, 1.28};
+	float tmp_jmr[] = {1.065, 1.031, 1.099}; //Tuned to our Top control region
+        jmrValues = tmp_jmr;
+      } 
+    else if(year == "2022")
+      {
+	//float tmp_jmr[] = {1.24, 1.20, 1.28};
+	float tmp_jmr[] = {1.065, 1.031, 1.099}; //Tuned to our Top control region
+        jmrValues = tmp_jmr;
+      }
+    else if(year == "2023")
+      {
+	//float tmp_jmr[] = {1.24, 1.20, 1.28};
+        float tmp_jmr[] = {1.065, 1.031, 1.099}; //Tuned to our Top control region
+	jmrValues = tmp_jmr;
+      }
+    else
+      {
+	std::cout << "year is not acceptable! Use: 2016, 2017, 2018" << std::endl;
+	exit(EXIT_FAILURE);
+      }
+
+
+    //----------------------------------------
+    //---jet energy scale uncertainty
+    //----------------------------------------
+    string JECUncertaintyFile = "";
+    if (year == "2016") {
+      JECUncertaintyFile = CMSSWDir + "/src/HHBoostedAnalyzer/data/JEC/Summer16_07Aug2017_V11_MC/Summer16_07Aug2017_V11_MC_Uncertainty_AK8PFPuppi.txt";
+    } else if (year == "2017") {
+      JECUncertaintyFile = CMSSWDir + "/src/HHBoostedAnalyzer/data/JEC/Fall17_17Nov2017_V32_MC/Fall17_17Nov2017_V32_MC_Uncertainty_AK8PFPuppi.txt";
+    } else if (year == "2018") {
+     JECUncertaintyFile = CMSSWDir + "/src/HHBoostedAnalyzer/data/JEC/Autumn18_V19_MC/Autumn18_V19_MC_Uncertainty_AK8PFPuppi.txt";
+    } else if (year == "2022") {
+     JECUncertaintyFile = CMSSWDir + "/src/HHBoostedAnalyzer/data/JEC/Autumn18_V19_MC/Autumn18_V19_MC_Uncertainty_AK8PFPuppi.txt";
+    }
+    JetCorrectionUncertainty *jecUnc = new JetCorrectionUncertainty(JECUncertaintyFile.c_str());
+    
+    //----------------------------------------
+    //Output file
+    //----------------------------------------  
+    string outfilename = outputfilename;
+    if (outfilename == "") outfilename = "HHTo2B2GNtuple.root";
+    TFile *outFile = new TFile(outfilename.c_str(), "RECREATE");    
+ 
+    //histogram containing total number of processed events (for normalization)
+    TH1F *NEvents = new TH1F("NEvents", "NEvents", 1, 1, 2);
+
+    //output TTree
+    TTree *outputTree = new TTree("tree", "");
+ 
+    //------------------------
+    //declare branch variables
+    //------------------------  
+    float weight = 0;
+    float triggerEffWeight = 0;
+    float triggerEff3DWeight = 0;
+    float triggerEffMCWeight = 0;
+    float triggerEffMC3DWeight = 0;
+    float pileupWeight = 0;
+    float pileupWeightUp = 0;
+    float pileupWeightDown = 0;
+    float totalWeight = 0;
+//----------b Quark---
+    float genbQuark1_Pt = -99;
+    float genbQuark1_Eta = -99;
+    float genbQuark1_Phi = -99;
+    float genbQuark2_Pt = -99;
+    float genbQuark2_Eta = -99;
+    float genbQuark2_Phi = -99;
+    //to bb Higgs 
+    float tobbHiggs_Pt = -99;
+    float tobbHiggs_Eta = -99;
+    float tobbHiggs_Phi = -99;
+    float tobbHiggs_Mass = -99;
+    float toggHiggs_Pt = -99;
+    float toggHiggs_Eta = -99;
+    float toggHiggs_Phi = -99;
+    float toggHiggs_Mass = -99;
+//--------------------------
+//---------gen B-Jets-------
+    float GenBJet1_Pt = -99;
+    float GenBJet1_Eta = -99;
+    float GenBJet1_Phi = -99;
+    float GenBJet1_Mass = -99;
+    float GenBJet2_Pt = -99;
+    float GenBJet2_Eta = -99;
+    float GenBJet2_Phi = -99;
+    float GenBJet2_Mass = -99;
+    float GenBJet3_Pt = -99;
+    float GenBJet3_Eta = -99;
+    float GenBJet3_Phi = -99;
+    float GenBJet3_Mass = -99;
+    float GenBJet4_Pt = -99;
+    float GenBJet4_Eta = -99;
+    float GenBJet4_Phi = -99;
+    float GenBJet4_Mass = -99;
+    float GenBJet5_Pt = -99;
+    float GenBJet5_Eta = -99;
+    float GenBJet5_Phi = -99;
+    float GenBJet5_Mass = -99;
+
+//-------------------------    
+    float genHiggs1Pt = -1;
+    float genHiggs1Eta = -1;
+    float genHiggs1Phi = -1;
+    float genHiggs2Pt = -1;
+    float genHiggs2Eta = -1;
+    float genHiggs2Phi = -1;
+    float genPhoton1Pt = -1;
+    float genPhoton1Eta = -1;
+    float genPhoton1Phi = -1;    
+    float genPhoton2Pt = -1;
+    float genPhoton2Eta = -1;
+    float genPhoton2Phi = -1;    
+    int genPho1_Idx = -1;
+    int genPho2_Idx = -1;
+    float genHH_pt = -99;
+    float genHH_eta = -99;
+    float genHH_phi = -99;
+    float genHH_mass = -99;
+//----------------GenFatJet-------
+    float FatJetMatch_Pt = -99;
+    float FatJetMatch_Eta = -99;
+    float FatJetMatch_Phi = -99;
+    float FatJetMatch_Mass = -99;
+    float FatJetMatch_corrMass = -99;
+    float FatJetMatch_PNet = -99;
+ //   float FatJetMatch_Flav = -99;
+
+    float FatJetClose1_Pt = -99;
+    float FatJetClose1_Eta = -99;
+    float FatJetClose1_Phi = -99;
+    float FatJetClose1_Mass = -99;
+ //   float FatJetClose1_Flav = -99;
+    
+    float FatJetClose2_Pt = -99;
+    float FatJetClose2_Eta = -99;
+    float FatJetClose2_Phi = -99;
+    float FatJetClose2_Mass = -99;
+ //   float FatJetClose2_Flav = -99;
+
+//-------------------------------
+    float genWPt = -1;
+    float genWEta = -1;
+    float genWPhi = -1;
+    float genZPt = -1;
+    float genZEta = -1;
+    float genZPhi = -1;
+    float genTop1Mass = -1;
+    float genTop1Pt = -1;
+    float genTop1Eta = -1;
+    float genTop1Phi = -1;   
+    float genTop2Mass = -1;
+    float genTop2Pt = -1;
+    float genTop2Eta = -1;
+    float genTop2Phi = -1;   
+    float genMTT = -1;
+    float genLeptonPt = -1;
+    float genLeptonEta = -1;
+    float genLeptonPhi = -1;
+    int   genLeptonId = 0;
+    int   genLeptonMotherId = 0;
+// Reco_FatJet -------------------
+ //   float RecoFatJetCan_Pt = -99;
+ //   float RecoFatJetCan_Eta = -99;
+//    float RecoFatJetCan_Phi = -99;
+//    float RecoFatJetCan_MS = -99;
+//    float RecoFatJetCan_PNet = -99;
+ //   float RecoFatJetCan_DDB = -99;
+    
+ //   float RecoFatJetClose1_Pt = -99;
+ //   float RecoFatJetClose1_Eta = -99;
+ //   float RecoFatJetClose1_Phi = -99;
+ //   float RecoFatJetClose1_MS = -99;
+ //   float RecoFatJetClose1_PNet = -99;
+ //   float RecoFatJetClose1_DDB = -99;
+
+ //   float RecoFatJetClose2_Pt = -99;
+ //   float RecoFatJetClose2_Eta = -99;
+ //   float RecoFatJetClose2_Phi = -99;
+ //   float RecoFatJetClose2_MS = -99;
+ //   float RecoFatJetClose2_PNet = -99;
+ //   float RecoFatJetClose2_DDB = -99;
+//--------------------------------------
+    int NJets = 0;
+    float MET = -1;
+    float fatJet1Pt = -99;
+    float fatJet1Pt_JES_Up   = -99;
+    float fatJet1Pt_JES_Down = -99;
+    float fatJet1Eta = -99;
+    float fatJet1Phi = -99;
+    float fatJet1Mass = -99;
+    float fatJet1MassSD      = -99;
+    float fatJet1MassSD_UnCorrected  = -99;
+    float fatJet1MassSD_JMS_Up       = -99;//jet mass scale up
+    float fatJet1MassSD_JMS_Down     = -99;//jet mass scale down
+    float fatJet1MassSD_JMR_Up       = -99;//jet mass resolution up
+    float fatJet1MassSD_JMR_Down     = -99;//jet mass resolution down
+    float fatJet1DDBTagger = -99;
+    float fatJet1PNetXbb = -99;
+    float fatJet1PNetXcc = -99;
+    float fatJet1PNetXqq = -99;
+    float fatJet1PNetQCD = -99;
+    int   fatJet1GenMatchIndex = -99;
+    float fatJet1Tau3OverTau2 = -99;
+    float fatJet1_n2b1 = -99; 
+    bool fatJet1HasMuon = 0;
+    bool fatJet1HasElectron = 0;
+    bool fatJet1HasBJetCSVLoose = 0;
+    bool fatJet1HasBJetCSVMedium = 0;
+    bool fatJet1HasBJetCSVTight = 0;
+    bool fatJet1OppositeHemisphereHasBJet = 0;
+    float fatJet2Pt = -99;
+    float fatJet2Pt_JES_Up   = -99;
+    float fatJet2Pt_JES_Down = -99;
+    float fatJet2Eta = -99;
+    float fatJet2Phi = -99;
+    float fatJet2Mass = -99;
+    float fatJet2MassSD = -99;
+    float fatJet2MassSD_UnCorrected  = -99;
+    float fatJet2MassSD_JMS_Up       = -99;//jet mass scale up
+    float fatJet2MassSD_JMS_Down     = -99;//jet mass scale down
+    float fatJet2MassSD_JMR_Up       = -99;//jet mass resolution up
+    float fatJet2MassSD_JMR_Down     = -99;//jet mass resolution down
+    float fatJet2DDBTagger = -99;
+    float fatJet2PNetXbb = -99;
+    float fatJet2PNetXcc = -99;
+    float fatJet2PNetXqq = -99;
+    float fatJet2PNetQCD = -99;
+    int   fatJet2GenMatchIndex = -99;
+    float fatJet2Tau3OverTau2 = -99;
+    bool fatJet2HasMuon = 0;
+    bool fatJet2HasElectron = 0;
+    bool fatJet2HasBJetCSVLoose = 0;
+    bool fatJet2HasBJetCSVMedium = 0;
+    bool fatJet2HasBJetCSVTight = 0;
+    float fatJet3Pt = -99;
+    float fatJet3Pt_JES_Up   = -99;
+    float fatJet3Pt_JES_Down = -99;
+    float fatJet3Eta = -99;
+    float fatJet3Phi = -99;
+    float fatJet3Mass = -99;
+    float fatJet3MassSD = -99;
+    float fatJet3MassSD_UnCorrected  = -99;
+    float fatJet3MassSD_JMS_Up       = -99;//jet mass scale up
+    float fatJet3MassSD_JMS_Down     = -99;//jet mass scale down
+    float fatJet3MassSD_JMR_Up       = -99;//jet mass resolution up
+    float fatJet3MassSD_JMR_Down     = -99;//jet mass resolution down
+    float fatJet3DDBTagger = -99;
+    float fatJet3PNetXbb = -99;
+    float fatJet3PNetXcc = -99;
+    float fatJet3PNetXqq = -99;
+    float fatJet3PNetQCD = -99;
+    float fatJet3Tau3OverTau2 = -99;
+    bool fatJet3HasMuon = 0;
+    bool fatJet3HasElectron = 0;
+    bool fatJet3HasBJetCSVLoose = 0;
+    bool fatJet3HasBJetCSVMedium = 0;
+    bool fatJet3HasBJetCSVTight = 0;
+    float hh_pt = -99;
+    float hh_eta = -99;
+    float hh_phi = -99;
+    float hh_mass = -99;        
+    float hh_pt_JESUp = -99;
+    float hh_pt_JESDown = -99;
+    float hh_pt_JMSUp = -99;
+    float hh_pt_JMSDown = -99;
+    float hh_pt_JMRUp = -99;
+    float hh_pt_JMRDown = -99;
+    float hh_eta_JESUp = -99;
+    float hh_eta_JESDown = -99;
+    float hh_eta_JMSUp = -99;
+    float hh_eta_JMSDown = -99;
+    float hh_eta_JMRUp = -99;
+    float hh_eta_JMRDown = -99;
+    float hh_mass_JESUp = -99;
+    float hh_mass_JESDown = -99;
+    float hh_mass_JMSUp = -99;
+    float hh_mass_JMSDown = -99;
+    float hh_mass_JMRUp = -99;
+    float hh_mass_JMRDown = -99;    
+    float fatJet1PtOverMHH = -99;
+    float fatJet1PtOverMHH_JESUp = -99;
+    float fatJet1PtOverMHH_JESDown = -99;
+    float fatJet1PtOverMHH_JMSUp = -99;
+    float fatJet1PtOverMHH_JMSDown = -99;
+    float fatJet1PtOverMHH_JMRUp = -99;
+    float fatJet1PtOverMHH_JMRDown = -99;
+    float fatJet1PtOverMSD = -99;
+    float fatJet2PtOverMHH = -99;
+    float fatJet2PtOverMHH_JESUp = -99;
+    float fatJet2PtOverMHH_JESDown = -99;
+    float fatJet2PtOverMHH_JMSUp = -99;
+    float fatJet2PtOverMHH_JMSDown = -99;
+    float fatJet2PtOverMHH_JMRUp = -99;
+    float fatJet2PtOverMHH_JMRDown = -99;
+    float fatJet2PtOverMSD = -99;
+    float deltaEta_j1j2 = -99;
+    float deltaPhi_j1j2 = -99;
+    float deltaR_j1j2 = -99;    
+    float ptj2_over_ptj1 = -99;
+    float mj2_over_mj1 = -99;
+    float lep1Pt = -99;
+    float lep1Eta = -99;
+    float lep1Phi = -99;
+    int   lep1Id = 0;
+    float lep2Pt = -99;
+    float lep2Eta = -99;
+    float lep2Phi = -99;
+    int   lep2Id = 0;
+    float pho1Pt = -99;
+    float pho1Eta = -99;
+    float pho1Phi = -99;
+    float pho1_mvaID = -99;
+    bool pho1_electronVeto = -99;
+// ------ new added bool value -----------
+    bool pho1r9 = 0;
+    bool pho2r9 = 0;
+    bool pho1_ChIOvEt = 0;
+    bool pho2_ChIOvEt = 0;
+    bool pho1_ChI = 0;
+    bool pho2_ChI = 0;
+    bool pho1_hoe = 0;
+    bool pho2_hoe = 0;
+    int  pho1_seediPhiOriY = -99;
+    int pho1_seediEtaOriX = -99;
+    int  pho2_seediPhiOriY = -99;
+    int pho2_seediEtaOriX = -99;
+//------------------
+    float pho2Pt = -99;
+    float pho2Eta = -99;
+    float pho2Phi = -99;
+    float pho2_mvaID = -99;
+    bool pho2_electronVeto = -99;
+// ------
+    float jet1Pt = -99;
+    float jet1Eta = -99;
+    float jet1Phi = -99;
+    float jet1Mass = -99;
+    float jet1PNet = -99;
+    float jet1DeepFlavB = -99;
+    int jet1Flav = -1;
+
+    float jet2Pt = -99;
+    float jet2Eta = -99;
+    float jet2Phi = -99;
+    float jet2Mass = -99;
+    float jet2PNet = -99;
+    float jet2DeepFlavB = -99;
+    int jet2Flav = -1;
+    
+    float jet3Pt = -99;
+    float jet3Eta = -99;
+    float jet3Phi = -99;
+    float jet3Mass = -99;
+    float jet3PNet = -99;
+    float jet3DeepFlavB = -99;
+    int jet3Flav = -1;
+
+    float jet4Pt = -99;
+    float jet4Eta = -99;
+    float jet4Phi = -99;
+    float jet4Mass = -99;
+    float jet4PNet = -99;
+    float jet4DeepFlavB = -99;
+    int jet4Flav = -1;
+
+    float jet5Pt = -99;
+    float jet5Eta = -99;
+    float jet5Phi = -99;
+    float jet5Mass = -99;
+    float jet5PNet = -99;
+    float jet5DeepFlavB = -99;
+    int jet5Flav = -1;
+
+    float jet6Pt = -99;
+    float jet6Eta = -99;
+    float jet6Phi = -99;
+    float jet6Mass = -99;
+    float jet6PNet = -99;
+
+    // Add jets_mass and DiJets Mass
+    float Dijets_Mass = -99;
+    float DijetsCan_Mass = -99;
+    float Dijetsall_Mass = -99;
+    //variables for overlap removal with VBF HH->4b boosted analysis
+    int isVBFtag = 0;
+    float dijetmass = -99;
+    float vbfjet1Pt = -99;
+    float vbfjet1Eta = -99;
+    float vbfjet1Phi = -99;
+    float vbfjet1Mass = -99;
+    float vbfjet2Pt = -99;
+    float vbfjet2Eta = -99;
+    float vbfjet2Phi = -99;
+    float vbfjet2Mass = -99;
+    float vbffatJet1Pt = -99;
+    float vbffatJet1Eta = -99;
+    float vbffatJet1Phi = -99;
+    float vbffatJet1PNetXbb = -99;
+    float vbffatJet2Pt = -99;
+    float vbffatJet2Eta = -99;
+    float vbffatJet2Phi = -99;
+    float vbffatJet2PNetXbb = -99;
+    // add b taggers
+    
+    int nSigBjets = 0;
+    float Jet_PNetSignal[5];
+    float Jet_DeepJetSignal[5];
+    float Jet_bmatchPt[5];   
+    float Jet_bmatchEta[5];
+    int Jet_bmatchFlav[5];
+    int nBkgjets = 0;
+    float Jet_PNetBkg[5];   
+    float Jet_DeepJetBkg[5];
+    float Jet_nobmatchPt[5];    
+    float Jet_nobmatchEta[5];
+    int Jet_nobmatchFlav[5];
+    int nBkgFatjets = 0;
+    float FatJet_PNetBkg[3];
+    float FatJet_DDBBkg[3];
+    float FatJet_nobmatchPt[3];
+    float FatJet_nobmatchEta[3];
+    float FatJet_nobmatchM[3];
+   // Add GenJet
+    float genJetEta[500];
+    float genJetPhi[500];
+    float genJetMass[500];
+    float genJetPt[500];
+    int genJetPartonFlavor[500];
+    // Add GenFatJet
+    float genJetAK8Eta[100];
+    float genJetAK8Phi[100];
+    float genJetAK8Mass[100];
+    float genJetAK8Pt[100];
+    int genJetAK8PartonFlavor[100]; 
+    // Add Jet and FatJet
+    float JetEta[500];
+    float JetPhi[500];
+    float JetPt[500];
+    int JetFlavour[500];    
+    float FatJetEta[100];
+    float FatJetPhi[100];
+    float FatJetPt[100];
+    float FatJetPNet[100];
+    float FatJetMass[100];
+    int FatJetBHadrons[100];
+    float FatJetM_nosoftdrop[100];
+    float FatJetPNetMasscorr[100];
+
+    // some float
+    float Margin = 1.0;
+    float margin1 = 0.4;
+    float margin2 = 0.4;  
+    int FatJetMatch_idx = -1;
+   // int GenFatJetClose1_idx = -1;
+   // int GenFatJetClose2_idx = -1;
+    int Number_FatJetMatch = 0;
+    int last1Idx = -1;
+    int last2Idx = -1;
+    int GenBJet1_idx = -1;
+    int GenBJet2_idx = -1;
+    int GenBJet3_idx = -1;
+    int GenBJet4_idx = -1;
+//    int GenBJet5_idx = -1;
+    int CloseBQuark = 0;
+    int Farjet = 1;
+    float BquarkR = -99;
+    float DeltaR_HH = -99;
+
+    //float TestPt1 = -99;
+    //float TestPt2 = -99;
+    //float TestDeltaR1 = -99;
+    float FatJetDeltaR = -99;
+    
+    float Diphoton_Mass = -99;
+    float GenHmass = -99;
+
+    //------------------------
+    //set branches on big tree
+    //------------------------    
+    outputTree->Branch("weight", &weight, "weight/F");
+    outputTree->Branch("genMTT", &genMTT, "genMTT/F");
+
+    if (Option != 100) {
+      outputTree->Branch("triggerEffWeight", &triggerEffWeight, "triggerEffWeight/F");
+      outputTree->Branch("triggerEff3DWeight", &triggerEff3DWeight, "triggerEff3DWeight/F");
+      outputTree->Branch("triggerEffMCWeight", &triggerEffMCWeight, "triggerEffMCWeight/F");
+      outputTree->Branch("triggerEffMC3DWeight", &triggerEffMC3DWeight, "triggerEffMC3DWeight/F");
+
+      float triggerEff3DWeight = 0;
+      float triggerEffMCWeight = 0;
+      float triggerEffMC3DWeight = 0;
+      
+      outputTree->Branch("pileupWeight", &pileupWeight, "pileupWeight/F");
+      outputTree->Branch("pileupWeightUp", &pileupWeightUp, "pileupWeightUp/F");
+      outputTree->Branch("pileupWeightDown", &pileupWeightDown, "pileupWeightDown/F");
+      outputTree->Branch("totalWeight", &totalWeight, "totalWeight/F");
+      outputTree->Branch("run", &run, "run/i");
+      outputTree->Branch("lumi", &luminosityBlock, "lumi/i");
+      outputTree->Branch("event", &event, "event/l");
+      outputTree->Branch("npu", &Pileup_nTrueInt, "npu/F");
+      outputTree->Branch("rho", &fixedGridRhoFastjetAll, "rho/F");
+
+      outputTree->Branch("NJets", &NJets, "NJets/I");
+      outputTree->Branch("MET", &MET, "MET/F");
+      // test FatJet_PNet  
+      outputTree->Branch("fatJet1Pt", &fatJet1Pt, "fatJet1Pt/F");
+      outputTree->Branch("fatJet1Pt_JES_Up", &fatJet1Pt_JES_Up, "fatJet1Pt_JES_Up/F");
+      outputTree->Branch("fatJet1Pt_JES_Down", &fatJet1Pt_JES_Down, "fatJet1Pt_JES_Down/F");
+      outputTree->Branch("fatJet1Eta", &fatJet1Eta, "fatJet1Eta/F");
+      outputTree->Branch("fatJet1Phi", &fatJet1Phi, "fatJet1Phi/F");
+      outputTree->Branch("fatJet1Mass", &fatJet1Mass, "fatJet1Mass/F");
+      outputTree->Branch("fatJet1MassSD", &fatJet1MassSD, "fatJet1MassSD/F");
+      outputTree->Branch("fatJet1MassSD_UnCorrected", &fatJet1MassSD_UnCorrected, "fatJet1MassSD_UnCorrected/F");
+      outputTree->Branch("fatJet1MassSD_JMS_Up", &fatJet1MassSD_JMS_Up, "fatJet1MassSD_JMS_Up/F");
+      outputTree->Branch("fatJet1MassSD_JMS_Down", &fatJet1MassSD_JMS_Down, "fatJet1MassSD_JMS_Down/F");
+      outputTree->Branch("fatJet1MassSD_JMR_Up", &fatJet1MassSD_JMR_Up, "fatJet1MassSD_JMR_Up/F");
+      outputTree->Branch("fatJet1MassSD_JMR_Down", &fatJet1MassSD_JMR_Down, "fatJet1MassSD_JMR_Down/F");
+      outputTree->Branch("fatJet1DDBTagger", &fatJet1DDBTagger, "fatJet1DDBTagger/F");
+      outputTree->Branch("fatJet1PNetXbb", &fatJet1PNetXbb, "fatJet1PNetXbb/F");
+      outputTree->Branch("fatJet1PNetXcc", &fatJet1PNetXcc, "fatJet1PNetXcc/F");
+      outputTree->Branch("fatJet1PNetXqq", &fatJet1PNetXqq, "fatJet1PNetXqq/F");
+      outputTree->Branch("fatJet1PNetQCD", &fatJet1PNetQCD, "fatJet1PNetQCD/F");
+      outputTree->Branch("fatJet1GenMatchIndex", &fatJet1GenMatchIndex, "fatJet1GenMatchIndex/I");
+      outputTree->Branch("fatJet1Tau3OverTau2", &fatJet1Tau3OverTau2, "fatJet1Tau3OverTau2/F");
+      outputTree->Branch("fatJet1_n2b1", &fatJet1_n2b1, "fatJet1_n2b1/F");
+      outputTree->Branch("fatJet1HasMuon", &fatJet1HasMuon, "fatJet1HasMuon/O");
+      outputTree->Branch("fatJet1HasElectron", &fatJet1HasElectron, "fatJet1HasElectron/O");
+      outputTree->Branch("fatJet1HasBJetCSVLoose", &fatJet1HasBJetCSVLoose, "fatJet1HasBJetCSVLoose/O");
+      outputTree->Branch("fatJet1HasBJetCSVMedium", &fatJet1HasBJetCSVMedium, "fatJet1HasBJetCSVMedium/O");
+      outputTree->Branch("fatJet1HasBJetCSVTight", &fatJet1HasBJetCSVTight, "fatJet1HasBJetCSVTight/O");
+      outputTree->Branch("fatJet1OppositeHemisphereHasBJet", &fatJet1OppositeHemisphereHasBJet, "fatJet1OppositeHemisphereHasBJet/O");
+ 
+      //for phase-space overlap removal with VBFHH->4b boosted analysis
+      //small R VBF jets
+      outputTree->Branch("isVBFtag", &isVBFtag, "isVBFtag/I");
+      outputTree->Branch("dijetmass", &dijetmass, "dijetmass/F");
+      outputTree->Branch("vbfjet1Pt", &vbfjet1Pt, "vbfjet1Pt/F");
+      outputTree->Branch("vbfjet1Eta", &vbfjet1Eta, "vbfjet1Eta/F");
+      outputTree->Branch("vbfjet1Phi", &vbfjet1Phi, "vbfjet1Phi/F");
+      outputTree->Branch("vbfjet1Mass", &vbfjet1Mass, "vbfjet1Mass/F");
+      outputTree->Branch("vbfjet2Pt", &vbfjet2Pt, "vbfjet2Pt/F");
+      outputTree->Branch("vbfjet2Eta", &vbfjet2Eta, "vbfjet2Eta/F");
+      outputTree->Branch("vbfjet2Phi", &vbfjet2Phi, "vbfjet2Phi/F");
+      outputTree->Branch("vbfjet2Mass", &vbfjet2Mass, "vbfjet2Mass/F");
+      //leading and subleading AK8jets
+      outputTree->Branch("vbffatJet1PNetXbb", &vbffatJet1PNetXbb, "vbffatJet1PNetXbb/F");
+      outputTree->Branch("vbffatJet1Pt", &vbffatJet1Pt, "vbffatJet1Pt/F");
+      outputTree->Branch("vbffatJet1Eta", &vbffatJet1Eta, "vbffatJet1Eta/F");
+      outputTree->Branch("vbffatJet1Phi", &vbffatJet1Phi, "vbffatJet1Phi/F");
+      outputTree->Branch("vbffatJet2PNetXbb", &vbffatJet2PNetXbb, "vbffatJet2PNetXbb/F");
+      outputTree->Branch("vbffatJet2Pt", &vbffatJet2Pt, "vbffatJet2Pt/F");
+      outputTree->Branch("vbffatJet2Eta", &vbffatJet2Eta, "vbffatJet2Eta/F");
+      outputTree->Branch("vbffatJet2Phi", &vbffatJet2Phi, "vbffatJet2Phi/F");
+    }
+
+    if (Option == 0) {
+      outputTree->Branch("genPhoton1Pt", &genPhoton1Pt, "genPhoton1Pt/F");
+      outputTree->Branch("genPhoton1Eta", &genPhoton1Eta, "genPhoton1Eta/F");
+      outputTree->Branch("genPhoton1Phi", &genPhoton1Phi, "genPhoton1Phi/F");
+      outputTree->Branch("genPhoton2Pt", &genPhoton2Pt, "genPhoton2Pt/F");
+      outputTree->Branch("genPhoton2Eta", &genPhoton2Eta, "genPhoton2Eta/F");
+      outputTree->Branch("genPhoton2Phi", &genPhoton2Phi, "genPhoton2Phi/F");
+      outputTree->Branch("jet1Pt", &jet1Pt, "jet1Pt/F");
+      outputTree->Branch("jet1Eta", &jet1Eta, "jet1Eta/F");
+      outputTree->Branch("jet1Phi", &jet1Phi, "jet1Phi/F");
+      outputTree->Branch("jet1PNet", &jet1PNet, "jet1PNet/F");
+      outputTree->Branch("jet1DeepFlavB", &jet1DeepFlavB, "jet1DeepFlavB/F");
+      outputTree->Branch("jet1Flav", &jet1Flav, "jet1Flav/I");
+   //   outputTree->Branch("jet1DeepJetBTag", &jet1DeepJetBTag, "jet1DeepJetBTag/F");      
+      outputTree->Branch("jet2Pt", &jet2Pt, "jet2Pt/F");
+      outputTree->Branch("jet2Eta", &jet2Eta, "jet2Eta/F");
+      outputTree->Branch("jet2Phi", &jet2Phi, "jet2Phi/F");
+      outputTree->Branch("jet2PNet", &jet2PNet, "jet2PNet/F");
+      outputTree->Branch("jet2DeepFlavB", &jet2DeepFlavB, "jet2DeepFlavB/F");
+      outputTree->Branch("jet2Flav", &jet2Flav, "jet2Flav/I");
+   //  outputTree->Branch("jet2DeepJetBTag", &jet2DeepJetBTag, "jet2DeepJetBTag/F");      
+      outputTree->Branch("jet3Pt", &jet3Pt, "jet3Pt/F");
+      outputTree->Branch("jet3Eta", &jet3Eta, "jet3Eta/F");
+      outputTree->Branch("jet3Phi", &jet3Phi, "jet3Phi/F");
+      outputTree->Branch("jet3PNet", &jet3PNet, "jet3PNet/F");
+      outputTree->Branch("jet3DeepFlavB", &jet3DeepFlavB, "jet3DeepFlavB/F");
+      outputTree->Branch("jet3Flav", &jet3Flav, "jet3Flav/I");
+   //  outputTree->Branch("jet3DeepJetBTag", &jet3DeepJetBTag, "jet3DeepJetBTag/F");      
+      outputTree->Branch("jet4Pt", &jet4Pt, "jet4Pt/F");
+      outputTree->Branch("jet4Eta", &jet4Eta, "jet4Eta/F");
+      outputTree->Branch("jet4Phi", &jet4Phi, "jet4Phi/F");
+      outputTree->Branch("jet4PNet", &jet4PNet, "jet4PNet/F");
+      outputTree->Branch("jet4DeepFlavB", &jet4DeepFlavB, "jet4DeepFlavB/F");
+      outputTree->Branch("jet4Flav", &jet4Flav, "jet4Flav/I");
+   //   outputTree->Branch("jet4DeepJetBTag", &jet4DeepJetBTag, "jet4DeepJetBTag/F");    
+      outputTree->Branch("jet5Pt", &jet5Pt, "jet5Pt/F");
+      outputTree->Branch("jet5Eta", &jet5Eta, "jet5Eta/F");
+      outputTree->Branch("jet5Phi", &jet5Phi, "jet5Phi/F");
+      outputTree->Branch("jet5PNet", &jet5PNet, "jet5PNet/F");
+      outputTree->Branch("jet6Pt", &jet6Pt, "jet6Pt/F");
+      outputTree->Branch("jet6Eta", &jet6Eta, "jet6Eta/F");
+      outputTree->Branch("jet6Phi", &jet6Phi, "jet6Phi/F");
+      outputTree->Branch("jet6PNet", &jet6PNet, "jet6PNet/F");
+   //   outputTree->Branch("jet5DeepFlavB", &jet5DeepFlavB, "jet5DeepFlavB/F");
+   //   outputTree->Branch("jet5Flav", &jet5Flav, "jet5Flav/I");
+      outputTree->Branch("Dijets_Mass", &Dijets_Mass, "Dijets_Mass/F");  
+      outputTree->Branch("DijetsCan_Mass", &DijetsCan_Mass, "DijetsCan_Mass/F");
+      outputTree->Branch("Dijetsall_Mass", &Dijetsall_Mass, "Dijetsall_Mass/F");
+   }
+
+
+    if (Option != 20 && Option != 100) {
+      outputTree->Branch("genbQuark1_Pt", &genbQuark1_Pt, "genbQuark1_Pt/F");
+      outputTree->Branch("genbQuark1_Eta", &genbQuark1_Eta, "genbQuark1_Eta/F");
+      outputTree->Branch("genbQuark1_Phi", &genbQuark1_Phi, "genbQuark1_Phi/F");
+      outputTree->Branch("genbQuark2_Pt", &genbQuark2_Pt, "genbQuark2_Pt/F");
+      outputTree->Branch("genbQuark2_Eta", &genbQuark2_Eta, "genbQuark2_Eta/F");
+      outputTree->Branch("genbQuark2_Phi", &genbQuark2_Phi, "genbQuark2_Phi/F");
+      outputTree->Branch("BquarkR", &BquarkR, "BquarkR/F");
+      outputTree->Branch("GenBJet1_Pt", &GenBJet1_Pt , "GenBJet1_Pt/F");
+      outputTree->Branch("GenBJet1_Eta", &GenBJet1_Eta , "GenBJet1_Eta/F");
+      outputTree->Branch("GenBJet1_Phi", &GenBJet1_Phi , "GenBJet1_Phi/F");
+      outputTree->Branch("GenBJet2_Pt", &GenBJet2_Pt , "GenBJet2_Pt/F");
+      outputTree->Branch("GenBJet2_Eta", &GenBJet2_Eta , "GenBJet2_Eta/F");
+      outputTree->Branch("GenBJet2_Phi", &GenBJet2_Phi , "GenBJet2_Phi/F");
+      outputTree->Branch("GenBJet3_Pt", &GenBJet3_Pt , "GenBJet3_Pt/F");
+      outputTree->Branch("GenBJet3_Eta", &GenBJet3_Eta , "GenBJet3_Eta/F");
+      outputTree->Branch("GenBJet3_Phi", &GenBJet3_Phi , "GenBJet3_Phi/F");
+      outputTree->Branch("GenBJet4_Pt", &GenBJet4_Pt , "GenBJet4_Pt/F");
+      outputTree->Branch("GenBJet4_Eta", &GenBJet4_Eta , "GenBJet4_Eta/F");
+      outputTree->Branch("GenBJet4_Phi", &GenBJet4_Phi , "GenBJet4_Phi/F");
+      outputTree->Branch("GenBJet1_idx", &GenBJet1_idx , "GenBJet1_idx/I");
+      outputTree->Branch("GenBJet2_idx", &GenBJet2_idx , "GenBJet2_idx/I");
+      outputTree->Branch("GenBJet3_idx", &GenBJet3_idx , "GenBJet3_idx/I");
+      outputTree->Branch("GenBJet4_idx", &GenBJet4_idx , "GenBJet4_idx/I");
+      
+      outputTree->Branch("tobbHiggs_Pt", &tobbHiggs_Pt, "tobbHiggs_Pt/F");
+      outputTree->Branch("tobbHiggs_Eta", &tobbHiggs_Eta, "tobbHiggs_Eta/F");
+      outputTree->Branch("tobbHiggs_Phi", &tobbHiggs_Phi, "tobbHiggs_Phi/F");
+      outputTree->Branch("tobbHiggs_Mass", &tobbHiggs_Mass, "tobbHiggs_Mass/F");
+      outputTree->Branch("toggHiggs_Pt", &toggHiggs_Pt, "toggHiggs_Pt/F"); 
+      outputTree->Branch("toggHiggs_Eta", &toggHiggs_Eta, "toggHiggs_Eta/F");    
+      outputTree->Branch("toggHiggs_Phi", &toggHiggs_Phi, "toggHiggs_Phi/F");
+      outputTree->Branch("toggHiggs_Mass", &toggHiggs_Mass, "toggHiggs_Mass/F");
+
+      outputTree->Branch("FatJetMatch_Pt", &FatJetMatch_Pt, "FatJetMatch_Pt/F");
+      outputTree->Branch("FatJetMatch_Eta", &FatJetMatch_Eta, "FatJetMatch_Eta/F");
+      outputTree->Branch("FatJetMatch_Phi", &FatJetMatch_Phi, "FatJetMatch_Phi/F");
+      outputTree->Branch("FatJetMatch_Mass", &FatJetMatch_Mass, "FatJetMatch_Mass/F");
+      outputTree->Branch("FatJetMatch_PNet", &FatJetMatch_PNet, "FatJetMatch_PNet/F");
+      outputTree->Branch("FatJetMatch_corrMass", &FatJetMatch_corrMass, "FatJetMatch_corrMass/F");
+
+      outputTree->Branch("FatJetClose1_Pt", &FatJetClose1_Pt, "FatJetClose1_Pt/F");
+      outputTree->Branch("FatJetClose1_Eta", &FatJetClose1_Eta, "FatJetClose1_Eta/F");
+      outputTree->Branch("FatJetClose1_Phi", &FatJetClose1_Phi, "FatJetClose1_Phi/F");
+      outputTree->Branch("FatJetClose1_Mass", &FatJetClose1_Mass, "FatJetClose1_Mass/F");
+      //outputTree->Branch("GenFatJetClose1_Flav", &GenFatJetClose1_Flav, "GenFatJetClose1_Flav/F");
+      outputTree->Branch("FatJetClose2_Pt", &FatJetClose2_Pt, "FatJetClose2_Pt/F");
+      outputTree->Branch("FatJetClose2_Eta", &FatJetClose2_Eta, "FatJetClose2_Eta/F");
+      outputTree->Branch("FatJetClose2_Phi", &FatJetClose2_Phi, "FatJetClose2_Phi/F");
+      outputTree->Branch("FatJetClose2_Mass", &FatJetClose2_Mass, "FatJetClose2_Mass/F");
+      //outputTree->Branch("GenFatJetClose2_Flav", &GenFatJetClose2_Flav, "GenFatJetClose2_Flav/F");
+    //  outputTree->Branch("RecoFatJetCan_Pt", &RecoFatJetCan_Pt, "RecoFatJetCan_Pt/F");
+    //  outputTree->Branch("RecoFatJetCan_Eta", &RecoFatJetCan_Eta, "RecoFatJetCan_Eta/F");
+    //  outputTree->Branch("RecoFatJetCan_Phi", &RecoFatJetCan_Phi, "RecoFatJetCan_Phi/F");
+    //  outputTree->Branch("RecoFatJetCan_MS", &RecoFatJetCan_MS, "RecoFatJetCan_MS/F");
+   //   outputTree->Branch("RecoFatJetCan_PNet", &RecoFatJetCan_PNet, "RecoFatJetCan_PNet/F");
+    //  outputTree->Branch("RecoFatJetCan_DDB", &RecoFatJetCan_DDB, "RecoFatJetCan_DDB/F");
+    //  outputTree->Branch("RecoFatJetClose1_Pt", &RecoFatJetClose1_Pt, "RecoFatJetClose1_Pt/F");
+    //  outputTree->Branch("RecoFatJetClose1_Eta", &RecoFatJetClose1_Eta, "RecoFatJetClose1_Eta/F");
+    //  outputTree->Branch("RecoFatJetClose1_Phi", &RecoFatJetClose1_Phi, "RecoFatJetClose1_Phi/F");
+    //  outputTree->Branch("RecoFatJetClose1_MS", &RecoFatJetClose1_MS, "RecoFatJetClose1_MS/F");
+    //  outputTree->Branch("RecoFatJetClose1_PNet", &RecoFatJetClose1_PNet, "RecoFatJetClose1_PNet/F");
+    //  outputTree->Branch("RecoFatJetClose1_DDB", &RecoFatJetClose1_DDB, "RecoFatJetClose1_DDB/F");
+    //  outputTree->Branch("RecoFatJetClose2_Pt", &RecoFatJetClose2_Pt, "RecoFatJetClose2_Pt/F");
+    //  outputTree->Branch("RecoFatJetClose2_Eta", &RecoFatJetClose2_Eta, "RecoFatJetClose2_Eta/F");
+    //  outputTree->Branch("RecoFatJetClose2_Phi", &RecoFatJetClose2_Phi, "RecoFatJetClose2_Phi/F");
+    //  outputTree->Branch("RecoFatJetClose2_MS", &RecoFatJetClose2_MS, "RecoFatJetClose2_MS/F");
+    //  outputTree->Branch("RecoFatJetClose2_PNet", &RecoFatJetClose2_PNet, "RecoFatJetClose2_PNet/F");
+    //  outputTree->Branch("RecoFatJetClose2_DDB", &RecoFatJetClose2_DDB, "RecoFatJetClose2_DDB/F");
+
+      outputTree->Branch("genHiggs1Pt", &genHiggs1Pt, "genHiggs1Pt/F");
+      outputTree->Branch("genHiggs1Eta", &genHiggs1Eta, "genHiggs1Eta/F");
+      outputTree->Branch("genHiggs1Phi", &genHiggs1Phi, "genHiggs1Phi/F");
+      outputTree->Branch("genHiggs2Pt", &genHiggs2Pt, "genHiggs2Pt/F");
+      outputTree->Branch("genHiggs2Eta", &genHiggs2Eta, "genHiggs2Eta/F");
+      outputTree->Branch("genHiggs2Phi", &genHiggs2Phi, "genHiggs2Phi/F");
+      outputTree->Branch("genHH_pt",      &genHH_pt,     "genHH_pt/F");
+      outputTree->Branch("genHH_eta",     &genHH_eta,    "genHH_eta/F");
+      outputTree->Branch("genHH_phi",     &genHH_phi,    "genHH_phi/F");
+      outputTree->Branch("genHH_mass",    &genHH_mass,   "genHH_mass/F");
+      outputTree->Branch("genLeptonId", &genLeptonId, "genLeptonId/I");
+      outputTree->Branch("genLeptonMotherId", &genLeptonMotherId, "genLeptonMotherId/I");
+      outputTree->Branch("genLeptonPt", &genLeptonPt, "genLeptonPt/F");
+      outputTree->Branch("genLeptonEta", &genLeptonEta, "genLeptonEta/F");
+      outputTree->Branch("genLeptonPhi", &genLeptonPhi, "genLeptonPhi/F");
+      outputTree->Branch("fatJet2Pt", &fatJet2Pt, "fatJet2Pt/F");
+      outputTree->Branch("fatJet2Pt_JES_Up", &fatJet2Pt_JES_Up, "fatJet2Pt_JES_Up/F");
+      outputTree->Branch("fatJet2Pt_JES_Down", &fatJet2Pt_JES_Down, "fatJet2Pt_JES_Down/F");
+      outputTree->Branch("fatJet2Eta", &fatJet2Eta, "fatJet2Eta/F");
+      outputTree->Branch("fatJet2Phi", &fatJet2Phi, "fatJet2Phi/F");
+      outputTree->Branch("fatJet2Mass", &fatJet2Mass, "fatJet2Mass/F");
+      outputTree->Branch("fatJet2MassSD", &fatJet2MassSD, "fatJet2MassSD/F");
+      outputTree->Branch("fatJet2MassSD_UnCorrected", &fatJet2MassSD_UnCorrected, "fatJet2MassSD_UnCorrected/F");
+      outputTree->Branch("fatJet2MassSD_JMS_Up", &fatJet2MassSD_JMS_Up, "fatJet2MassSD_JMS_Up/F");
+      outputTree->Branch("fatJet2MassSD_JMS_Down", &fatJet2MassSD_JMS_Down, "fatJet2MassSD_JMS_Down/F");
+      outputTree->Branch("fatJet2MassSD_JMR_Up", &fatJet2MassSD_JMR_Up, "fatJet2MassSD_JMR_Up/F");
+      outputTree->Branch("fatJet2MassSD_JMR_Down", &fatJet2MassSD_JMR_Down, "fatJet2MassSD_JMR_Down/F");
+      outputTree->Branch("fatJet2DDBTagger", &fatJet2DDBTagger, "fatJet2DDBTagger/F");
+      outputTree->Branch("fatJet2PNetXbb", &fatJet2PNetXbb, "fatJet2PNetXbb/F");
+      outputTree->Branch("fatJet2PNetXcc", &fatJet2PNetXcc, "fatJet2PNetXcc/F");
+      outputTree->Branch("fatJet2PNetXqq", &fatJet2PNetXqq, "fatJet2PNetXqq/F");
+      outputTree->Branch("fatJet2PNetQCD", &fatJet2PNetQCD, "fatJet2PNetQCD/F");
+      outputTree->Branch("fatJet2GenMatchIndex", &fatJet2GenMatchIndex, "fatJet2GenMatchIndex/I");
+      outputTree->Branch("fatJet2Tau3OverTau2", &fatJet2Tau3OverTau2, "fatJet2Tau3OverTau2/F");
+      outputTree->Branch("fatJet2HasMuon", &fatJet2HasMuon, "fatJet2HasMuon/O");
+      outputTree->Branch("fatJet2HasElectron", &fatJet2HasElectron, "fatJet2HasElectron/O");
+      outputTree->Branch("fatJet2HasBJetCSVLoose", &fatJet2HasBJetCSVLoose, "fatJet2HasBJetCSVLoose/O");
+      outputTree->Branch("fatJet2HasBJetCSVMedium", &fatJet2HasBJetCSVMedium, "fatJet2HasBJetCSVMedium/O");
+      outputTree->Branch("fatJet2HasBJetCSVTight", &fatJet2HasBJetCSVTight, "fatJet2HasBJetCSVTight/O");
+      outputTree->Branch("fatJet3Pt", &fatJet3Pt, "fatJet3Pt/F");
+      // outputTree->Branch("fatJet3Pt_JES_Up", &fatJet3Pt_JES_Up, "fatJet3Pt_JES_Up/F");
+      // outputTree->Branch("fatJet3Pt_JES_Down", &fatJet3Pt_JES_Down, "fatJet3Pt_JES_Down/F");
+      outputTree->Branch("fatJet3Eta", &fatJet3Eta, "fatJet3Eta/F");
+      outputTree->Branch("fatJet3Phi", &fatJet3Phi, "fatJet3Phi/F");
+      outputTree->Branch("fatJet3Mass", &fatJet3Mass, "fatJet3Mass/F");
+      outputTree->Branch("fatJet3MassSD", &fatJet3MassSD, "fatJet3MassSD/F");
+      // outputTree->Branch("fatJet3MassSD_UnCorrected", &fatJet3MassSD_UnCorrected, "fatJet3MassSD_UnCorrected/F");
+      // outputTree->Branch("fatJet3MassSD_JMS_Up", &fatJet3MassSD_JMS_Up, "fatJet3MassSD_JMS_Up/F");
+      // outputTree->Branch("fatJet3MassSD_JMS_Down", &fatJet3MassSD_JMS_Down, "fatJet3MassSD_JMS_Down/F");
+      // outputTree->Branch("fatJet3MassSD_JMR_Up", &fatJet3MassSD_JMR_Up, "fatJet3MassSD_JMR_Up/F");
+      // outputTree->Branch("fatJet3MassSD_JMR_Down", &fatJet3MassSD_JMR_Down, "fatJet3MassSD_JMR_Down/F");
+      outputTree->Branch("fatJet3DDBTagger", &fatJet3DDBTagger, "fatJet3DDBTagger/F");
+      outputTree->Branch("fatJet3PNetXbb", &fatJet3PNetXbb, "fatJet3PNetXbb/F");
+      outputTree->Branch("fatJet3PNetXcc", &fatJet3PNetXcc, "fatJet3PNetXcc/F");
+      outputTree->Branch("fatJet3PNetXqq", &fatJet3PNetXqq, "fatJet3PNetXqq/F");
+      outputTree->Branch("fatJet3PNetQCD", &fatJet3PNetQCD, "fatJet3PNetQCD/F");
+      outputTree->Branch("fatJet3Tau3OverTau2", &fatJet3Tau3OverTau2, "fatJet3Tau3OverTau2/F");
+      outputTree->Branch("fatJet3HasMuon", &fatJet3HasMuon, "fatJet3HasMuon/O");
+      outputTree->Branch("fatJet3HasElectron", &fatJet3HasElectron, "fatJet3HasElectron/O");
+      outputTree->Branch("fatJet3HasBJetCSVLoose", &fatJet3HasBJetCSVLoose, "fatJet3HasBJetCSVLoose/O");
+      outputTree->Branch("fatJet3HasBJetCSVMedium", &fatJet3HasBJetCSVMedium, "fatJet3HasBJetCSVMedium/O");
+      outputTree->Branch("fatJet3HasBJetCSVTight", &fatJet3HasBJetCSVTight, "fatJet3HasBJetCSVTight/O");
+      outputTree->Branch("hh_pt",      &hh_pt,     "hh_pt/F");
+      outputTree->Branch("hh_eta",     &hh_eta,    "hh_eta/F");
+      outputTree->Branch("hh_phi",     &hh_phi,    "hh_phi/F");
+      outputTree->Branch("hh_mass",    &hh_mass,   "hh_mass/F");
+      outputTree->Branch("hh_pt_JESUp",      &hh_pt_JESUp,     "hh_pt_JESUp/F");
+      outputTree->Branch("hh_pt_JESDown",    &hh_pt_JESDown,   "hh_pt_JESDown/F");
+      outputTree->Branch("hh_pt_JMSUp",      &hh_pt_JMSUp,     "hh_pt_JMSUp/F");
+      outputTree->Branch("hh_pt_JMSDown",    &hh_pt_JMSDown,   "hh_pt_JMSDown/F");
+      outputTree->Branch("hh_pt_JMRUp",      &hh_pt_JMRUp,     "hh_pt_JMRUp/F");
+      outputTree->Branch("hh_pt_JMRDown",    &hh_pt_JMRDown,   "hh_pt_JMRDown/F");
+      outputTree->Branch("hh_eta_JESUp",      &hh_eta_JESUp,     "hh_eta_JESUp/F");
+      outputTree->Branch("hh_eta_JESDown",    &hh_eta_JESDown,   "hh_eta_JESDown/F");
+      outputTree->Branch("hh_eta_JMSUp",      &hh_eta_JMSUp,     "hh_eta_JMSUp/F");
+      outputTree->Branch("hh_eta_JMSDown",    &hh_eta_JMSDown,   "hh_eta_JMSDown/F");
+      outputTree->Branch("hh_eta_JMRUp",      &hh_eta_JMRUp,     "hh_eta_JMRUp/F");
+      outputTree->Branch("hh_eta_JMRDown",    &hh_eta_JMRDown,   "hh_eta_JMRDown/F");
+      outputTree->Branch("hh_mass_JESUp",      &hh_mass_JESUp,     "hh_mass_JESUp/F");
+      outputTree->Branch("hh_mass_JESDown",    &hh_mass_JESDown,   "hh_mass_JESDown/F");
+      outputTree->Branch("hh_mass_JMSUp",      &hh_mass_JMSUp,     "hh_mass_JMSUp/F");
+      outputTree->Branch("hh_mass_JMSDown",    &hh_mass_JMSDown,   "hh_mass_JMSDown/F");
+      outputTree->Branch("hh_mass_JMRUp",      &hh_mass_JMRUp,     "hh_mass_JMRUp/F");
+      outputTree->Branch("hh_mass_JMRDown",    &hh_mass_JMRDown,   "hh_mass_JMRDown/F");
+      outputTree->Branch("fatJet1PtOverMHH",    &fatJet1PtOverMHH,   "fatJet1PtOverMHH/F");
+      outputTree->Branch("fatJet1PtOverMHH_JESUp",    &fatJet1PtOverMHH_JESUp,   "fatJet1PtOverMHH_JESUp/F");
+      outputTree->Branch("fatJet1PtOverMHH_JESDown",  &fatJet1PtOverMHH_JESDown, "fatJet1PtOverMHH_JESDown/F");
+      outputTree->Branch("fatJet1PtOverMHH_JMSUp",    &fatJet1PtOverMHH_JMSUp,   "fatJet1PtOverMHH_JMSUp/F");
+      outputTree->Branch("fatJet1PtOverMHH_JMSDown",  &fatJet1PtOverMHH_JMSDown, "fatJet1PtOverMHH_JMSDown/F");
+      outputTree->Branch("fatJet1PtOverMHH_JMRUp",    &fatJet1PtOverMHH_JMRUp,   "fatJet1PtOverMHH_JMRUp/F");
+      outputTree->Branch("fatJet1PtOverMHH_JMRDown",  &fatJet1PtOverMHH_JMRDown, "fatJet1PtOverMHH_JMRDown/F");
+      outputTree->Branch("fatJet1PtOverMSD",    &fatJet1PtOverMSD,   "fatJet1PtOverMSD/F");
+      outputTree->Branch("fatJet2PtOverMHH",    &fatJet2PtOverMHH,   "fatJet2PtOverMHH/F");
+      outputTree->Branch("fatJet2PtOverMHH_JESUp",    &fatJet2PtOverMHH_JESUp,   "fatJet2PtOverMHH_JESUp/F");
+      outputTree->Branch("fatJet2PtOverMHH_JESDown",  &fatJet2PtOverMHH_JESDown, "fatJet2PtOverMHH_JESDown/F");
+      outputTree->Branch("fatJet2PtOverMHH_JMSUp",    &fatJet2PtOverMHH_JMSUp,   "fatJet2PtOverMHH_JMSUp/F");
+      outputTree->Branch("fatJet2PtOverMHH_JMSDown",  &fatJet2PtOverMHH_JMSDown, "fatJet2PtOverMHH_JMSDown/F");
+      outputTree->Branch("fatJet2PtOverMHH_JMRUp",    &fatJet2PtOverMHH_JMRUp,   "fatJet2PtOverMHH_JMRUp/F");
+      outputTree->Branch("fatJet2PtOverMHH_JMRDown",  &fatJet2PtOverMHH_JMRDown, "fatJet2PtOverMHH_JMRDown/F");
+      outputTree->Branch("fatJet2PtOverMSD",    &fatJet2PtOverMSD,   "fatJet2PtOverMSD/F");
+      outputTree->Branch("deltaEta_j1j2",    &deltaEta_j1j2,   "deltaEta_j1j2/F");
+      outputTree->Branch("deltaPhi_j1j2",    &deltaPhi_j1j2,   "deltaPhi_j1j2/F");
+      outputTree->Branch("deltaR_j1j2",    &deltaR_j1j2,   "deltaR_j1j2/F");
+      outputTree->Branch("ptj2_over_ptj1",    &ptj2_over_ptj1,   "ptj2_over_ptj1/F");
+      outputTree->Branch("mj2_over_mj1",    &mj2_over_mj1,   "mj2_over_mj1/F");
+      outputTree->Branch("lep1Pt", &lep1Pt, "lep1Pt/F");
+      outputTree->Branch("lep1Eta", &lep1Eta, "lep1Eta/F");
+      outputTree->Branch("lep1Phi", &lep1Phi, "lep1Phi/F");
+      outputTree->Branch("lep1Id", &lep1Id, "lep1Id/I");
+      outputTree->Branch("lep2Pt", &lep2Pt, "lep2Pt/F");
+      outputTree->Branch("lep2Eta", &lep2Eta, "lep2Eta/F");
+      outputTree->Branch("lep2Phi", &lep2Phi, "lep2Phi/F");
+      outputTree->Branch("lep2Id", &lep2Id, "lep2Id/I");
+      //outputTree->Branch("nBTaggedJets", &nBTaggedJets, "nBTaggedJets/I");      
+    } 
+
+   // if (Option == 0 || Option == 20 || Option == 21) {
+   //   outputTree->Branch("genWPt", &genWPt, "genWPt/F");
+   //   outputTree->Branch("genWEta", &genWEta, "genWEta/F");
+   //   outputTree->Branch("genWPhi", &genWPhi, "genWPhi/F");
+   //   outputTree->Branch("genZPt", &genZPt, "genZPt/F");
+   //   outputTree->Branch("genZEta", &genZEta, "genZEta/F");
+   //   outputTree->Branch("genZPhi", &genZPhi, "genZPhi/F");
+  // }
+
+    if (Option == 0 || Option == 20 || Option == 21) {
+      outputTree->Branch("pho1Pt", &pho1Pt, "pho1Pt/F");
+      outputTree->Branch("pho1Eta", &pho1Eta, "pho1Eta/F");
+      outputTree->Branch("pho1Phi", &pho1Phi, "pho1Phi/F");
+      outputTree->Branch("pho2Pt", &pho2Pt, "pho2Pt/F");
+      outputTree->Branch("pho2Eta", &pho2Eta, "pho2Eta/F");
+      outputTree->Branch("pho2Phi", &pho2Phi, "pho2Phi/F");
+      outputTree->Branch("Diphoton_Mass",&Diphoton_Mass,"Diphoton_Mass/F");  
+      outputTree->Branch("pho1r9", &pho1r9, "pho1r9/O");
+      outputTree->Branch("pho1_ChIOvEt",&pho1_ChIOvEt, "pho1_ChIOvEt/O" );
+      outputTree->Branch("pho1_ChI", &pho1_ChI, "pho1_ChI/O");
+      outputTree->Branch("pho1_hoe", &pho1_hoe, "pho1_hoe/O");
+      outputTree->Branch("pho1_mvaID", &pho1_mvaID, "pho1_mvaID/F");
+      outputTree->Branch("pho1_electronVeto", &pho1_electronVeto, "pho1_electronVeto/O");
+      outputTree->Branch("pho2r9", &pho2r9, "pho2r9/O");
+      outputTree->Branch("pho2_ChIOvEt",&pho2_ChIOvEt, "pho2_ChIOvEt/O" );
+      outputTree->Branch("pho2_ChI", &pho2_ChI, "pho2_ChI/O");
+      outputTree->Branch("pho2_hoe", &pho2_hoe, "pho2_hoe/O");
+      outputTree->Branch("pho2_mvaID", &pho2_mvaID, "pho2_mvaID/F");
+      outputTree->Branch("pho2_electronVeto", &pho2_electronVeto, "pho2_electronVeto/O");
+      outputTree->Branch("pho1_seediPhiOriY", &pho1_seediPhiOriY, "pho1_seediPhiOriY/I");
+      outputTree->Branch("pho1_seediEtaOriX", &pho1_seediEtaOriX, "pho1_seediEtaOriX/I");
+      outputTree->Branch("pho2_seediPhiOriY", &pho2_seediPhiOriY, "pho2_seediPhiOriY/I");
+      outputTree->Branch("pho2_seediEtaOriX", &pho2_seediEtaOriX, "pho2_seediEtaOriX/I");
+
+    }
+
+    if (Option != 100) {
+      //outputTree->Branch("HLT_Ele27_WPTight_Gsf", &HLT_Ele27_WPTight_Gsf, "HLT_Ele27_WPTight_Gsf/O");
+      //outputTree->Branch("HLT_Ele28_WPTight_Gsf", &HLT_Ele28_WPTight_Gsf, "HLT_Ele28_WPTight_Gsf/O");
+      //outputTree->Branch("HLT_Ele30_WPTight_Gsf", &HLT_Ele30_WPTight_Gsf, "HLT_Ele30_WPTight_Gsf/O");
+      //outputTree->Branch("HLT_Ele32_WPTight_Gsf", &HLT_Ele32_WPTight_Gsf, "HLT_Ele32_WPTight_Gsf/O");
+      //outputTree->Branch("HLT_Ele35_WPTight_Gsf", &HLT_Ele35_WPTight_Gsf, "HLT_Ele35_WPTight_Gsf/O");
+      //outputTree->Branch("HLT_Ele38_WPTight_Gsf", &HLT_Ele38_WPTight_Gsf, "HLT_Ele38_WPTight_Gsf/O");
+      //outputTree->Branch("HLT_Ele40_WPTight_Gsf", &HLT_Ele40_WPTight_Gsf, "HLT_Ele40_WPTight_Gsf/O");
+      //outputTree->Branch("HLT_IsoMu20", &HLT_IsoMu20, "HLT_IsoMu20/O");
+      //outputTree->Branch("HLT_IsoMu24", &HLT_IsoMu24, "HLT_IsoMu24/O");
+      //outputTree->Branch("HLT_IsoMu24_eta2p1", &HLT_IsoMu24_eta2p1, "HLT_IsoMu24_eta2p1/O");
+      //outputTree->Branch("HLT_IsoMu27", &HLT_IsoMu27, "HLT_IsoMu27/O");
+      //outputTree->Branch("HLT_IsoMu30", &HLT_IsoMu30, "HLT_IsoMu30/O");
+      //outputTree->Branch("HLT_Mu50", &HLT_Mu50, "HLT_Mu50/O");
+      //outputTree->Branch("HLT_Mu55", &HLT_Mu55, "HLT_Mu55/O");
+      //outputTree->Branch("HLT_Photon175",                                      &HLT_Photon175,                         "HLT_Photon175/O");
+      //outputTree->Branch("HLT_PFHT780",                                        &HLT_PFHT780,                                       "HLT_PFHT780/O");
+      //outputTree->Branch("HLT_PFHT890",                                        &HLT_PFHT890,                                       "HLT_PFHT890/O");
+      //outputTree->Branch("HLT_PFHT1050",                                        &HLT_PFHT1050,                                       "HLT_PFHT1050/O");
+      //outputTree->Branch("HLT_AK8PFJet360_TrimMass30",                          &HLT_AK8PFJet360_TrimMass30,                         "HLT_AK8PFJet360_TrimMass30/O");
+      //outputTree->Branch("HLT_AK8PFJet380_TrimMass30",                          &HLT_AK8PFJet380_TrimMass30,                         "HLT_AK8PFJet380_TrimMass30/O");
+      //outputTree->Branch("HLT_AK8PFJet400_TrimMass30",                          &HLT_AK8PFJet400_TrimMass30,                         "HLT_AK8PFJet400_TrimMass30/O");
+      //outputTree->Branch("HLT_AK8PFJet420_TrimMass30",                          &HLT_AK8PFJet420_TrimMass30,                         "HLT_AK8PFJet420_TrimMass30/O");
+      //outputTree->Branch("HLT_AK8PFHT750_TrimMass50",                           &HLT_AK8PFHT750_TrimMass50,                          "HLT_AK8PFHT750_TrimMass50/O");
+      //outputTree->Branch("HLT_AK8PFHT800_TrimMass50",                           &HLT_AK8PFHT800_TrimMass50,                          "HLT_AK8PFHT800_TrimMass50/O");
+      //outputTree->Branch("HLT_AK8PFHT850_TrimMass50",                           &HLT_AK8PFHT850_TrimMass50,                          "HLT_AK8PFHT850_TrimMass50/O");
+      //outputTree->Branch("HLT_AK8PFHT900_TrimMass50",                           &HLT_AK8PFHT900_TrimMass50,                          "HLT_AK8PFHT900_TrimMass50/O");
+      
+      
+      //outputTree->Branch("HLT_AK8PFHT700_TrimR0p1PT0p03Mass50",                 &HLT_AK8PFHT700_TrimR0p1PT0p03Mass50,                "HLT_AK8PFHT700_TrimR0p1PT0p03Mass50/O");
+      // outputTree->Branch("HLT_PFHT650_WideJetMJJ950DEtaJJ1p5",                  &HLT_PFHT650_WideJetMJJ950DEtaJJ1p5,                 "HLT_PFHT650_WideJetMJJ950DEtaJJ1p5/O");
+      // outputTree->Branch("HLT_PFHT650_WideJetMJJ900DEtaJJ1p5",                  &HLT_PFHT650_WideJetMJJ900DEtaJJ1p5,                  "HLT_PFHT650_WideJetMJJ900DEtaJJ1p5/O");
+      
+
+      //outputTree->Branch("HLT_PFJet450",                                        &HLT_PFJet450,                                       "HLT_PFJet450/O");
+      //outputTree->Branch("HLT_PFJet500",                                        &HLT_PFJet500,                                       "HLT_PFJet500/O");
+      //outputTree->Branch("HLT_PFJet550",                                        &HLT_PFJet550,                                       "HLT_PFJet550/O");
+      //outputTree->Branch("HLT_AK8PFJet400",                                     &HLT_AK8PFJet400,                                    "HLT_AK8PFJet400/O");
+      //outputTree->Branch("HLT_AK8PFJet450",                                     &HLT_AK8PFJet450,                                    "HLT_AK8PFJet450/O");
+      //outputTree->Branch("HLT_AK8PFJet500",                                     &HLT_AK8PFJet500,                                    "HLT_AK8PFJet500/O");
+      //outputTree->Branch("HLT_AK8PFJet550",                                     &HLT_AK8PFJet550,                                    "HLT_AK8PFJet550/O");
+      //outputTree->Branch("HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p17",     &HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p17,    "HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p17/O");
+      //outputTree->Branch("HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p1",      &HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p1,     "HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p1/O");
+      //outputTree->Branch("HLT_AK8PFJet330_PFAK8BTagCSV_p17",                    &HLT_AK8PFJet330_PFAK8BTagCSV_p17,                   "HLT_AK8PFJet330_PFAK8BTagCSV_p17/O");
+      //outputTree->Branch("HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_p02",  &HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_p02, "HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_p02/O");
+      //outputTree->Branch("HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np2",  &HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np2, "HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np2/O");
+      //outputTree->Branch("HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np4",  &HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np4, "HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np4/O"); 
+      //outputTree->Branch("HLT_AK8DiPFJet300_200_TrimMass30_BTagCSV_p20",        &HLT_AK8DiPFJet300_200_TrimMass30_BTagCSV_p20,       "HLT_AK8DiPFJet300_200_TrimMass30_BTagCSV_p20/O");
+      //outputTree->Branch("HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p087",       &HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p087,      "HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p087/O");
+      //outputTree->Branch("HLT_AK8DiPFJet300_200_TrimMass30_BTagCSV_p087",       &HLT_AK8DiPFJet300_200_TrimMass30_BTagCSV_p087,      "HLT_AK8DiPFJet300_200_TrimMass30_BTagCSV_p087/O");
+      //outputTree->Branch("HLT_AK8PFHT600_TrimR0p1PT0p03Mass50_BTagCSV_p20",     &HLT_AK8PFHT600_TrimR0p1PT0p03Mass50_BTagCSV_p20,    "HLT_AK8PFHT600_TrimR0p1PT0p03Mass50_BTagCSV_p20/O");
+      //outputTree->Branch("HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p20",        &HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p20,       "HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p20/O");
+      //outputTree->Branch("HLT_AK8DiPFJet250_200_TrimMass30_BTagCSV_p20",        &HLT_AK8DiPFJet250_200_TrimMass30_BTagCSV_p20,       "HLT_AK8DiPFJet250_200_TrimMass30_BTagCSV_p20/O");
+      outputTree->Branch("HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90",  &HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90,"HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90/O");
+    //  outputTree->Branch("HLT_Diphoton30_18_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90",  &HLT_Diphoton30_18_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90,"HLT_Diphoton30_18_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90/O");
+    
+    }
+
+    if ((Option == 0) & (!isData) ) {
+      outputTree->Branch("nGenJet", &nGenJet, "nGenJet/I");
+      outputTree->Branch("GenJet_eta", &genJetEta, "GenJet_eta[nGenJet]/F");
+      outputTree->Branch("GenJet_phi", &genJetPhi, "GenJet_phi[nGenJet]/F");
+      outputTree->Branch("GenJet_pt", &genJetPt, "GenJet_pt[nGenJet]/F");
+      outputTree->Branch("GenJet_mass", &genJetMass, "GenJet_mass[nGenJet]/F");
+      outputTree->Branch("GenHmass", &GenHmass, "GenHmass/F");
+      outputTree->Branch("GenJet_partonFlavour", &genJetPartonFlavor, "GenJet_partonFlavour[nGenJet]/I");
+      outputTree->Branch("nGenJetAK8", &nGenJetAK8, "nGenJetAK8/I");
+      outputTree->Branch("GenJetAK8_eta", &genJetAK8Eta, "GenJetAK8_eta[nGenJetAK8]/F");
+      outputTree->Branch("GenJetAK8_phi", &genJetAK8Phi, "GenJetAK8_phi[nGenJetAK8]/F");
+      outputTree->Branch("GenJetAK8_pt", &genJetAK8Pt, "GenJetAK8_pt[nGenJetAK8]/F");
+      outputTree->Branch("GenJetAK8_mass", &genJetAK8Mass, "GenJetAK8_mass[nGenJetAK8]/F");
+      outputTree->Branch("GenJetAK8_partonFlavour", &genJetAK8PartonFlavor, "GenJetAK8_partonFlavour[nGenJetAK8]/I");
+      
+      outputTree->Branch("nFatJet", &nFatJet, "nFatJet/I");
+      outputTree->Branch("FatJet_eta", &FatJetEta, "FatJet_eta[nFatJet]/F");
+      outputTree->Branch("FatJet_phi", &FatJetPhi, "FatJet_phi[nFatJet]/F");  
+      outputTree->Branch("FatJet_pt", &FatJetPt, "FatJet_pt[nFatJet]/F");
+      outputTree->Branch("FatJet_particleNet_XbbVsQCD", &FatJetPNet, "FatJet_particleNet_XbbVsQCD[nFatJet]/F");
+      outputTree->Branch("FatJet_msoftdrop", &FatJetMass, "FatJet_msoftdrop[nFatJet]/F");
+      outputTree->Branch("FatJet_nBHadrons", &FatJetBHadrons, "FatJet_nBHadrons[nFatJet]/I");
+      
+      outputTree->Branch("FatJet_mass", &FatJetM_nosoftdrop, "FatJet_mass[nFatJet]/F");
+      outputTree->Branch("FatJet_particleNet_massCorr", &FatJetPNetMasscorr, "FatJet_particleNet_massCorr[nFatJet]/F");
+
+      outputTree->Branch("nJet", &nJet, "nJet/I");
+      outputTree->Branch("Jet_eta", &JetEta, "Jet_eta[nJet]/F"); 
+      outputTree->Branch("Jet_phi", &JetPhi, "Jet_phi[nJet]/F");
+      outputTree->Branch("Jet_pt", &JetPt, "Jet_pt[nJet]/F");
+      outputTree->Branch("Jet_partonFlavour", &JetFlavour, "Jet_partonFlavour[nJet]/I");
+
+      outputTree->Branch("nSigBjets", &nSigBjets, "nSigBjets/I");   
+      outputTree->Branch("Jet_PNetSignal", &Jet_PNetSignal , "Jet_PNetSignal[5]/F");
+      outputTree->Branch("Jet_DeepJetSignal", &Jet_DeepJetSignal , "Jet_DeepJetSignal[5]/F");
+      outputTree->Branch("Jet_bmatchPt", &Jet_bmatchPt, "Jet_bmatchPt[5]/F");
+      outputTree->Branch("Jet_bmatchEta", &Jet_bmatchEta, "Jet_bmatchEta[5]/F");
+      outputTree->Branch("Jet_bmatchFlav", &Jet_bmatchFlav, "Jet_bmatchFlav[5]/F");
+
+      outputTree->Branch("nBkgjets", &nBkgjets, "nBkgjets/I");
+      outputTree->Branch("Jet_nobmatchPt", &Jet_nobmatchPt, "Jet_nobmatchPt[5]/F");
+      outputTree->Branch("Jet_nobmatchEta", &Jet_nobmatchEta, "Jet_nobmatchEta[5]/F");
+      outputTree->Branch("Jet_nobmatchFlav", &Jet_nobmatchFlav, "Jet_nobmatchFlav[5]/F");
+      outputTree->Branch("Jet_PNetBkg", &Jet_PNetBkg , "Jet_PNetBkg[5]/F");
+      outputTree->Branch("Jet_DeepJetBkg", &Jet_DeepJetBkg , "Jet_DeepJetBkg[5]/F");    
+
+      outputTree->Branch("nBkgFatjets", &nBkgFatjets,"nBkgFatjets/I");
+      outputTree->Branch("FatJet_PNetBkg", &FatJet_PNetBkg , "FatJet_PNetBkg[3]/F");
+      outputTree->Branch("FatJet_DDBBkg", &FatJet_DDBBkg , "FatJet_DDBBkg[3]/F");
+      outputTree->Branch("FatJet_nobmatchPt", &FatJet_nobmatchPt, "FatJet_nobmatchPt[3]/F");
+      outputTree->Branch("FatJet_nobmatchEta", &FatJet_nobmatchEta, "FatJet_nobmatchEta[3]/F");
+      outputTree->Branch("FatJet_nobmatchM", &FatJet_nobmatchM, "FatJet_nobmatchM[3]/F");
+      
+      //outputTree->Branch("TestPt1", &TestPt1, "TestPt1/F");
+      //outputTree->Branch("TestPt2", &TestPt2, "TestPt2/F");
+      //outputTree->Branch("TestDeltaR1", &TestDeltaR1, "TestDeltaR1/F");
+      outputTree->Branch("FatJetDeltaR", &FatJetDeltaR, "FatJetDeltaR/F");
+      outputTree->Branch("DeltaR_HH", &DeltaR_HH, "DeltaR_HH/F");
+     }
+
+
+    cout << "Run With Option = " << Option << "\n";
+    
+    if (Option == 0) cout << "Option = 0 : No Cuts \n";
+    if (Option == 2) cout << "Option = 2 : Select FatJets with pT > 200 GeV and PNetXbb > 0.8 only\n";
+    if (Option == 5) cout << "Option = 5 : Select Events with FatJet1 pT > 200 GeV and PNetXbb > 0.8 only\n";
+    if (Option == 10) cout << "Option = 10 : Select FatJets with pT > 200 GeV and tau3/tau2 < 0.54 only\n";
+    if (Option == 20) cout << "Option = 20 : Select FatJets with pT > 200 GeV and MassSD>50, but only save Jet1 info\n";
+    if (Option == 21) cout << "Option = 21 : Select FatJets with pT > 200 GeV and MassSD>50, but save all info\n";
+    if (Option == 100) cout << "Option = 100 : No Cuts, save only genMTT \n";
+
+    //-------------------------------
+    //random number generator for JMR
+    //-------------------------------
+    TRandom3* rnd = new TRandom3(1);
+
+
+    UInt_t NEventsFilled = 0;
+ 
+    //begin loop
+    if (fChain == 0) return;
+    UInt_t nentries = fChain->GetEntries();
+    Long64_t nbytes = 0, nb = 0;
+
+    cout << "nentries = " << nentries << "\n";
+    for (UInt_t jentry=0; jentry<nentries;jentry++) {
+      //begin event
+      if(jentry % 1000 == 0) cout << "Processing entry " << jentry << endl;
+      Long64_t ientry = LoadTree(jentry);
+      if (ientry < 0){ 
+        cout << "Entry<0 " << endl;   
+        break;
+      }
+      nb = fChain->GetEntry(jentry);   nbytes += nb;
+
+
+      //fill normalization histogram
+      // weight = genWeight / fabs(genWeight);
+      // NEvents->SetBinContent( 1, NEvents->GetBinContent(1) + weight);
+
+      //Use the non-normalized version because some samples have non-equal genWeights
+      weight = genWeight;
+      NEvents->SetBinContent( 1, NEvents->GetBinContent(1) + weight);
+
+      //reset tree variables
+      genHiggs1Pt = -99.0;
+      genHiggs1Eta = -99.0;
+      genHiggs1Phi = -99.0;
+      genHiggs2Pt = -99.0;
+      genHiggs2Eta = -99.0;
+      genHiggs2Phi = -99.0;
+      genHH_pt = -99;
+      genHH_eta = -99;
+      genHH_phi = -99;
+      genHH_mass = -99;   
+      genWPt = -99.0;
+      genWEta = -99.0;
+      genWPhi = -99.0;
+      genZPt = -99.0;
+      genZEta = -99.0;
+      genZPhi = -99.0;
+      genTop1Pt = -99.0;
+      genTop1Mass = -99.0;
+      genTop1Eta = -99.0;
+      genTop1Phi = -99.0;
+      genTop2Pt = -99.0;
+      genTop2Mass = -99.0;
+      genTop2Eta = -99.0;
+      genTop2Phi = -99.0;
+      genMTT = -99;
+      genLeptonId = 0;
+      genLeptonMotherId = 0;
+      genLeptonPt = -99.0;
+      genLeptonEta = -99.0;
+      genLeptonPhi = -99.0;
+      genPhoton1Pt = -99.0;
+      genPhoton1Eta = -99.0;
+      genPhoton1Phi = -99.0;
+      genPho1_Idx = -99;
+      genPhoton2Pt = -99.0;
+      genPhoton2Eta = -99.0;
+      genPhoton2Phi = -99.0;
+      genPho2_Idx = -99;
+      NJets = -1;
+      MET = -99.0;
+
+      fatJet1Pt          = -99.0;
+      fatJet1Pt_JES_Up   = -99.0;
+      fatJet1Pt_JES_Down = -99.0;
+      fatJet1Eta = -99.0;
+      fatJet1Phi = -99.0;
+      fatJet1Mass = -99.0;
+      fatJet1MassSD      = -99.0;
+      fatJet1MassSD_UnCorrected = -99.0;
+      fatJet1MassSD_JMS_Up      = -99.0;
+      fatJet1MassSD_JMS_Down    = -99.0;
+      fatJet1MassSD_JMR_Up      = -99.0;
+      fatJet1MassSD_JMR_Down    = -99.0;
+      fatJet1DDBTagger = -99.0;
+      fatJet1PNetXbb = -99;
+      fatJet1PNetXcc = -99;
+      fatJet1PNetXqq = -99;
+      fatJet1PNetQCD = -99;
+      fatJet1GenMatchIndex = -99.0;
+      fatJet1Tau3OverTau2 = -99;
+      fatJet1_n2b1 = -99; 
+      fatJet1HasMuon = 0;
+      fatJet1HasElectron = 0;
+      fatJet1HasBJetCSVLoose = 0;
+      fatJet1HasBJetCSVMedium = 0;
+      fatJet1HasBJetCSVTight = 0;      
+      fatJet1OppositeHemisphereHasBJet = 0;
+      fatJet2Pt = -99.0;
+      fatJet2Pt_JES_Up   = -99.0;
+      fatJet2Pt_JES_Down = -99.0;
+      fatJet2Eta = -99.0;
+      fatJet2Phi = -99.0;
+      fatJet2Mass = -99.0;
+      fatJet2MassSD = -99.0;
+      fatJet2MassSD_UnCorrected = -99.0;
+      fatJet2MassSD_JMS_Up      = -99.0;
+      fatJet2MassSD_JMS_Down    = -99.0;
+      fatJet2MassSD_JMR_Up      = -99.0;
+      fatJet2MassSD_JMR_Down    = -99.0;
+      fatJet2DDBTagger = -99.0;
+      fatJet2PNetXbb = -99;
+      fatJet2PNetXcc = -99;
+      fatJet2PNetXqq = -99;
+      fatJet2PNetQCD = -99;
+      fatJet2GenMatchIndex = -99.0;
+      fatJet2Tau3OverTau2 = -99;
+      fatJet2HasMuon = 0;
+      fatJet2HasElectron = 0;
+      fatJet2HasBJetCSVLoose = 0;
+      fatJet2HasBJetCSVMedium = 0;
+      fatJet2HasBJetCSVTight = 0;
+      fatJet3Pt = -99.0;
+      fatJet2Pt_JES_Up   = -99.0;
+      fatJet2Pt_JES_Down = -99.0;
+      fatJet3Eta = -99.0;
+      fatJet3Phi = -99.0;
+      fatJet3Mass = -99.0;
+      fatJet3MassSD = -99.0;
+      fatJet3MassSD_UnCorrected = -99.0;
+      fatJet3MassSD_JMS_Up      = -99.0;
+      fatJet3MassSD_JMS_Down    = -99.0;
+      fatJet3MassSD_JMR_Up      = -99.0;
+      fatJet3MassSD_JMR_Down    = -99.0;
+      fatJet3DDBTagger = -99.0;
+      fatJet3PNetXbb = -99;
+      fatJet3PNetXcc = -99;
+      fatJet3PNetXqq = -99;
+      fatJet3PNetQCD = -99;
+      fatJet3Tau3OverTau2 = -99;
+      fatJet3HasMuon = 0;
+      fatJet3HasElectron = 0;
+      fatJet3HasBJetCSVLoose = 0;
+      fatJet3HasBJetCSVMedium = 0;
+      fatJet3HasBJetCSVTight = 0;
+      hh_pt = -99;
+      hh_eta = -99;
+      hh_phi = -99;
+      hh_mass = -99;
+      hh_pt_JESUp = -99;
+      hh_pt_JESDown = -99;
+      hh_pt_JMSUp = -99;
+      hh_pt_JMSDown = -99;
+      hh_pt_JMRUp = -99;
+      hh_pt_JMRDown = -99;
+      hh_eta_JESUp = -99;
+      hh_eta_JESDown = -99;
+      hh_eta_JMSUp = -99;
+      hh_eta_JMSDown = -99;
+      hh_eta_JMRUp = -99;
+      hh_eta_JMRDown = -99;
+      hh_mass_JESUp = -99;
+      hh_mass_JESDown = -99;
+      hh_mass_JMSUp = -99;
+      hh_mass_JMSDown = -99;
+      hh_mass_JMRUp = -99;
+      hh_mass_JMRDown = -99;  
+      fatJet1PtOverMHH = -99;
+      fatJet1PtOverMHH_JESUp = -99;
+      fatJet1PtOverMHH_JESDown = -99;
+      fatJet1PtOverMHH_JMSUp = -99;
+      fatJet1PtOverMHH_JMSDown = -99;
+      fatJet1PtOverMHH_JMRUp = -99;
+      fatJet1PtOverMHH_JMRDown = -99;
+      fatJet1PtOverMSD = -99;
+      fatJet2PtOverMHH = -99;
+      fatJet2PtOverMHH_JESUp = -99;
+      fatJet2PtOverMHH_JESDown = -99;
+      fatJet2PtOverMHH_JMSUp = -99;
+      fatJet2PtOverMHH_JMSDown = -99;
+      fatJet2PtOverMHH_JMRUp = -99;
+      fatJet2PtOverMHH_JMRDown = -99;
+      fatJet2PtOverMSD = -99;
+      deltaEta_j1j2 = -99;
+      deltaPhi_j1j2 = -99;
+      deltaR_j1j2 = -99;    
+      ptj2_over_ptj1 = -99;
+      mj2_over_mj1 = -99;
+      lep1Pt = -99;
+      lep1Eta = -99;
+      lep1Phi = -99;
+      lep1Id = 0;
+      lep2Pt = -99;
+      lep2Eta = -99;
+      lep2Phi = -99;
+      lep2Id = 0;
+      pho1Pt = -99;
+      pho1Eta = -99;
+      pho1Phi = -99;
+      pho2Pt = -99;
+      pho2Eta = -99;
+      pho2Phi = -99;
+      jet1Pt = -99;
+      jet1Eta = -99;
+      jet1Phi = -99;
+      jet1Mass = -99;
+      jet1PNet = -99;
+      jet1DeepFlavB = -99;
+      jet1Flav = -99;
+      jet2Pt = -99;
+      jet2Eta = -99;
+      jet2Phi = -99;
+      jet2Mass = -99;
+      jet2PNet = -99;
+      jet2DeepFlavB = -99;
+      jet2Flav = -99;
+      jet3Pt = -99;
+      jet3Eta = -99;
+      jet3Phi = -99;
+      jet3Mass = -99;
+      jet3PNet = -99;
+      jet3DeepFlavB = -99;
+      jet3Flav = -99;
+      jet4Pt = -99;
+      jet4Eta = -99;
+      jet4Phi = -99;
+      jet4Mass = -99;
+      jet4PNet = -99;
+      jet4DeepFlavB = -99;
+      jet4Flav = -99;
+      jet5Pt = -99;
+      jet5Eta = -99;
+      jet5Phi = -99;
+      jet5Mass = -99;
+      jet5PNet = -99;
+      jet5DeepFlavB = -99;
+      jet5Flav = -99;
+      jet6Pt = -99;
+      jet6Eta = -99;
+      jet6Phi = -99;
+      jet6Mass = -99;
+      jet6PNet = -99;
+      // add jet Mass & Dijet_mass
+      Dijets_Mass = -99; 
+      DijetsCan_Mass = -99;
+      Dijetsall_Mass = -99;
+      //variables for overlap removal with VBF HH->4b boosted analysis
+      isVBFtag = 0;
+      dijetmass = -99;
+      vbfjet1Pt = -99;
+      vbfjet1Eta = -99;
+      vbfjet1Phi = -99;
+      vbfjet1Mass = -99;
+      vbfjet2Pt = -99;
+      vbfjet2Eta = -99;
+      vbfjet2Phi = -99;
+      vbfjet2Mass = -99;
+      vbffatJet1Pt = -99;
+      vbffatJet1Eta = -99;
+      vbffatJet1Phi = -99;
+      vbffatJet1PNetXbb = -99;
+      vbffatJet2Pt = -99;
+      vbffatJet2Eta = -99;
+      vbffatJet2Phi = -99;
+      vbffatJet2PNetXbb = -99;
+      // Testing FatJet_PNet     
+      Diphoton_Mass = -99;
+      GenHmass = -99;  
+      nSigBjets = 0;
+      nBkgFatjets = 0;
+      nBkgjets = 0; 
+      //tobbHiggs
+      tobbHiggs_Pt = -99;
+      tobbHiggs_Eta = -99;
+      tobbHiggs_Phi = -99;
+      tobbHiggs_Mass = -99;
+      toggHiggs_Pt = -99;
+      toggHiggs_Eta = -99;
+      toggHiggs_Phi = -99;
+      toggHiggs_Mass = -99;
+      // gen b-quark
+      genbQuark1_Pt = -99;
+      genbQuark1_Eta = -99;
+      genbQuark1_Phi = -99;
+      genbQuark2_Pt = -99;
+      genbQuark2_Eta = -99;
+      genbQuark2_Phi = -99;
+      // gen B-jet
+      GenBJet1_Pt = -99;
+      GenBJet1_Eta = -99;
+      GenBJet1_Phi = -99;
+      GenBJet1_Mass = -99;
+      GenBJet2_Pt = -99;
+      GenBJet2_Eta = -99;
+      GenBJet2_Phi = -99;
+      GenBJet2_Mass = -99;
+      GenBJet3_Pt = -99;
+      GenBJet3_Eta = -99;
+      GenBJet3_Phi = -99;
+      GenBJet3_Mass = -99;
+      GenBJet4_Pt = -99;
+      GenBJet4_Eta = -99;
+      GenBJet4_Phi = -99;
+      GenBJet4_Mass = -99;
+      GenBJet5_Pt = -99;
+      GenBJet5_Eta = -99;
+      GenBJet5_Phi = -99;
+      GenBJet5_Mass = -99;
+      // GenFatJet
+      FatJetMatch_Pt = -99;
+      FatJetMatch_Eta = -99;
+      FatJetMatch_Phi = -99;
+      FatJetMatch_Mass = -99;
+      FatJetMatch_corrMass = -99;
+      FatJetMatch_PNet = -99;
+      //FatJetMatch_Flav = -99;
+      FatJetClose1_Pt = -99;
+      FatJetClose1_Eta = -99;
+      FatJetClose1_Phi = -99;
+      FatJetClose1_Mass = -99;
+     // FatJetClose1_Flav = -99;
+      FatJetClose2_Pt = -99;
+      FatJetClose2_Eta = -99;
+      FatJetClose2_Phi = -99;
+      FatJetClose2_Mass = -99;
+     // GenFatJetClose2_Flav = -99;
+      // RecoFatJet
+    //  RecoFatJetCan_Pt = -99;
+    //  RecoFatJetCan_Eta = -99;
+    //  RecoFatJetCan_Phi = -99;
+    //  RecoFatJetCan_MS = -99;
+    //  RecoFatJetCan_PNet = -99;
+    //  RecoFatJetCan_DDB = -99;
+    //  RecoFatJetClose1_Pt = -99;
+    //  RecoFatJetClose1_Eta = -99;
+    //  RecoFatJetClose1_Phi = -99;
+    //  RecoFatJetClose1_MS = -99;
+    //  RecoFatJetClose1_PNet = -99;
+    //  RecoFatJetClose1_DDB = -99;
+    //  RecoFatJetClose2_Pt = -99;
+    //  RecoFatJetClose2_Eta = -99;
+    //  RecoFatJetClose2_Phi = -99;
+    //  RecoFatJetClose2_MS = -99;
+    //  RecoFatJetClose2_PNet = -99;
+    //  RecoFatJetClose2_DDB = -99;
+      // added new phos
+      pho1r9 = 0;
+      pho1_ChIOvEt = 0;
+      pho1_ChI = 0;
+      pho1_hoe = 0;
+      pho1_mvaID = -99;    
+      pho1_electronVeto = 0;
+      pho2r9 = 0;
+      pho2_ChIOvEt = 0;
+      pho2_ChI = 0;
+      pho2_hoe = 0;
+      pho2_mvaID = -99;
+      pho2_electronVeto = 0;
+      pho1_seediEtaOriX = -999;
+      pho2_seediEtaOriX = -999;
+      pho1_seediPhiOriY = -999;
+      pho2_seediPhiOriY = -999;
+      BquarkR = - 99;
+      FatJetDeltaR = -99;
+      DeltaR_HH = -99;
+      //TestPt1 = -99;
+      //TestPt2 = -99;
+      //TestDeltaR1 = -99;
+      //TestDeltaR2 = -99;
+
+      for (int i = 0; i < 3; i++){
+        FatJet_PNetBkg[i] = -99;
+        FatJet_DDBBkg[i] = -99;
+        FatJet_nobmatchPt[i] = -99;
+        FatJet_nobmatchEta[i] = -99;  
+        FatJet_nobmatchM[i] = -99;
+      }      
+      for (int i = 0; i < 5; i++){
+        Jet_PNetBkg[i] = -99;
+        Jet_DeepJetBkg[i] = -99;
+        Jet_nobmatchPt[i] = -99;
+        Jet_nobmatchEta[i] = -99;
+        Jet_nobmatchFlav[i] = -1;
+      }
+      for (int i = 0; i < 5 ; i++){
+        Jet_PNetSignal[i] = -99;
+        Jet_DeepJetSignal[i] = -99;
+        Jet_bmatchPt[i] = -99;
+        Jet_bmatchEta[i] = -99;
+        Jet_bmatchFlav[i] = -1;
+      }
+
+      if (!isData){
+        for(int i = 0; i < nGenJet; i++){ 
+          genJetEta[i] = -999;
+          genJetPhi[i] = -999;
+ 	  genJetPt[i] = -999;
+ 	  genJetMass[i] = -999;
+ 	  genJetPartonFlavor[i] = -999;
+        }
+        for(int i = 0; i < nGenJetAK8; i++) {
+          genJetAK8Eta[i] = -999;
+          genJetAK8Phi[i] = -999;
+          genJetAK8Pt[i] = -999;
+          genJetAK8Mass[i] = -999;
+          genJetAK8PartonFlavor[i] = -999;
+        }
+      }
+      for(int i = 0; i < nFatJet; i++){
+          FatJetEta[i]=-999;
+          FatJetPhi[i]=-999;
+          FatJetPt[i]=-999;
+          FatJetPNet[i]=-999;
+          FatJetMass[i]=-999;
+          FatJetBHadrons[i]=-999;
+          FatJetM_nosoftdrop[i]=-999;
+          FatJetPNetMasscorr[i]=-999;
+        }
+      for(int i = 0; i < nJet; i++){
+          JetEta[i]=-999;
+          JetPhi[i]=-999;
+          JetPt[i] =-999;
+          JetFlavour[i] = -999;
+        }
+        
+         
+      //------------------------------
+      //----Event variables------------
+      //------------------------------
+      MET = MET_pt;
+
+      //------------------------------
+      //----gen-jets------------
+      //------------------------------
+      if(!isData){
+        for(int i = 0; i < nGenJet; i++) {
+          genJetEta[i] = GenJet_eta[i];
+          genJetPhi[i] = GenJet_phi[i];
+ 	  genJetPt[i] = GenJet_pt[i];
+ 	  genJetMass[i] = GenJet_mass[i];
+ 	  genJetPartonFlavor[i] = GenJet_partonFlavour[i];
+        }
+        for(int i = 0; i < nGenJetAK8; i++) {
+          genJetAK8Eta[i] = GenJetAK8_eta[i];
+          genJetAK8Phi[i] = GenJetAK8_phi[i];
+          genJetAK8Pt[i] = GenJetAK8_pt[i];
+          genJetAK8Mass[i] = GenJetAK8_mass[i];
+          genJetAK8PartonFlavor[i] = GenJetAK8_partonFlavour[i];
+        }
+      }
+        //std::cout << nFatJet << std::endl;
+      for(int i = 0; i < nFatJet; i++){
+          FatJetEta[i] = FatJet_eta[i];
+          FatJetPhi[i] = FatJet_phi[i];
+          FatJetPt[i] = FatJet_pt[i];
+          FatJetPNet[i] = FatJet_particleNet_XbbVsQCD[i];
+          FatJetMass[i] = FatJet_msoftdrop[i];
+          FatJetBHadrons[i] = FatJet_nBHadrons[i];
+          FatJetM_nosoftdrop[i]=FatJet_mass[i];
+          FatJetPNetMasscorr[i]=FatJet_particleNet_massCorr[i];
+        }
+      for(int i = 0; i < nJet; i++){
+          JetEta[i] = Jet_eta[i];
+          JetPhi[i] = Jet_phi[i];
+          JetPt[i] = Jet_pt[i];
+          JetFlavour[i] = Jet_partonFlavour[i];
+        }
+      //------------------------------
+      //----find gen-higgs------------
+      //------------------------------
+      int current_mIndex = -1;
+      std::vector< TLorentzVector > genHiggsVector;
+      if (!isData) {
+	for(int i = 0; i < nGenPart; i++) {
+          if ( abs(GenPart_pdgId[i]) == 5 && GenPart_pdgId[GenPart_genPartIdxMother[i]] == 25 && GenPart_status[GenPart_genPartIdxMother[i]]==62 ){
+            if (genbQuark1_Pt < 0){
+              genbQuark1_Pt = GenPart_pt[i];
+              genbQuark1_Eta = GenPart_eta[i];
+              genbQuark1_Phi = GenPart_phi[i];
+            } else if (genbQuark2_Pt < 0){
+              genbQuark2_Pt = GenPart_pt[i];
+              genbQuark2_Eta = GenPart_eta[i];    
+              genbQuark2_Phi = GenPart_phi[i];
+            } 
+            if (genbQuark2_Pt>0 && genbQuark1_Pt>0){
+              BquarkR=deltaR(genbQuark2_Eta, genbQuark2_Phi, genbQuark1_Eta, genbQuark1_Phi);
+            }
+              
+            if (tobbHiggs_Pt<0){
+              tobbHiggs_Pt = GenPart_pt[GenPart_genPartIdxMother[i]];
+              tobbHiggs_Eta = GenPart_eta[GenPart_genPartIdxMother[i]];
+              tobbHiggs_Phi = GenPart_phi[GenPart_genPartIdxMother[i]];
+              tobbHiggs_Mass = GenPart_mass[GenPart_genPartIdxMother[i]];
+            }
+          }
+	  if( (abs(GenPart_pdgId[i]) == 5 || GenPart_pdgId[i]==22) && GenPart_pdgId[GenPart_genPartIdxMother[i]] == 25 && current_mIndex != GenPart_genPartIdxMother[i] && GenPart_status[GenPart_genPartIdxMother[i]]==62){
+	    TLorentzVector h;
+	    h.SetPtEtaPhiM( GenPart_pt[GenPart_genPartIdxMother[i]], GenPart_eta[GenPart_genPartIdxMother[i]], GenPart_phi[GenPart_genPartIdxMother[i]], GenPart_mass[GenPart_genPartIdxMother[i]] );
+	    genHiggsVector.push_back(h);
+	    current_mIndex = GenPart_genPartIdxMother[i];
+	  }
+
+	  if ( (abs(GenPart_pdgId[i]) == 11 || abs(GenPart_pdgId[i]) == 13)
+	       && GenPart_pt[i] > 10
+	       && (abs(GenPart_pdgId[GenPart_genPartIdxMother[i]]) == 23 || abs(GenPart_pdgId[GenPart_genPartIdxMother[i]]) == 24 || abs(GenPart_pdgId[GenPart_genPartIdxMother[i]]) == 15)
+	       && GenPart_pt[i] > genLeptonPt 
+	       ) {
+	    genLeptonId = GenPart_pdgId[i];
+	    genLeptonMotherId = GenPart_pdgId[GenPart_genPartIdxMother[i]];
+	    genLeptonPt = GenPart_pt[i];
+	    genLeptonEta = GenPart_eta[i];
+	    genLeptonPhi = GenPart_phi[i];	    
+	  }
+
+	  if ( GenPart_pdgId[i] == 22 && GenPart_pdgId[GenPart_genPartIdxMother[i]] == 25 && GenPart_status[GenPart_genPartIdxMother[i]]==62 ) {
+            if (genPhoton1Pt < 0) {
+	      genPhoton1Pt = GenPart_pt[i];
+	      genPhoton1Eta = GenPart_eta[i];
+	      genPhoton1Phi = GenPart_phi[i];
+              genPho1_Idx = i;
+	    } else if (genPhoton2Pt < 0) {
+	      genPhoton2Pt = GenPart_pt[i];
+	      genPhoton2Eta = GenPart_eta[i];
+	      genPhoton2Phi = GenPart_phi[i];
+              genPho2_Idx = i;
+            }
+	    if (toggHiggs_Pt<0){    
+              toggHiggs_Pt = GenPart_pt[GenPart_genPartIdxMother[i]];   
+              toggHiggs_Eta = GenPart_eta[GenPart_genPartIdxMother[i]];         
+              toggHiggs_Phi = GenPart_phi[GenPart_genPartIdxMother[i]];      
+              toggHiggs_Mass = GenPart_mass[GenPart_genPartIdxMother[i]];  
+	    }  
+	  }
+
+	  if ( abs(GenPart_pdgId[i]) == 23 
+	       && GenPart_status[i] == 62 
+	       ) {
+	    genZPt = GenPart_pt[i];
+	    genZEta = GenPart_eta[i];
+	    genZPhi = GenPart_phi[i];
+	  }
+
+	  if ( abs(GenPart_pdgId[i]) == 24
+	       && GenPart_status[i] == 62
+	       ) {
+	    genWPt = GenPart_pt[i];
+	    genWEta = GenPart_eta[i];
+	    genWPhi = GenPart_phi[i];
+	  }
+
+	  if ( GenPart_pdgId[i] == 6 
+	       && GenPart_status[i] == 22 
+	       ) {
+	    genTop1Mass = GenPart_mass[i];
+	    genTop1Pt = GenPart_pt[i];
+	    genTop1Eta = GenPart_eta[i];
+	    genTop1Phi = GenPart_phi[i];	   
+	  }
+	  if ( GenPart_pdgId[i] == -6 
+	       && GenPart_status[i] == 22 
+	       ) {
+	    genTop2Mass = GenPart_mass[i];
+	    genTop2Pt = GenPart_pt[i];
+	    genTop2Eta = GenPart_eta[i];
+	    genTop2Phi = GenPart_phi[i];	   
+	  }
+	  TLorentzVector Top1Vector;
+	  Top1Vector.SetPtEtaPhiM( genTop1Pt, genTop1Eta, genTop1Phi, genTop1Mass );
+	  TLorentzVector Top2Vector;
+	  Top2Vector.SetPtEtaPhiM( genTop2Pt, genTop2Eta, genTop2Phi, genTop2Mass );
+	  genMTT = (Top1Vector+Top2Vector).M();
+
+	}
+
+	if(genHiggsVector.size() >= 1) {
+	  //filling tree_out variables
+	  genHiggs1Pt = genHiggsVector[0].Pt();
+	  genHiggs1Eta = genHiggsVector[0].Eta();
+	  genHiggs1Phi = genHiggsVector[0].Phi();
+	  //
+	  if(genHiggsVector.size() >= 2) {
+	    genHiggs2Pt = genHiggsVector[1].Pt();
+	    genHiggs2Eta = genHiggsVector[1].Eta();
+	    genHiggs2Phi = genHiggsVector[1].Phi();	
+	  }
+	}
+
+	//gen level
+	if(genHiggsVector.size() > 1) { 
+	  genHH_pt = (genHiggsVector[0]+genHiggsVector[1]).Pt();
+	  genHH_eta = (genHiggsVector[0]+genHiggsVector[1]).Eta();
+	  genHH_phi = (genHiggsVector[0]+genHiggsVector[1]).Phi();
+	  genHH_mass= (genHiggsVector[0]+genHiggsVector[1]).M();
+	}
+      DeltaR_HH = deltaR(tobbHiggs_Eta, tobbHiggs_Phi, toggHiggs_Eta, toggHiggs_Phi);	
+      } //end if !data
+      //-------------------------------------------------------------
+      //---match FatJet to Higgs Boson (In MC)-----------------------
+      //-------------------------------------------------------------
+      Margin = 1.2;
+      FatJetMatch_idx = -1;
+     // FatJetClose1_idx = -1;
+     // FatJetClose2_idx = -1;
+      Number_FatJetMatch = 0;
+      if (!isData){
+        for (int i = 0; i < nFatJet; i++ ){
+          if (FatJet_pt[i]<250) continue;
+          if (deltaR(FatJet_eta[i], FatJet_phi[i], tobbHiggs_Eta, tobbHiggs_Phi) < Margin){
+            Margin = deltaR(FatJet_eta[i], FatJet_phi[i], tobbHiggs_Eta, tobbHiggs_Phi);
+            FatJetMatch_Pt = FatJet_pt[i];
+            FatJetMatch_Eta = FatJet_eta[i];
+            FatJetMatch_Phi = FatJet_phi[i];
+            FatJetMatch_Mass = FatJet_msoftdrop[i];
+            FatJetMatch_corrMass = FatJet_mass[i]*FatJet_particleNet_massCorr[i];
+            FatJetMatch_PNet = FatJet_particleNet_XbbVsQCD[i];
+            FatJetDeltaR = Margin;
+            FatJetMatch_idx = i;
+            Number_FatJetMatch++;
+          }
+        //  if ((FatJet_msoftdrop[i]>130)&&(FatJet_pt[i]>250)){
+         //   if (TestPt1<0){
+          //   TestPt1=FatJet_msoftdrop[i];
+          //    TestDeltaR1 = deltaR(FatJet_eta[i], FatJet_phi[i], tobbHiggs_Eta, tobbHiggs_Phi); 
+          //  }else if(TestPt2<0){
+           //   TestPt2=FatJet_msoftdrop[i];
+           //   TestDeltaR2 = deltaR(FatJet_eta[i], FatJet_phi[i], tobbHiggs_Eta, tobbHiggs_Phi);
+           // }
+        //  }
+          if (Number_FatJetMatch==2){
+            FatJetClose1_Pt = FatJet_pt[last1Idx];
+            FatJetClose1_Eta = FatJet_eta[last1Idx]; 
+            FatJetClose1_Phi = FatJet_phi[last1Idx];
+            FatJetClose1_Mass = FatJet_msoftdrop[last1Idx];
+            //FatJetClose1_Flav= GenJetAK8_partonFlavour[last1Idx];
+          //  FatJetClose1_idx = last1Idx;
+          }
+          if (Number_FatJetMatch==3){
+            FatJetClose2_Pt = FatJet_pt[last2Idx];
+            FatJetClose2_Eta = FatJet_eta[last2Idx];
+            FatJetClose2_Phi = FatJet_phi[last2Idx];
+            FatJetClose2_Mass = FatJet_msoftdrop[last2Idx];
+            //FatJetClose2_Flav= GenJetAK8_partonFlavour[last2Idx];
+           // FatJetClose2_idx = last2Idx;
+          }
+          
+          if (FatJetMatch_idx == i && Number_FatJetMatch==1) {
+            last1Idx = FatJetMatch_idx;
+          }
+          if (FatJetMatch_idx == i && Number_FatJetMatch==2) {
+            last2Idx = FatJetMatch_idx;
+          }
+        }
+        //for (int i=0; i<nFatJet; i++){
+         // if (GenFatJetMatch_idx!=-1 && FatJet_genJetAK8Idx[i]==GenFatJetMatch_idx){
+          //  RecoFatJetCan_Pt = FatJet_pt[i];
+           // RecoFatJetCan_Eta = FatJet_eta[i];
+          //  RecoFatJetCan_Phi = FatJet_phi[i];
+          //  RecoFatJetCan_MS = FatJet_msoftdrop[i];
+          //  RecoFatJetCan_PNet = FatJet_particleNet_XbbVsQCD[i];
+          //  RecoFatJetCan_DDB = FatJet_btagDDBvLV2[i];
+         // } else if (GenFatJetClose1_idx!=-1 && FatJet_genJetAK8Idx[i]==GenFatJetClose1_idx){
+         //   RecoFatJetClose1_Pt = FatJet_pt[i];
+         //   RecoFatJetClose1_Eta = FatJet_eta[i];
+         //   RecoFatJetClose1_Phi = FatJet_phi[i];
+         //   RecoFatJetClose1_MS = FatJet_msoftdrop[i];
+          //  RecoFatJetClose1_PNet = FatJet_particleNet_XbbVsQCD[i];
+         //   RecoFatJetClose1_DDB = FatJet_btagDDBvLV2[i];
+         // } else if (GenFatJetClose2_idx!=-1 && FatJet_genJetAK8Idx[i]==GenFatJetClose2_idx){
+         //   RecoFatJetClose2_Pt = FatJet_pt[i];
+         //   RecoFatJetClose2_Eta = FatJet_eta[i];
+         //   RecoFatJetClose2_Phi = FatJet_phi[i];
+         //   RecoFatJetClose2_MS = FatJet_msoftdrop[i];
+         //   RecoFatJetClose2_PNet = FatJet_particleNet_XbbVsQCD[i];
+         //   RecoFatJetClose2_DDB = FatJet_btagDDBvLV2[i];
+         // } else if (nBkgFatjets<3){  //not coming from Higgs
+         //   FatJet_nobmatchPt[nBkgFatjets] = FatJet_pt[i];                         
+         //   FatJet_nobmatchEta[nBkgFatjets] = FatJet_eta[i];  
+         //   FatJet_nobmatchM[nBkgFatjets] = FatJet_msoftdrop[i];    
+         //   FatJet_PNetBkg[nBkgFatjets] = FatJet_particleNet_XbbVsQCD[i];  
+         //   FatJet_DDBBkg[nBkgFatjets] = FatJet_btagDDBvLV2[i];                    
+         //   nBkgFatjets++; 
+         // }
+        //} 
+      }//end if Data
+
+      //-------------------------------------------------------------
+      //--- define random numbers for jet mass smearing correction
+      //-------------------------------------------------------------
+      double corr_fatJet1_mass_JMRUp = rnd->Gaus( 0.0, jmrValues[2] - 1.0 );
+      double corr_fatJet1_mass = (fmax(jmrValues[0] - 1.0,0.0))/(jmrValues[2] - 1.0) * corr_fatJet1_mass_JMRUp;
+      double corr_fatJet1_mass_JMRDown = (fmax(jmrValues[1] - 1.0,0.0))/(jmrValues[2] - 1.0) * corr_fatJet1_mass_JMRUp;
+      double corr_fatJet2_mass_JMRUp = rnd->Gaus( 0.0, jmrValues[2] - 1.0 );
+      double corr_fatJet2_mass = (fmax(jmrValues[0] - 1.0,0.0))/(jmrValues[2] - 1.0) * corr_fatJet2_mass_JMRUp;
+      double corr_fatJet2_mass_JMRDown = (fmax(jmrValues[1] - 1.0,0.0))/(jmrValues[2] - 1.0) * corr_fatJet2_mass_JMRUp;
+      double corr_fatJet3_mass_JMRUp = rnd->Gaus( 0.0, jmrValues[2] - 1.0 );
+      double corr_fatJet3_mass = (fmax(jmrValues[0] - 1.0,0.0))/(jmrValues[2] - 1.0) * corr_fatJet3_mass_JMRUp;
+      double corr_fatJet3_mass_JMRDown = (fmax(jmrValues[1] - 1.0,0.0))/(jmrValues[2] - 1.0) * corr_fatJet3_mass_JMRUp;
+      //------------------------------------------------------                                                                //----------Find Photons                                                                                                //------------------------------------------------------ 
+      std::vector< TLorentzVector > recoPhotonVector;  
+      for(unsigned int i = 0; i < nPhoton; i++ ) {  
+        if (Photon_pt[i] < 20) continue;   
+        if (fabs(Photon_eta[i]) > 2.5) continue;  
+        if (fabs(Photon_eta[i]) > 1.442 && fabs(Photon_eta[i]) < 1.566) continue;       
+          // add preselections 
+        if (Photon_r9[i] < 0.8 && Photon_pfRelIso03_chg_quadratic[i] > 0.3 && Photon_pfRelIso03_chg_quadratic[i]*Photon_pt[i]>20) continue;
+        if (Photon_hoe[i] > 0.08) continue;
+        if (Photon_mvaID[i] < -0.9) continue;
+        if (!Photon_electronVeto[i]) continue;
+        if (Photon_pt[i]>pho1Pt && Photon_pt[i]>30){
+          if (pho1Pt>pho2Pt) {
+            pho2Pt = pho1Pt;
+            pho2Eta = pho1Eta;
+            pho2Phi = pho1Phi;
+            pho2_seediPhiOriY = pho1_seediPhiOriY;                                                       
+            pho2_seediEtaOriX = pho1_seediEtaOriX;
+            }
+          pho1Pt = Photon_pt[i];
+          pho1Eta = Photon_eta[i];
+          pho1Phi = Photon_phi[i];
+          pho1_seediPhiOriY = Photon_seediPhiOriY[i];  
+          pho1_seediEtaOriX = Photon_seediEtaOriX[i];
+        }else if (Photon_pt[i]>pho2Pt){   
+          pho2Pt = Photon_pt[i]; 
+          pho2Eta = Photon_eta[i];
+          pho2Phi = Photon_phi[i];    
+          pho2_seediPhiOriY = Photon_seediPhiOriY[i];
+          pho2_seediEtaOriX = Photon_seediEtaOriX[i];
+        }
+        if (pho2Pt>0){
+        TLorentzVector g1;
+        TLorentzVector g2;
+        g1.SetPtEtaPhiM(pho1Pt,pho1Eta,pho1Phi,0);
+        g2.SetPtEtaPhiM(pho2Pt,pho2Eta,pho2Phi,0);
+        Diphoton_Mass=(g1+g2).M();
+        }
+      }
+
+      //------------------------------
+      //-------find fatJet------------
+      //------------------------------
+      vector<int> selectedFatJetIndices;
+
+      for(unsigned int i = 0; i < nFatJet; i++ ) {       
+        //Hbb fat jet pre-selection
+        if (FatJet_pt[i] < 250) continue;
+        if (deltaR(FatJet_eta[i], FatJet_phi[i], pho1Eta, pho1Phi) < 0.8) continue;
+        if (deltaR(FatJet_eta[i], FatJet_phi[i], pho2Eta, pho2Phi) < 0.8) continue;
+        if (FatJet_particleNet_XbbVsQCD[i]<0.4) continue;
+        if (Option == 10) {
+          if (!(FatJet_tau3[i] / FatJet_tau2[i] < 0.54 )) continue; 
+        }
+        selectedFatJetIndices.push_back(i);
+      }      
+
+
+      //------------------------------------------------------
+      //----------select the two H candidates with largest Xbb
+      //------------------------------------------------------
+      int fatJet1Index = -1;
+      int fatJet2Index = -1;
+      double tmpfatJet1Pt = -999;
+      double tmpfatJet2Pt = -999;
+      double tmpfatJet1Tagger = -999;
+      double tmpfatJet2Tagger = -999;
+        
+      int vbffatJet1Index = -1;
+      int vbffatJet2Index = -1;
+      double tmpvbffatJet1Pt = -999;
+      double tmpvbffatJet2Pt = -999;
+        
+      if (Option <= 10) {
+	for(unsigned int i = 0; i < selectedFatJetIndices.size(); i++ ) {
+          double fatJetTagger = 0;
+          fatJetTagger = FatJet_particleNet_XbbVsQCD[selectedFatJetIndices[i]];
+	  if (fatJetTagger > tmpfatJet1Tagger) {
+	    tmpfatJet2Tagger = tmpfatJet1Tagger;
+	    fatJet2Index = fatJet1Index;	  
+	    tmpfatJet1Tagger = fatJetTagger;
+	    fatJet1Index = selectedFatJetIndices[i];
+	  } else if (fatJetTagger > tmpfatJet2Tagger) {
+	    tmpfatJet2Tagger = fatJetTagger;
+	    fatJet2Index = selectedFatJetIndices[i];
+	  }
+        
+          //fat jet used in the VBF HH->4b analysis
+//	  if (FatJet_pt[selectedFatJetIndices[i]] > tmpvbffatJet1Pt) {
+//	    tmpvbffatJet2Pt = vbffatJet1Pt;
+//	    vbffatJet2Index = vbffatJet1Index;	  
+//	    tmpvbffatJet1Pt = FatJet_pt[selectedFatJetIndices[i]];
+//	    vbffatJet1Index = selectedFatJetIndices[i];
+//	  } else if ( FatJet_pt[selectedFatJetIndices[i]] > tmpvbffatJet2Pt ) {
+//	    tmpvbffatJet2Pt = FatJet_pt[selectedFatJetIndices[i]];
+//	    vbffatJet2Index = selectedFatJetIndices[i];
+//	  } 
+	}
+       // vbffatJet1Pt = FatJet_pt[vbffatJet1Index];
+       // vbffatJet1Eta = FatJet_eta[vbffatJet1Index];
+       // vbffatJet1Phi = FatJet_phi[vbffatJet1Index];
+       // vbffatJet1PNetXbb = FatJet_particleNet_XbbVsQCD[vbffatJet1Index];
+       // vbffatJet2PNetXbb = FatJet_particleNet_XbbVsQCD[vbffatJet2Index];
+       // vbffatJet2Pt = FatJet_pt[vbffatJet2Index];
+       // vbffatJet2Eta = FatJet_eta[vbffatJet2Index];
+       // vbffatJet2Phi = FatJet_phi[vbffatJet2Index];
+
+      } else if (Option == 20 || Option == 21) {
+	for(unsigned int i = 0; i < selectedFatJetIndices.size(); i++ ) {
+	  if (FatJet_pt[selectedFatJetIndices[i]] > tmpfatJet1Pt) {
+	    tmpfatJet2Pt = fatJet1Pt;
+	    fatJet2Index = fatJet1Index;	  
+	    tmpfatJet1Pt = FatJet_pt[selectedFatJetIndices[i]];
+	    fatJet1Index = selectedFatJetIndices[i];
+	  } else if ( FatJet_pt[selectedFatJetIndices[i]] > tmpfatJet2Pt ) {
+	    tmpfatJet2Pt = FatJet_pt[selectedFatJetIndices[i]];
+	    fatJet2Index = selectedFatJetIndices[i];
+	  }
+	}
+      }
+
+      
+
+
+      //------------------------------------------------------
+      //----------look for presence of a third AK8 jet
+      //------------------------------------------------------
+      int fatJet3Index = -1;
+      //double tmpfatJet3Pt = -999;
+      double tmpfatJet3Tagger = -999;
+      for(unsigned int i = 0; i < nFatJet; i++ ) {  
+        double fatJetTagger = 0;
+	fatJetTagger = FatJet_particleNet_XbbVsQCD[i];
+        // fatJetTagger = FatJet_particleNetMD_Xbb[i]/(1.0 - FatJet_particleNetMD_Xcc[i] - FatJet_particleNetMD_Xqq[i]);
+	//Hbb fat jet pre-selection
+	if (FatJet_pt[i] < 250) continue;
+	if (i == fatJet1Index || i == fatJet2Index) continue;
+	if (fatJetTagger > tmpfatJet3Tagger) {
+	  fatJet3Index = i;
+	  //tmpfatJet3Pt = FatJet_pt[i];
+	  tmpfatJet3Tagger = fatJetTagger;
+	}
+      }
+
+      //------------------------------------------------------
+      //----------Fill higgs candidate information
+      //------------------------------------------------------
+   
+      fatJet1Pt = FatJet_pt[fatJet1Index];
+      fatJet1Eta = FatJet_eta[fatJet1Index];
+      fatJet1Phi                = FatJet_phi[fatJet1Index];
+      fatJet1Mass               = FatJet_mass[fatJet1Index];
+      fatJet1MassSD_UnCorrected = FatJet_msoftdrop[fatJet1Index];
+      fatJet1MassSD = jmsValues[0]*fatJet1MassSD_UnCorrected;//correct, mass scale and resolution, for resolution subtract 1.0 from width
+
+      //For MC apply jet energy and mass corrections
+      if (!isData){
+	jecUnc->setJetEta(fatJet1Eta);
+	jecUnc->setJetPt(fatJet1Pt);
+	double unc = jecUnc->getUncertainty(true);
+	fatJet1Pt_JES_Up   = fatJet1Pt*(1+unc);
+	fatJet1Pt_JES_Down = fatJet1Pt/(1+unc);
+	fatJet1MassSD             = ( 1.0 + corr_fatJet1_mass )*jmsValues[0]*fatJet1MassSD_UnCorrected;//correct, mass scale and resolution, for resolution subtract 1.0 from width
+	fatJet1MassSD_JMS_Down    = (jmsValues[1]/jmsValues[0])*fatJet1MassSD;//jet mass scale down
+	fatJet1MassSD_JMS_Up      = (jmsValues[2]/jmsValues[0])*fatJet1MassSD;//jrt mass scale up
+	fatJet1MassSD_JMR_Down    = ( 1.0 + corr_fatJet1_mass_JMRDown )*jmsValues[0]*fatJet1MassSD_UnCorrected;//jet mass resolution down -- wrt scale corrected value -- for resolution subtract 1.0 from width
+	fatJet1MassSD_JMR_Up      = ( 1.0 + corr_fatJet1_mass_JMRUp )*jmsValues[0]*fatJet1MassSD_UnCorrected;//jrt mass resolution up -- wrt to scale corrected value -- for resolution subtract 1.0 from width
+      }
+      fatJet1DDBTagger = FatJet_btagDDBvLV2[fatJet1Index];
+      fatJet1PNetXbb = FatJet_particleNet_XbbVsQCD[fatJet1Index];
+      fatJet1PNetXcc = FatJet_particleNet_XccVsQCD[fatJet1Index];
+      fatJet1PNetXqq = FatJet_particleNet_XqqVsQCD[fatJet1Index];
+      fatJet1PNetQCD = FatJet_particleNet_QCD[fatJet1Index];
+      fatJet1Tau3OverTau2 = FatJet_tau3[fatJet1Index] /  FatJet_tau2[fatJet1Index];
+      fatJet1_n2b1 = FatJet_n2b1[fatJet1Index];
+
+
+      //****************************************
+      //Define Higgs Jet TLorentzVectors
+      //****************************************
+      TLorentzVector Higgs1Jet;
+      Higgs1Jet.SetPtEtaPhiM(fatJet1Pt,fatJet1Eta,fatJet1Phi,fatJet1MassSD_UnCorrected);
+      float Higgs1MinDR = 999.;
+      int Higgs1_match_idx = -1;
+      for( int j = 0; j < genHiggsVector.size(); j++) {
+	if(Higgs1Jet.DeltaR(genHiggsVector[j]) < Higgs1MinDR) {
+	  Higgs1MinDR = Higgs1Jet.DeltaR(genHiggsVector[j]);
+	  Higgs1_match_idx = j;
+	}
+      }
+      if(Higgs1MinDR < 0.4) {
+	fatJet1GenMatchIndex = Higgs1_match_idx;
+      }
+      TLorentzVector Higgs1Jet_JESUp;
+      Higgs1Jet_JESUp.SetPtEtaPhiM(fatJet1Pt_JES_Up,fatJet1Eta,fatJet1Phi,fatJet1MassSD);
+      TLorentzVector Higgs1Jet_JESDown;
+      Higgs1Jet_JESDown.SetPtEtaPhiM(fatJet1Pt_JES_Down,fatJet1Eta,fatJet1Phi,fatJet1MassSD);
+      TLorentzVector Higgs1Jet_JMSUp;
+      Higgs1Jet_JMSUp.SetPtEtaPhiM(fatJet1Pt,fatJet1Eta,fatJet1Phi,fatJet1MassSD_JMS_Up);
+      TLorentzVector Higgs1Jet_JMSDown;
+      Higgs1Jet_JMSDown.SetPtEtaPhiM(fatJet1Pt,fatJet1Eta,fatJet1Phi,fatJet1MassSD_JMS_Down);
+      TLorentzVector Higgs1Jet_JMRUp;
+      Higgs1Jet_JMRUp.SetPtEtaPhiM(fatJet1Pt,fatJet1Eta,fatJet1Phi,fatJet1MassSD_JMR_Up);
+      TLorentzVector Higgs1Jet_JMRDown;
+      Higgs1Jet_JMRDown.SetPtEtaPhiM(fatJet1Pt,fatJet1Eta,fatJet1Phi,fatJet1MassSD_JMR_Down);
+
+
+      //find any bjets in opposite hemisphere as fatJet1
+      double btagMediumCut = -1;
+      //if (year == "2016") btagMediumCut = 0.3033;
+      //else if (year == "2017") btagMediumCut = 0.3033 ;
+      //else if (year == "2018") btagMediumCut = 0.2770 ;
+      if (year == "2022") btagMediumCut = 0.2605 ;
+      for(unsigned int q = 0; q < nJet; q++ ) {       
+	if (Jet_pt[q] > 25 && Jet_btagPNetB[q] > btagMediumCut && 
+	    deltaPhi(fatJet1Phi, Jet_phi[q]) > 2.5
+	    ) {
+	  fatJet1OppositeHemisphereHasBJet = true;
+	  break;
+	}
+      }
+	
+
+      //find muon inside jet
+      for(unsigned int q = 0; q < nMuon; q++ ) {       
+	if (Muon_pt[q] > 30 && Muon_looseId[q] && 
+	    deltaR(fatJet1Eta , fatJet1Phi, Muon_eta[q], Muon_phi[q]) < 1.0
+	    ) {
+	  fatJet1HasMuon = true;
+	  break;
+	}
+      }
+      //find electron inside jet
+      for(unsigned int q = 0; q < nElectron; q++ ) {       
+	if (Electron_pt[q] > 30 && Electron_mvaNoIso_WP90[q] && 
+	    deltaR(fatJet1Eta , fatJet1Phi, Electron_eta[q], Electron_phi[q]) < 1.0
+	    ) {
+	  fatJet1HasElectron = true;
+	  break;
+	}
+      }
+      //find loose b-tagged jet inside jet
+      for(unsigned int q = 0; q < nJet; q++ ) {       
+	if (Jet_btagPNetB[q] > 0.0521 && 
+	    deltaR(fatJet1Eta , fatJet1Phi, Jet_eta[q], Jet_phi[q]) < 1.0
+	    ) {
+	  fatJet1HasBJetCSVLoose = true;
+	  break;
+	}
+      }
+     //find medium b-tagged jet inside jet
+      for(unsigned int q = 0; q < nJet; q++ ) {       
+	if (Jet_btagPNetB[q] > 0.3033 && 
+	    deltaR(fatJet1Eta , fatJet1Phi, Jet_eta[q], Jet_phi[q]) < 1.0
+	    ) {
+	  fatJet1HasBJetCSVMedium = true;
+	  break;
+	}
+      }
+      //find tight b-tagged jet inside jet
+      for(unsigned int q = 0; q < nJet; q++ ) {       
+	if (Jet_btagPNetB[q] > 0.7489 && 
+	    deltaR(fatJet1Eta , fatJet1Phi, Jet_eta[q], Jet_phi[q]) < 1.0
+	    ) {
+	  fatJet1HasBJetCSVTight = true;
+	  break;
+	}
+      }
+
+
+
+      fatJet2Pt = FatJet_pt[fatJet2Index];
+      fatJet2Eta = FatJet_eta[fatJet2Index];
+      fatJet2Phi                = FatJet_phi[fatJet2Index];
+      fatJet2Mass               = FatJet_mass[fatJet2Index];
+      fatJet2MassSD_UnCorrected = FatJet_msoftdrop[fatJet2Index];
+      fatJet2MassSD             = jmsValues[0]*fatJet2MassSD_UnCorrected;//correct, mass scale and resolution, for resolution subtract 1.0 from width
+
+     //For MC apply jet energy and mass corrections
+      if ( !isData ) {
+	jecUnc->setJetEta(fatJet2Eta);
+	jecUnc->setJetPt(fatJet2Pt);
+	double unc                = jecUnc->getUncertainty(true);
+	fatJet2Pt_JES_Up   = fatJet2Pt*(1+unc);
+	fatJet2Pt_JES_Down = fatJet2Pt/(1+unc);
+        fatJet2MassSD             = ( 1.0 + corr_fatJet2_mass )*jmsValues[0]*fatJet2MassSD_UnCorrected;//correct, mass scale and resolution, for resolution subtract 1.0 from width
+	fatJet2MassSD_JMS_Down    = (jmsValues[1]/jmsValues[0])*fatJet2MassSD;//jet mass scale down
+	fatJet2MassSD_JMS_Up      = (jmsValues[2]/jmsValues[0])*fatJet2MassSD;//jrt mass scale up
+	fatJet2MassSD_JMR_Down    = ( 1.0 + corr_fatJet2_mass_JMRDown )*jmsValues[0]*fatJet2MassSD_UnCorrected;//jet mass resolution down -- wrt scale corrected value -- for resolution subtract 1.0 from width
+	fatJet2MassSD_JMR_Up      = ( 1.0 + corr_fatJet2_mass_JMRUp )*jmsValues[0]*fatJet2MassSD_UnCorrected;//jrt mass resolution up -- wrt to scale corrected value -- for resolution subtract 1.0 from width
+      }
+     
+      fatJet2DDBTagger = FatJet_btagDDBvLV2[fatJet2Index];
+      fatJet2PNetXbb = FatJet_particleNet_XbbVsQCD[fatJet2Index];
+      fatJet2PNetXcc = FatJet_particleNet_XccVsQCD[fatJet2Index];
+      fatJet2PNetXqq = FatJet_particleNet_XqqVsQCD[fatJet2Index];
+      fatJet2PNetQCD = FatJet_particleNet_QCD[fatJet2Index]; 
+      fatJet2Tau3OverTau2 = FatJet_tau3[fatJet2Index] /  FatJet_tau2[fatJet2Index];
+    
+      TLorentzVector Higgs2Jet;
+      Higgs2Jet.SetPtEtaPhiM(FatJet_pt[fatJet2Index],FatJet_eta[fatJet2Index],FatJet_phi[fatJet2Index],FatJet_msoftdrop[fatJet2Index]);
+      float Higgs2MinDR = 999.;
+      int Higgs2_match_idx = -1;
+      for( int j = 0; j < genHiggsVector.size(); j++) {
+	if(Higgs2Jet.DeltaR(genHiggsVector[j]) < Higgs2MinDR) {
+	  Higgs2MinDR = Higgs2Jet.DeltaR(genHiggsVector[j]);
+	  Higgs2_match_idx = j;
+	}
+      }
+      if(Higgs2MinDR < 0.4) {
+	fatJet2GenMatchIndex = Higgs2_match_idx;
+      }
+      TLorentzVector Higgs2Jet_JESUp;
+      Higgs2Jet_JESUp.SetPtEtaPhiM(fatJet2Pt_JES_Up,fatJet2Eta,fatJet2Phi,fatJet2MassSD);
+      TLorentzVector Higgs2Jet_JESDown;
+      Higgs2Jet_JESDown.SetPtEtaPhiM(fatJet2Pt_JES_Down,fatJet2Eta,fatJet2Phi,fatJet2MassSD);
+      TLorentzVector Higgs2Jet_JMSUp;
+      Higgs2Jet_JMSUp.SetPtEtaPhiM(fatJet2Pt,fatJet2Eta,fatJet2Phi,fatJet2MassSD_JMS_Up);
+      TLorentzVector Higgs2Jet_JMSDown;
+      Higgs2Jet_JMSDown.SetPtEtaPhiM(fatJet2Pt,fatJet2Eta,fatJet2Phi,fatJet2MassSD_JMS_Down);
+      TLorentzVector Higgs2Jet_JMRUp;
+      Higgs2Jet_JMRUp.SetPtEtaPhiM(fatJet2Pt,fatJet2Eta,fatJet2Phi,fatJet2MassSD_JMR_Up);
+      TLorentzVector Higgs2Jet_JMRDown;
+      Higgs2Jet_JMRDown.SetPtEtaPhiM(fatJet2Pt,fatJet2Eta,fatJet2Phi,fatJet2MassSD_JMR_Down);
+
+       
+      //find muon inside jet
+      for(unsigned int q = 0; q < nMuon; q++ ) {       
+	if (Muon_pt[q] > 30 && Muon_looseId[q] && 
+	    deltaR(fatJet2Eta , fatJet2Phi, Muon_eta[q], Muon_phi[q]) < 1.0
+	    ) {
+	  fatJet2HasMuon = true;
+	  break;
+	}
+      }
+      //find electron inside jet
+      for(unsigned int q = 0; q < nElectron; q++ ) {       
+	if (Electron_pt[q] > 30 && Electron_mvaNoIso_WP90[q] && 
+	    deltaR(fatJet2Eta , fatJet2Phi, Electron_eta[q], Electron_phi[q]) < 1.0
+	    ) {
+	  fatJet2HasElectron = true;
+	  break;
+	}
+      }
+      //find loose b-tagged jet inside jet
+      for(unsigned int q = 0; q < nJet; q++ ) {       
+	if (Jet_btagPNetB[q] > 0.0521 && 
+	    deltaR(fatJet2Eta , fatJet2Phi, Jet_eta[q], Jet_phi[q]) < 1.0
+	    ) {
+	  fatJet2HasBJetCSVLoose = true;
+	  break;
+	}
+      }
+      //find medium b-tagged jet inside jet
+      for(unsigned int q = 0; q < nJet; q++ ) {       
+	if (Jet_btagPNetB[q] > 0.3033 && 
+	    deltaR(fatJet2Eta , fatJet2Phi, Jet_eta[q], Jet_phi[q]) < 1.0
+	    ) {
+	  fatJet2HasBJetCSVMedium = true;
+	  break;
+	}
+      }
+      //find tight b-tagged jet inside jet
+      for(unsigned int q = 0; q < nJet; q++ ) {       
+	if (Jet_btagPNetB[q] > 0.7489 && 
+	    deltaR(fatJet2Eta , fatJet2Phi, Jet_eta[q], Jet_phi[q]) < 1.0
+	    ) {
+	  fatJet2HasBJetCSVTight = true;
+	  break;
+	}
+      }
+
+
+      //------------------------------------------------------
+      //----------Fill Jet 3 information
+      //------------------------------------------------------
+      fatJet3Pt = FatJet_pt[fatJet3Index];
+      fatJet3Eta = FatJet_eta[fatJet3Index];
+      fatJet3Phi                = FatJet_phi[fatJet3Index];
+      fatJet3Mass               = FatJet_mass[fatJet3Index];
+      fatJet3MassSD_UnCorrected = FatJet_msoftdrop[fatJet3Index];
+      fatJet3MassSD             = jmsValues[0]*fatJet3MassSD_UnCorrected;//correct, mass scale and resolution, for resolution subtract 1.0 from width
+      if ( !isData ) {
+          jecUnc->setJetEta(fatJet3Eta);
+          jecUnc->setJetPt(fatJet3Pt);
+          double unc                = jecUnc->getUncertainty(true);
+          fatJet3Pt_JES_Up   = fatJet3Pt*(1+unc);
+          fatJet3Pt_JES_Down = fatJet3Pt/(1+unc);
+	  fatJet3MassSD             = ( 1.0 + corr_fatJet3_mass )*jmsValues[0]*fatJet3MassSD_UnCorrected;//correct, mass scale and resolution, for resolution subtract 1.0 from width
+	  fatJet3MassSD_JMS_Down    = (jmsValues[1]/jmsValues[0])*fatJet3MassSD;//jet mass scale down
+	  fatJet3MassSD_JMS_Up      = (jmsValues[2]/jmsValues[0])*fatJet3MassSD;//jrt mass scale up
+	  fatJet3MassSD_JMR_Down    = ( 1.0 + corr_fatJet3_mass_JMRDown )*jmsValues[0]*fatJet3MassSD_UnCorrected;//jet mass resolution down -- wrt scale corrected value -- for resolution subtract 1.0 from width
+	  fatJet3MassSD_JMR_Up      = ( 1.0 + corr_fatJet3_mass_JMRUp )*jmsValues[0]*fatJet3MassSD_UnCorrected;//jrt mass resolution up -- wrt to scale corrected value -- for resolution subtract 1.0 from width
+      }
+      fatJet3DDBTagger = FatJet_btagDDBvLV2[fatJet3Index];
+      fatJet3PNetXbb = FatJet_particleNet_XbbVsQCD[fatJet3Index];
+      fatJet3PNetXcc = FatJet_particleNet_XccVsQCD[fatJet3Index];
+      fatJet3PNetXqq = FatJet_particleNet_XqqVsQCD[fatJet3Index];
+  
+      fatJet3PNetQCD = FatJet_particleNet_QCD[fatJet3Index];
+      fatJet3Tau3OverTau2 = FatJet_tau3[fatJet3Index] /  FatJet_tau2[fatJet3Index];
+      //find muon inside jet
+      for(unsigned int q = 0; q < nMuon; q++ ) {       
+	if (Muon_pt[q] > 30 && Muon_looseId[q] && 
+	    deltaR(fatJet3Eta , fatJet3Phi, Muon_eta[q], Muon_phi[q]) < 1.0
+	    ) {
+	  fatJet3HasMuon = true;
+	  break;
+	}
+      }
+      //find electron inside jet
+      for(unsigned int q = 0; q < nElectron; q++ ) {       
+	if (Electron_pt[q] > 30 && Electron_mvaNoIso_WP90[q] && 
+	    deltaR(fatJet3Eta , fatJet3Phi, Electron_eta[q], Electron_phi[q]) < 1.0
+	    ) {
+	  fatJet3HasElectron = true;
+	  break;
+	}
+      }
+      //find loose b-tagged jet inside jet
+      for(unsigned int q = 0; q < nJet; q++ ) {       
+	if (Jet_btagPNetB[q] > 0.0521 && 
+	    deltaR(fatJet3Eta , fatJet3Phi, Jet_eta[q], Jet_phi[q]) < 1.0
+	    ) {
+	  fatJet3HasBJetCSVLoose = true;
+	  break;
+	}
+      }
+     //find medium b-tagged jet inside jet
+      for(unsigned int q = 0; q < nJet; q++ ) {       
+	if (Jet_btagPNetB[q] > 0.3033 && 
+	    deltaR(fatJet3Eta , fatJet3Phi, Jet_eta[q], Jet_phi[q]) < 1.0
+	    ) {
+	  fatJet3HasBJetCSVMedium = true;
+	  break;
+	}
+      }
+      //find tight b-tagged jet inside jet
+      for(unsigned int q = 0; q < nJet; q++ ) {       
+	if (Jet_btagPNetB[q] > 0.7489 && 
+	    deltaR(fatJet3Eta , fatJet3Phi, Jet_eta[q], Jet_phi[q]) < 1.0
+	    ) {
+	  fatJet3HasBJetCSVTight = true;
+	  break;
+	}
+      }
+
+
+      //------------------------------------------------------
+      //----------Fill hh candidate information
+      //------------------------------------------------------
+      hh_pt = (Higgs1Jet+Higgs2Jet).Pt();
+      hh_eta = (Higgs1Jet+Higgs2Jet).Eta();
+      hh_phi = (Higgs1Jet+Higgs2Jet).Phi();
+      hh_mass = (Higgs1Jet+Higgs2Jet).M();     
+      fatJet1PtOverMHH = fatJet1Pt / hh_mass;
+      fatJet1PtOverMSD = fatJet1Pt / fatJet1MassSD;
+      fatJet2PtOverMHH = fatJet2Pt / hh_mass;
+      fatJet2PtOverMSD = fatJet2Pt / fatJet1MassSD;
+
+      if ( !isData ) {
+	hh_pt_JESUp = (Higgs1Jet_JESUp+Higgs2Jet_JESUp).Pt();
+	hh_pt_JESDown = (Higgs1Jet_JESDown+Higgs2Jet_JESDown).Pt();
+	hh_pt_JMSUp = (Higgs1Jet_JMSUp+Higgs2Jet_JMSUp).Pt();
+	hh_pt_JMSDown = (Higgs1Jet_JMSDown+Higgs2Jet_JMSDown).Pt();
+	hh_pt_JMRUp = (Higgs1Jet_JMRUp+Higgs2Jet_JMRUp).Pt();
+	hh_pt_JMRDown = (Higgs1Jet_JMRDown+Higgs2Jet_JMRDown).Pt();
+	hh_eta_JESUp = (Higgs1Jet_JESUp+Higgs2Jet_JESUp).Eta();
+	hh_eta_JESDown = (Higgs1Jet_JESDown+Higgs2Jet_JESDown).Eta();
+	hh_eta_JMSUp = (Higgs1Jet_JMSUp+Higgs2Jet_JMSUp).Eta();
+	hh_eta_JMSDown = (Higgs1Jet_JMSDown+Higgs2Jet_JMSDown).Eta();
+	hh_eta_JMRUp = (Higgs1Jet_JMRUp+Higgs2Jet_JMRUp).Eta();
+	hh_eta_JMRDown = (Higgs1Jet_JMRDown+Higgs2Jet_JMRDown).Eta();
+	hh_mass_JESUp = (Higgs1Jet_JESUp+Higgs2Jet_JESUp).M();
+	hh_mass_JESDown = (Higgs1Jet_JESDown+Higgs2Jet_JESDown).M();
+	hh_mass_JMSUp = (Higgs1Jet_JMSUp+Higgs2Jet_JMSUp).M();
+	hh_mass_JMSDown = (Higgs1Jet_JMSDown+Higgs2Jet_JMSDown).M();
+	hh_mass_JMRUp = (Higgs1Jet_JMRUp+Higgs2Jet_JMRUp).M();
+	hh_mass_JMRDown = (Higgs1Jet_JMRDown+Higgs2Jet_JMRDown).M();  
+	fatJet1PtOverMHH_JESUp = fatJet1Pt_JES_Up / hh_mass_JESUp;
+	fatJet1PtOverMHH_JESDown = fatJet1Pt_JES_Down / hh_mass_JESDown;
+	fatJet1PtOverMHH_JMSUp = fatJet1Pt / hh_mass_JMSUp;
+	fatJet1PtOverMHH_JMSDown = fatJet1Pt / hh_mass_JMSDown;
+	fatJet1PtOverMHH_JMRUp = fatJet1Pt / hh_mass_JMRUp;
+	fatJet1PtOverMHH_JMRDown = fatJet1Pt / hh_mass_JMRDown;
+	fatJet2PtOverMHH_JESUp = fatJet2Pt_JES_Up / hh_mass_JESUp;
+	fatJet2PtOverMHH_JESDown = fatJet2Pt_JES_Down / hh_mass_JESDown;
+	fatJet2PtOverMHH_JMSUp = fatJet2Pt / hh_mass_JMSUp;
+	fatJet2PtOverMHH_JMSDown = fatJet2Pt / hh_mass_JMSDown;
+	fatJet2PtOverMHH_JMRUp = fatJet2Pt / hh_mass_JMRUp;
+	fatJet2PtOverMHH_JMRDown = fatJet2Pt / hh_mass_JMRDown;	
+      }
+
+      deltaEta_j1j2 = fabs(fatJet1Eta - fatJet2Eta);
+      deltaPhi_j1j2 = deltaPhi(fatJet1Phi, fatJet2Phi);
+      deltaR_j1j2 = deltaR(fatJet1Eta, fatJet1Phi, fatJet2Eta, fatJet2Phi);
+      ptj2_over_ptj1 = fatJet2Pt / fatJet1Pt;
+      mj2_over_mj1 = fatJet2MassSD / fatJet1MassSD;             
+
+      //------------------------------------------------------
+      //----------Find Leptons
+      //------------------------------------------------------     
+      for(unsigned int i = 0; i < nMuon; i++ ) {       
+
+	if (Muon_pt[i] < 30) continue;
+	if (fabs(Muon_eta[i]) > 2.4) continue;
+	if (Muon_miniPFRelIso_all[i] > 0.2) continue;
+	if (!Muon_tightId) continue;
+	
+	if (lep1Id == 0) {
+	  lep1Pt = Muon_pt[i];
+	  lep1Eta = Muon_eta[i];
+	  lep1Phi = Muon_phi[i];
+	  lep1Id = Muon_charge[i] * (13);
+	} else if (Muon_pt[i] > lep1Pt) {
+	  lep2Pt = lep1Pt;
+	  lep2Eta = lep1Eta;
+	  lep2Phi = lep1Phi;
+	  lep2Id = lep1Id;
+	  lep1Pt = Muon_pt[i];
+	  lep1Eta = Muon_eta[i];
+	  lep1Phi = Muon_phi[i];
+	  lep1Id = Muon_charge[i] * (13);
+	} else if (lep2Id == 0 || Muon_pt[i] > lep2Pt) {
+	  lep2Pt = Muon_pt[i];
+	  lep2Eta = Muon_eta[i];
+	  lep2Phi = Muon_phi[i];
+	  lep2Id = Muon_charge[i] * (13);
+	} 
+      } //loop over muons
+
+      for(unsigned int i = 0; i < nElectron; i++ ) {       
+        if (Electron_pt[i] < 35) continue;
+        if (fabs(Electron_eta[i]) > 2.5) continue;
+        if (Electron_miniPFRelIso_all[i] > 0.2) continue;
+        if (!Electron_cutBased[i]) continue;
+	if (lep1Id == 0) {
+	  lep1Pt = Electron_pt[i];
+	  lep1Eta = Electron_eta[i];
+	  lep1Phi = Electron_phi[i];
+	  lep1Id = Electron_charge[i] * (11);
+	} else if (Electron_pt[i] > lep1Pt) {
+	  lep2Pt = lep1Pt;
+	  lep2Eta = lep1Eta;
+	  lep2Phi = lep1Phi;
+	  lep2Id = lep1Id;
+	  lep1Pt = Electron_pt[i];
+	  lep1Eta = Electron_eta[i];
+	  lep1Phi = Electron_phi[i];
+	  lep1Id = Electron_charge[i] * (11);
+	} else if (lep2Id == 0 || Electron_pt[i] > lep2Pt) {
+	  lep2Pt = Electron_pt[i];
+	  lep2Eta = Electron_eta[i];
+	  lep2Phi = Electron_phi[i];
+	  lep2Id = Electron_charge[i] * (11);
+	} 
+      } //loop over electrons
+
+
+      //------------------------------------------------------
+      //----------Find Photons
+      //------------------------------------------------------ 
+     // std::vector< TLorentzVector > recoPhotonVector;    
+     // for(unsigned int i = 0; i < nPhoton; i++ ) {       
+        //if (Photon_pt[i] < 20) continue;
+      //  if (fabs(Photon_eta[i]) > 2.5) continue; 
+      //  if (fabs(Photon_eta[i]) > 1.442 && fabs(Photon_eta[i]) < 1.566) continue; 
+        // add preselections 
+      //  if (Photon_r9[i] < 0.8 && Photon_pfRelIso03_chg_quadratic[i] > 0.3 && Photon_pfRelIso03_chg_quadratic[i]*Photon_pt[i]>20) continue;
+  //      if (Photon_hoe[i] > 0.08) continue;
+    //    if (Photon_mvaID[i] < -0.9) continue;
+      //  if (!Photon_electronVeto[i]) continue;
+        //if (Photon_pt[i]>pho1Pt && Photon_pt[i]>30){
+          //if (pho1Pt>pho2Pt) {
+            //pho2Pt = pho1Pt;
+            //pho2Eta = pho1Eta;
+            //pho2Phi = pho1Phi;
+  //          pho2_seediPhiOriY = pho1_seediPhiOriY; 
+   //         pho2_seediEtaOriX = pho1_seediEtaOriX;
+    //      }
+     //     pho1Pt = Photon_pt[i];
+      //    pho1Eta = Photon_eta[i];
+       //   pho1Phi = Photon_phi[i];
+    //      pho1r9 = Photon_r9[i] > 0.8;
+    //      pho1_ChIOvEt = Photon_pfRelIso03_chg_quadratic[i] < 0.3;
+    //      pho1_ChI = Photon_pfRelIso03_chg_quadratic[i]*Photon_pt[i] < 20;
+    //      pho1_hoe = Photon_hoe[i] < 0.08;
+    //      pho1_mvaID = Photon_mvaID[i];
+    //      pho1_electronVeto = Photon_electronVeto[i];
+//	  pho1_seediPhiOriY = Photon_seediPhiOriY[i];
+  //        pho1_seediEtaOriX = Photon_seediEtaOriX[i];
+    //    }else if (Photon_pt[i]>pho2Pt){	
+//	  pho2Pt = Photon_pt[i];
+//	  pho2Eta = Photon_eta[i];
+//	  pho2Phi = Photon_phi[i];
+     //     pho2r9 = Photon_r9[i] > 0.8;
+     //     pho2_ChIOvEt = Photon_pfRelIso03_chg_quadratic[i] < 0.3;
+     //     pho2_ChI = Photon_pfRelIso03_chg_quadratic[i]*Photon_pt[i] < 20;
+     //     pho2_hoe = Photon_hoe[i] < 0.08;
+     //     pho2_mvaID = Photon_mvaID[i];
+     //     pho2_electronVeto = Photon_electronVeto[i];
+  //        pho2_seediPhiOriY = Photon_seediPhiOriY[i];
+ //         pho2_seediEtaOriX = Photon_seediEtaOriX[i];
+//	}
+      //  if (pho2Pt>0){
+      //  TLorentzVector g1;
+      //  TLorentzVector g2;
+      //  g1.SetPtEtaPhiM(pho1Pt,pho1Eta,pho1Phi,0);
+      //  g2.SetPtEtaPhiM(pho2Pt,pho2Eta,pho2Phi,0);
+      //  Diphoton_Mass=(g1+g2).M();
+      //  }
+     // }
+      //*******************************
+      //Count additional AK4 jets 
+      //*******************************
+      vector<int> vbfjets_index;
+      vbfjets_index.clear();
+      margin1 = 0.4;
+      margin2 = 0.4;
+      GenBJet1_idx = -1;
+      GenBJet2_idx = -1;
+      GenBJet3_idx = -1;
+      GenBJet4_idx = -1;
+      //GenBJet5_idx = -1;
+      CloseBQuark = 0;
+      for(int i = 0; i < nGenJet; i++) {
+        if (abs(GenJet_partonFlavour[i])!=5) continue;
+        if (deltaR(genbQuark1_Eta, genbQuark1_Phi, genbQuark2_Eta, genbQuark2_Phi) > 1.2){ 
+          if (deltaR(GenJet_eta[i], GenJet_phi[i], genbQuark1_Eta, genbQuark1_Phi) < margin1){
+            margin1 = deltaR(GenJet_eta[i], GenJet_phi[i], genbQuark1_Eta, genbQuark1_Phi);
+            GenBJet1_Pt = GenJet_pt[i];
+            GenBJet1_Eta = GenJet_eta[i];
+            GenBJet1_Phi = GenJet_phi[i];
+            GenBJet1_Mass = GenJet_mass[i];
+            GenBJet1_idx = i;
+          }else if (deltaR(GenJet_eta[i], GenJet_phi[i], genbQuark2_Eta, genbQuark2_Phi) < margin2){
+            margin2 = deltaR(GenJet_eta[i], GenJet_phi[i], genbQuark2_Eta, genbQuark2_Phi);
+            GenBJet2_Pt = GenJet_pt[i];
+            GenBJet2_Eta = GenJet_eta[i];
+            GenBJet2_Phi = GenJet_phi[i];
+            GenBJet2_Mass = GenJet_mass[i];
+            GenBJet2_idx = i;
+          }
+        }else{
+          if (deltaR(GenJet_eta[i], GenJet_phi[i], tobbHiggs_Eta, tobbHiggs_Phi) < 1.6){
+             CloseBQuark++;
+           }
+          if (CloseBQuark == 1){
+            GenBJet3_Pt = GenJet_pt[i];
+            GenBJet3_Eta = GenJet_eta[i];
+            GenBJet3_Phi = GenJet_phi[i];
+            GenBJet3_Mass = GenJet_mass[i];
+            GenBJet3_idx = i;
+          }
+          if (CloseBQuark == 2){
+            GenBJet4_Pt = GenJet_pt[i];
+            GenBJet4_Eta = GenJet_eta[i];
+            GenBJet4_Phi = GenJet_phi[i];
+            GenBJet4_Mass = GenJet_mass[i];
+            GenBJet4_idx = i;
+          }
+        }
+      }
+           
+      for(int i = 0; i < nJet; i++){
+        Farjet = 1;
+        if (GenBJet1_idx != -1 && Jet_genJetIdx[i] == GenBJet1_idx){
+          jet1Pt = Jet_pt[i];
+          jet1Eta = Jet_eta[i];
+          jet1Phi = Jet_phi[i];
+          jet1Mass = Jet_mass[i];
+          jet1PNet = Jet_btagPNetB[i];
+          jet1DeepFlavB = Jet_btagDeepFlavB[i];
+          jet1Flav = Jet_partonFlavour[i];
+          Farjet = 0;
+        } 
+        if (GenBJet2_idx != -1 && Jet_genJetIdx[i] == GenBJet2_idx){
+          jet2Pt = Jet_pt[i];
+          jet2Eta = Jet_eta[i];
+          jet2Phi = Jet_phi[i];
+          jet2Mass = Jet_mass[i];
+          jet2PNet = Jet_btagPNetB[i];
+          jet2DeepFlavB = Jet_btagDeepFlavB[i];
+          jet2Flav = Jet_partonFlavour[i];
+          Farjet = 0;
+        }
+        if (GenBJet3_idx != -1 && Jet_genJetIdx[i] == GenBJet3_idx){
+          jet3Pt = Jet_pt[i];
+          jet3Eta = Jet_eta[i];
+          jet3Phi = Jet_phi[i];
+          jet3Mass = Jet_mass[i];
+          jet3PNet = Jet_btagPNetB[i];
+          jet3DeepFlavB = Jet_btagDeepFlavB[i];
+          jet3Flav = Jet_partonFlavour[i];
+          Farjet = 0;
+        }     
+        if ( GenBJet4_idx != -1 && Jet_genJetIdx[i] == GenBJet4_idx){
+          jet4Pt = Jet_pt[i];
+          jet4Eta = Jet_eta[i];
+          jet4Phi = Jet_phi[i];
+          jet4Mass = Jet_mass[i];
+          jet4PNet = Jet_btagPNetB[i];
+          jet4DeepFlavB = Jet_btagDeepFlavB[i];
+          jet4Flav = Jet_partonFlavour[i];
+          Farjet = 0;
+        }
+     //   if (Jet_genJetIdx[i] == GenBJet5_idx){
+      //    jet5Pt = Jet_pt[i];
+      //    jet5Eta = Jet_eta[i];
+      //    jet5Phi = Jet_phi[i];
+      //    jet5Mass = Jet_mass[i];
+       //   jet5PNet = Jet_btagPNetB[i];
+       //   jet5DeepFlavB = Jet_btagDeepFlavB[i];
+       //   jet5Flav = Jet_partonFlavour[i];
+       //   Farjet = 0;
+       // }    
+//if(Jet_pt[i] > 30 && fabs(Jet_eta[i]) < 2.5
+//   deltaR(Jet_eta[i], Jet_phi[i], fatJet1Eta, fatJet1Phi) > 0.8
+	  // && deltaR(Jet_eta[i], Jet_phi[i], fatJet2Eta, fatJet2Phi) > 0.8
+	  //  && deltaR(Jet_eta[i], Jet_phi[i], pho1Eta, pho1Phi) > 0.4
+          //  && deltaR(Jet_eta[i], Jet_phi[i], pho2Eta, pho2Phi) > 0.4
+          //               ) {
+	 // NJets++;
+//	}
+        
+        if (year == "2022") {	  
+          if (Jet_pt[i] > 30 && fabs(Jet_eta[i]) < 2.5 && Jet_btagPNetB[i] > 0.2605 && deltaR(Jet_eta[i], Jet_phi[i], pho1Eta, pho1Phi) > 0.4 && deltaR(Jet_eta[i], Jet_phi[i], pho2Eta, pho2Phi) > 0.4){ 
+            if(Jet_pt[i]>jet5Pt){
+              jet6Pt = jet5Pt;
+              jet6Eta = jet5Eta;
+              jet6Phi = jet5Phi;
+              jet6Mass = jet5Mass;
+              jet6PNet = jet5PNet;
+              jet5Pt = Jet_pt[i];
+              jet5Eta = Jet_eta[i];
+              jet5Phi = Jet_phi[i];
+              jet5Mass = Jet_mass[i];
+              jet5PNet = Jet_btagPNetB[i];
+            }else if (Jet_pt[i]>jet6Pt){
+              jet6Pt = Jet_pt[i];
+              jet6Eta = Jet_eta[i];
+              jet6Phi = Jet_phi[i];
+              jet6Mass = Jet_mass[i];
+              jet6PNet = Jet_btagPNetB[i];                 
+            }  
+          }
+	}
+        if (jet1Pt>0 && jet2Pt>0){
+          TLorentzVector b1_jet;
+          TLorentzVector b2_jet;
+          b1_jet.SetPtEtaPhiM( jet1Pt, jet1Eta, jet1Phi, jet1Mass);
+          b2_jet.SetPtEtaPhiM( jet2Pt, jet2Eta, jet2Phi, jet2Mass);  
+          Dijets_Mass = (b1_jet+b2_jet).M();     
+	}
+        if (jet3Pt>0 && jet4Pt>0){
+          TLorentzVector b3_jet;
+          TLorentzVector b4_jet;
+          b3_jet.SetPtEtaPhiM( jet3Pt, jet3Eta, jet3Phi, jet3Mass);
+          b4_jet.SetPtEtaPhiM( jet4Pt, jet4Eta, jet4Phi, jet4Mass);
+          DijetsCan_Mass = (b3_jet+b4_jet).M();
+        }
+        if (jet5Pt>0 && jet6Pt>0){
+          TLorentzVector b5_jet;
+          TLorentzVector b6_jet;
+          b5_jet.SetPtEtaPhiM( jet5Pt, jet5Eta, jet5Phi, jet5Mass);
+          b6_jet.SetPtEtaPhiM( jet6Pt, jet6Eta, jet6Phi, jet6Mass);
+          Dijetsall_Mass = (b5_jet+b6_jet).M();
+        }
+        if (nBkgjets<5 && abs(GenJet_partonFlavour[Jet_genJetIdx[i]])!=5){
+          Jet_nobmatchPt[nBkgjets] = Jet_pt[i];
+          Jet_nobmatchEta[nBkgjets] = Jet_eta[i];
+          Jet_nobmatchFlav[nBkgjets] = Jet_partonFlavour[i];
+          Jet_PNetBkg[nBkgjets] = Jet_btagPNetB[i];
+          Jet_DeepJetBkg[nBkgjets] = Jet_btagDeepFlavB[i];
+          nBkgjets++;
+        }
+        //if (Farjet==1 && nSigBjets<5 && abs(GenJet_partonFlavour[Jet_genJetIdx[i]])==5){
+         // Jet_bmatchPt[nSigBjets] = Jet_pt[i];
+         // Jet_bmatchEta[nSigBjets] = Jet_eta[i];
+         // Jet_bmatchFlav[nSigBjets] = Jet_partonFlavour[i];
+         // Jet_PNetSignal[nSigBjets] = Jet_btagPNetB[i];
+         // Jet_DeepJetSignal[nSigBjets] = Jet_btagDeepFlavB[i];
+         // nSigBjets++;
+       // }
+      //find AK4 jets for VBF HH->4b analysis
+      //Pick a pair of opposite-η jets that maximizes mjj
+      //pT>25 GeV, |η|<4.7, lepton cleaning (ΔR(j,e/μ)>0.4), AK8 jet cleaning (ΔR(j,AK8)>0.4),pass tight jet ID and medium pileup jet ID
+      //Δη(jj) > 4.0 and mjjmax > 600 GeV, |ηtag jet|>1.5 for both jets
+        if (Jet_pt[i] > 30 && fabs(Jet_eta[i]) < 4.7
+	    && deltaR(Jet_eta[i] , Jet_phi[i], vbffatJet1Eta, vbffatJet1Phi) > 1.2
+	    && deltaR(Jet_eta[i] , Jet_phi[i], vbffatJet2Eta, vbffatJet2Phi) > 1.2
+            && Jet_jetId[i] >= 2 && (Jet_pt[i] <50 ||Jet_pt[i] >50)){
+          if (year == "2016"){
+            if (Jet_jetId[i] < 3) continue;
+          }
+        
+          bool islepoverlap = false;
+          for(unsigned int j = 0; j < nMuon; j++ ) { 
+	    if(Muon_pt[j]>5 && fabs(Muon_eta[j])<2.4 && abs(Muon_dxy[j]) < 0.05 and abs(Muon_dz[j]) < 0.2 && deltaR(Jet_eta[i] , Jet_phi[i], Muon_eta[j], Muon_phi[j]) < 0.4){
+                  islepoverlap = true;
+                  break;
+              }
+          }
+          for(unsigned int j = 0; j < nElectron; j++ ) { 
+	    if(Electron_pt[j]>7 && fabs(Electron_eta[j])<2.5 && abs(Electron_dxy[j]) < 0.05 and abs(Electron_dz[j]) < 0.2 && deltaR(Jet_eta[i] , Jet_phi[i], Electron_eta[j], Electron_phi[j]) < 0.4){
+                  islepoverlap = true;
+                  break;
+              }
+          }
+          if(!islepoverlap) vbfjets_index.push_back(i);  
+        }   
+      
+      } //loop over AK4 jets
+      
+      //get the AK4 jets with the largest pt
+      if(vbfjets_index.size()>1){
+	vbfjet1Pt = Jet_pt[vbfjets_index[0]];
+	vbfjet1Eta = Jet_eta[vbfjets_index[0]];
+	vbfjet1Phi = Jet_phi[vbfjets_index[0]];
+	vbfjet1Mass = Jet_mass[vbfjets_index[0]];
+	vbfjet2Pt = Jet_pt[vbfjets_index[1]];
+	vbfjet2Eta = Jet_eta[vbfjets_index[1]];
+	vbfjet2Phi = Jet_phi[vbfjets_index[1]];
+	vbfjet2Mass = Jet_mass[vbfjets_index[1]];
+	isVBFtag = 0;
+	TLorentzVector jet1,jet2;
+	jet1.SetPtEtaPhiM(vbfjet1Pt,vbfjet1Eta,vbfjet1Phi,vbfjet1Mass);
+	jet2.SetPtEtaPhiM(vbfjet2Pt,vbfjet2Eta,vbfjet2Phi,vbfjet2Mass);   
+	dijetmass = (jet1 + jet2).M(); 
+	if(dijetmass > 500. && fabs(vbfjet1Eta-vbfjet2Eta) > 4.) isVBFtag = 1;
+      }
+    
+        
+      //****************************************************
+      //Fill Event - skim for events with two jets found
+      //****************************************************
+      if (
+	  Option == 100 || 
+	  Option == 0 || 
+	  (Option == 5 && fatJet1Pt > 250 && fatJet2Pt > 250 && fatJet1MassSD > 50 
+	   && fatJet2MassSD > 50 && fatJet1PNetXbb > 0.8) || 
+	  (Option == 10 && ( (fatJet1Pt > 250 && fatJet2Pt > 250) || (fatJet1Pt > 250 && lep1Id != 0)) ) || 
+	  (Option == 20 && fatJet1Pt > 250 && fatJet1MassSD > 30 && lep1Id == 0) ||
+	  (Option == 21 && fatJet1Pt > 250 && fatJet1MassSD > 30 )
+	  ) {
+	 
+
+	//****************************************************
+	//Compute trigger efficiency weight
+	//****************************************************      
+	if (triggerEffHist) {
+	  triggerEffWeight = 1.0 - 
+	    (1 - getTriggerEff( triggerEffHist , fatJet1Pt, fatJet1MassSD )) * 
+	    (1 - getTriggerEff( triggerEffHist , fatJet2Pt, fatJet2MassSD ))
+	    ;
+	  triggerEff3DWeight = 1.0 - 
+	    (1 - getTriggerEff3D( triggerEffHist_Xbb0p0To0p9, 
+				  triggerEffHist_Xbb0p9To0p95, 
+				  triggerEffHist_Xbb0p95To0p98, 
+				  triggerEffHist_Xbb0p98To1p0, 
+				  fatJet1Pt, fatJet1MassSD, fatJet1PNetXbb )) * 
+	    (1 - getTriggerEff3D( triggerEffHist_Xbb0p0To0p9, 
+				  triggerEffHist_Xbb0p9To0p95, 
+				  triggerEffHist_Xbb0p95To0p98, 
+				  triggerEffHist_Xbb0p98To1p0, 
+				  fatJet2Pt, fatJet2MassSD, fatJet2PNetXbb ))
+	    ;	
+
+	  triggerEffMCWeight = 1.0 - 
+	    (1 - getTriggerEff( triggerEffMCHist , fatJet1Pt, fatJet1MassSD )) * 
+	    (1 - getTriggerEff( triggerEffMCHist , fatJet2Pt, fatJet2MassSD ))
+	    ;
+	  triggerEffMC3DWeight = 1.0 - 
+	    (1 - getTriggerEff3D( triggerEffMCHist_Xbb0p0To0p9, 
+				  triggerEffMCHist_Xbb0p9To0p95, 
+				  triggerEffMCHist_Xbb0p95To0p98, 
+				  triggerEffMCHist_Xbb0p98To1p0, 
+				  fatJet1Pt, fatJet1MassSD, fatJet1PNetXbb )) * 
+	    (1 - getTriggerEff3D( triggerEffMCHist_Xbb0p0To0p9, 
+				  triggerEffMCHist_Xbb0p9To0p95, 
+				  triggerEffMCHist_Xbb0p95To0p98, 
+				  triggerEffMCHist_Xbb0p98To1p0, 
+				  fatJet2Pt, fatJet2MassSD, fatJet2PNetXbb ))
+	    ;	
+
+	}
+	
+	//****************************************************
+	//Compute pileupWeight
+	//****************************************************      
+	if (pileupWeightHist) {
+	  pileupWeight = pileupWeightHist->GetBinContent( pileupWeightHist->GetXaxis()->FindFixBin(Pileup_nTrueInt));
+	  pileupWeightUp = pileupWeightUpHist->GetBinContent( pileupWeightUpHist->GetXaxis()->FindFixBin(Pileup_nTrueInt));
+	  pileupWeightDown = pileupWeightDownHist->GetBinContent( pileupWeightDownHist->GetXaxis()->FindFixBin(Pileup_nTrueInt));
+	}
+
+	//****************************************************
+	//Compute totalWeight
+	//****************************************************      
+	totalWeight = weight * triggerEffWeight * pileupWeight;
+ 
+        NEventsFilled++;            
+        outputTree->Fill();
+      }
+    }//end of event loop
+
+    cout << "Filled Total of " << NEventsFilled << " Events\n";
+    cout << "Writing output trees..." << endl;
+    outFile->Write();
+    outFile->Close();
+}

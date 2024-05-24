@@ -1,0 +1,43 @@
+
+Universe  = vanilla
+Executable = ./run_job_LPC.sh
+Arguments = HHTo2B2GNtupler no 0 $(I) 1 HHTo2B2GNtuple_option0 /store/user/yzhong/Run3/analyzer/HHTo2B2GNtupler/option0/nano/run3/2022/ttHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE/ CMSSW_12_6_3 2022 
+
+Log = log/job.$(Cluster).$(Process).log
+Output = out/job.$(Cluster).$(Process).out
+Error = err/job.$(Cluster).$(Process).err
+x509userproxy = $ENV(X509_USER_PROXY)
+transfer_input_files = /uscms_data/d3/yzhong/CMSSW_12_6_3/src/HHBoostedAnalyzer//condor/analyzer_HHTo2B2GNtupler_option0/nano/run3/2022/ttHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE/run_job_LPC.sh, /uscms_data/d3/yzhong/CMSSW_12_6_3/src/HHBoostedAnalyzer//condor/analyzer_HHTo2B2GNtupler_option0/nano/run3/2022/ttHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE/input_list.tgz, /uscms_data/d3/yzhong/CMSSW_12_6_3/src/HHBoostedAnalyzer//condor/analyzer_HHTo2B2GNtupler_option0/nano/run3/2022/ttHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE/RunHHTo2B2GNtupler, /uscms_data/d3/yzhong/CMSSW_12_6_3/src/HHBoostedAnalyzer//condor/analyzer_HHTo2B2GNtupler_option0/nano/run3/2022/ttHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE/HHBoostedAnalyzer/data/JetHTTriggerEfficiency_2016.root, /uscms_data/d3/yzhong/CMSSW_12_6_3/src/HHBoostedAnalyzer//condor/analyzer_HHTo2B2GNtupler_option0/nano/run3/2022/ttHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE/HHBoostedAnalyzer/data/JetHTTriggerEfficiency_2017.root, /uscms_data/d3/yzhong/CMSSW_12_6_3/src/HHBoostedAnalyzer//condor/analyzer_HHTo2B2GNtupler_option0/nano/run3/2022/ttHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE/HHBoostedAnalyzer/data/JetHTTriggerEfficiency_2018.root, /uscms_data/d3/yzhong/CMSSW_12_6_3/src/HHBoostedAnalyzer//condor/analyzer_HHTo2B2GNtupler_option0/nano/run3/2022/ttHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE/HHBoostedAnalyzer/data/JetHTTriggerEfficiency_Summer16.root, /uscms_data/d3/yzhong/CMSSW_12_6_3/src/HHBoostedAnalyzer//condor/analyzer_HHTo2B2GNtupler_option0/nano/run3/2022/ttHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE/HHBoostedAnalyzer/data/JetHTTriggerEfficiency_Fall17.root, /uscms_data/d3/yzhong/CMSSW_12_6_3/src/HHBoostedAnalyzer//condor/analyzer_HHTo2B2GNtupler_option0/nano/run3/2022/ttHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE/HHBoostedAnalyzer/data/JetHTTriggerEfficiency_Fall18.root, /uscms_data/d3/yzhong/CMSSW_12_6_3/src/HHBoostedAnalyzer//condor/analyzer_HHTo2B2GNtupler_option0/nano/run3/2022/ttHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE/HHBoostedAnalyzer/data/PileupWeights/PileupWeights.root, /uscms_data/d3/yzhong/CMSSW_12_6_3/src/HHBoostedAnalyzer//condor/analyzer_HHTo2B2GNtupler_option0/nano/run3/2022/ttHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE/HHBoostedAnalyzer/data/JEC/Summer16_07Aug2017_V11_MC/Summer16_07Aug2017_V11_MC_Uncertainty_AK8PFPuppi.txt, /uscms_data/d3/yzhong/CMSSW_12_6_3/src/HHBoostedAnalyzer//condor/analyzer_HHTo2B2GNtupler_option0/nano/run3/2022/ttHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE/HHBoostedAnalyzer/data/JEC/Fall17_17Nov2017_V32_MC/Fall17_17Nov2017_V32_MC_Uncertainty_AK8PFPuppi.txt, /uscms_data/d3/yzhong/CMSSW_12_6_3/src/HHBoostedAnalyzer//condor/analyzer_HHTo2B2GNtupler_option0/nano/run3/2022/ttHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE/HHBoostedAnalyzer/data/JEC/Autumn18_V19_MC/Autumn18_V19_MC_Uncertainty_AK8PFPuppi.txt 
+
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+
+# Resources request
+RequestMemory = 2000 
+
+
+# Jobs selection
+Queue I from (
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+)

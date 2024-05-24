@@ -1,0 +1,27 @@
+WARNING: In non-interactive mode release checks e.g. deprecated releases, production architectures are disabled.
+WARNING: In non-interactive mode release checks e.g. deprecated releases, production architectures are disabled.
+Error in <TChain::SetBranchAddress>: unknown branch -> LHEWeight_originalXWGTUP
+Error in <TChain::SetBranchAddress>: unknown branch -> nLHEPdfWeight
+Error in <TChain::SetBranchAddress>: unknown branch -> LHEPdfWeight
+Error in <TChain::SetBranchAddress>: unknown branch -> nLHEReweightingWeight
+Error in <TChain::SetBranchAddress>: unknown branch -> LHEReweightingWeight
+Error in <TChain::SetBranchAddress>: unknown branch -> nLHEScaleWeight
+Error in <TChain::SetBranchAddress>: unknown branch -> LHEScaleWeight
+Error in <TChain::SetBranchAddress>: unknown branch -> LHE_HT
+Error in <TChain::SetBranchAddress>: unknown branch -> LHE_HTIncoming
+Error in <TChain::SetBranchAddress>: unknown branch -> LHE_Vpt
+Error in <TChain::SetBranchAddress>: unknown branch -> LHE_Njets
+Error in <TChain::SetBranchAddress>: unknown branch -> LHE_Nb
+Error in <TChain::SetBranchAddress>: unknown branch -> LHE_Nc
+Error in <TChain::SetBranchAddress>: unknown branch -> LHE_Nuds
+Error in <TChain::SetBranchAddress>: unknown branch -> LHE_Nglu
+Error in <TChain::SetBranchAddress>: unknown branch -> LHE_NpNLO
+Error in <TChain::SetBranchAddress>: unknown branch -> LHE_NpLO
+Error in <TChain::SetBranchAddress>: unknown branch -> nLHEPart
+Error in <TChain::SetBranchAddress>: unknown branch -> LHEPart_pt
+Error in <TChain::SetBranchAddress>: unknown branch -> LHEPart_eta
+Error in <TChain::SetBranchAddress>: unknown branch -> LHEPart_phi
+Error in <TChain::SetBranchAddress>: unknown branch -> LHEPart_mass
+Error in <TChain::SetBranchAddress>: unknown branch -> LHEPart_pdgId
+------------------------------
+./run_job_LPC.sh: line 102: eosmkdir: command not found
