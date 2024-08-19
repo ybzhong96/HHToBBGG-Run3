@@ -32,7 +32,7 @@ jobIndex=$((($jobnumber-1)%$nJobsPerFile))
 workDir=`pwd`
 executable=Run${analysisType}
 source /cvmfs/cms.cern.ch/cmsset_default.sh
-export SCRAM_ARCH=slc7_amd64_gcc10
+export SCRAM_ARCH=el8_amd64_gcc12
 #export SCRAM_ARCH=el8_aarch64_gcc11
 #tar -zxvf cms_setup.tar.gz
 scramv1 project CMSSW $cmsswReleaseVersion
@@ -43,27 +43,30 @@ scramv1 project CMSSW $cmsswReleaseVersion
 #cp code.tgz $cmsswReleaseVersion/src/
 cp $executable $cmsswReleaseVersion/src/
 cp input_list.tgz $cmsswReleaseVersion/src/
-mkdir -p $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/PileupWeights/
+mkdir -p $cmsswReleaseVersion/src/HHToBBGG-Run3/data/PileupWeights/
 #cp HHBoostedAnalyzer/data/JetHTTriggerEfficiency_2016.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
-cp JetHTTriggerEfficiency_2016.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
+cp JetHTTriggerEfficiency_2016.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
 #cp HHBoostedAnalyzer/data/JetHTTriggerEfficiency_2017.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
-cp JetHTTriggerEfficiency_2017.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
+cp JetHTTriggerEfficiency_2017.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
 #cp HHBoostedAnalyzer/data/JetHTTriggerEfficiency_2018.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
-cp JetHTTriggerEfficiency_2018.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
+cp JetHTTriggerEfficiency_2018.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
 #cp HHBoostedAnalyzer/data/JetHTTriggerEfficiency_Summer16.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
-cp JetHTTriggerEfficiency_Summer16.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
+cp JetHTTriggerEfficiency_Summer16.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
 #cp HHBoostedAnalyzer/data/JetHTTriggerEfficiency_Fall17.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
-cp JetHTTriggerEfficiency_Fall17.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
+cp JetHTTriggerEfficiency_Fall17.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
 #cp HHBoostedAnalyzer/data/JetHTTriggerEfficiency_Fall18.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
-cp JetHTTriggerEfficiency_Fall18.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
+cp JetHTTriggerEfficiency_Fall18.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
 #cp HHBoostedAnalyzer/data/PileupWeights/PileupWeights.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/PileupWeights/
-cp PileupWeights.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/PileupWeights/
-mkdir -p $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/JEC/Summer16_07Aug2017_V11_MC/
-cp Summer16_07Aug2017_V11_MC_Uncertainty_AK8PFPuppi.txt $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/JEC/Summer16_07Aug2017_V11_MC/
-mkdir -p $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/JEC/Fall17_17Nov2017_V32_MC/
-cp Fall17_17Nov2017_V32_MC_Uncertainty_AK8PFPuppi.txt $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/JEC/Fall17_17Nov2017_V32_MC/
-mkdir -p $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/JEC/Autumn18_V19_MC/
-cp Autumn18_V19_MC_Uncertainty_AK8PFPuppi.txt $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/JEC/Autumn18_V19_MC/
+cp PileupWeights.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/PileupWeights/
+
+cp Run3_2022_2023_Golden.json $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
+
+mkdir -p $cmsswReleaseVersion/src/HHToBBGG-Run3/data/JEC/Summer16_07Aug2017_V11_MC/
+cp Summer16_07Aug2017_V11_MC_Uncertainty_AK8PFPuppi.txt $cmsswReleaseVersion/src/HHToBBGG-Run3/data/JEC/Summer16_07Aug2017_V11_MC/
+mkdir -p $cmsswReleaseVersion/src/HHToBBGG-Run3/data/JEC/Fall17_17Nov2017_V32_MC/
+cp Fall17_17Nov2017_V32_MC_Uncertainty_AK8PFPuppi.txt $cmsswReleaseVersion/src/HHToBBGG-Run3/data/JEC/Fall17_17Nov2017_V32_MC/
+mkdir -p $cmsswReleaseVersion/src/HHToBBGG-Run3/data/JEC/Autumn18_V19_MC/
+cp Autumn18_V19_MC_Uncertainty_AK8PFPuppi.txt $cmsswReleaseVersion/src/HHToBBGG-Run3/data/JEC/Autumn18_V19_MC/
 
 ###########################
 #get cmssw environment
