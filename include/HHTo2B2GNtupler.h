@@ -3,6 +3,9 @@
 
 #include "EventAnalyzer.h"
 #include "TH2F.h"
+#include "FactorizedJetCorrector.h"
+#include "JetCorrectorParameters.h"
+#include "JetCorrectionUncertainty.h"
 
 class HHTo2B2GNtupler: public EventAnalyzer {
     public: 
@@ -14,6 +17,18 @@ class HHTo2B2GNtupler: public EventAnalyzer {
 				TH2F *triggerEffHist_Xbb0p95To0p98, 
 				TH2F *triggerEffHist_Xbb0p98To1p0, 
 				double pt, double mass, double PNetXbb );
+        double JetEnergyCorrectionFactor( double jetRawPt, double jetEta, double jetPhi, double jetE,
+					  double rho, double jetArea,
+					  FactorizedJetCorrector *jetcorrector,
+					  int jetCorrectionLevel = -1,
+					  bool printDebug = false);
+        double JetEnergyCorrectionFactor( double jetRawPt, double jetEta, double jetPhi, double jetE,
+					  double rho, double jetArea,
+					  int run,
+					  std::vector<std::pair<int,int> > JetCorrectionsIOV,
+					  std::vector<FactorizedJetCorrector*> jetcorrector,
+					  int jetCorrectionLevel = -1,
+					  bool printDebug = false);
 };
 
 #endif

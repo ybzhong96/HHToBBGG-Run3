@@ -1,8 +1,6 @@
 #include "HHTo2B2GNtupler.h"
 #include <stdlib.h> 
 #include "JetTree.h"
-#include "JetCorrectorParameters.h"
-#include "JetCorrectionUncertainty.h"
 #include <TFile.h>
 //C++ includes
 //json includes
@@ -135,6 +133,100 @@ double HHTo2B2GNtupler::getTriggerEff( TH2F *trigEffHist , double pt, double mas
   //cout << "mass = " << mass << " , pt = " << pt << " : trigEff = " << result << "\n";
 
   return result; 
+}
+
+
+
+//Jet Energy Corrections
+double HHTo2B2GNtupler::JetEnergyCorrectionFactor( double jetRawPt, double jetEta, double jetPhi, double jetE,
+						 double rho, double jetArea,
+						 int run,
+						 std::vector<std::pair<int,int> > JetCorrectionsIOV,
+						 std::vector<FactorizedJetCorrector*> jetcorrector,
+						 int jetCorrectionLevel,
+						 bool printDebug) {
+
+  int foundIndex = -1;
+  for (unsigned int i=0; i<JetCorrectionsIOV.size(); i++) {
+    if (run >= JetCorrectionsIOV[i].first && run <= JetCorrectionsIOV[i].second) {
+      foundIndex = i;
+    }
+  }
+  if (foundIndex == -1) {
+    //cout << "Warning: run = " << run << " was not found in any valid IOV range. use default index = 0 for Jet energy corrections. \n";
+    foundIndex = 0;
+  }
+
+  if (!jetcorrector[foundIndex]) {
+    cout << "WWARNING: Jet corrector pointer is null. Returning JEC = 0. \n";
+    return 0;
+  }
+
+  jetcorrector[foundIndex]->setJetEta(jetEta);
+  jetcorrector[foundIndex]->setJetPt(jetRawPt);
+  jetcorrector[foundIndex]->setJetPhi(jetPhi);
+  jetcorrector[foundIndex]->setJetE(jetE);
+  jetcorrector[foundIndex]->setRho(rho);
+  jetcorrector[foundIndex]->setJetA(jetArea);
+
+  std::vector<float> corrections;
+  corrections = jetcorrector[foundIndex]->getSubCorrections();
+
+  if (printDebug) cout << "Computing Jet Energy Corrections for jet with raw momentum: " << jetRawPt << " " << jetEta << " " << jetPhi << "\n";
+
+  double cumulativeCorrection = 1.0;
+  for (UInt_t j=0; j<corrections.size(); ++j) {
+
+    //only correct up to the required level. if -1, then do all correction levels
+    if (jetCorrectionLevel >= 0 && int(j) > jetCorrectionLevel) continue;
+
+    double currentCorrection = corrections.at(j)/cumulativeCorrection;
+    cumulativeCorrection = corrections.at(j);
+    if (printDebug) cout << "Correction Level " << j << " : current correction = " << currentCorrection << " , cumulative correction = " << cumulativeCorrection << "\n";
+  }
+  if (printDebug) cout << "Final Cumulative Correction: " << cumulativeCorrection << "\n";
+
+  return cumulativeCorrection;
+
+}
+
+//Jet Energy Corrections
+double HHTo2B2GNtupler::JetEnergyCorrectionFactor( double jetRawPt, double jetEta, double jetPhi, double jetE,
+						 double rho, double jetArea,
+						 FactorizedJetCorrector *jetcorrector,
+						 int jetCorrectionLevel,
+						 bool printDebug) {
+  if (!jetcorrector) {
+    cout << "WWARNING: Jet corrector pointer is null. Returning JEC = 0. \n";
+    return 0;
+  }
+
+  jetcorrector->setJetEta(jetEta);
+  jetcorrector->setJetPt(jetRawPt);
+  jetcorrector->setJetPhi(jetPhi);
+  jetcorrector->setJetE(jetE);
+  jetcorrector->setRho(rho);
+  jetcorrector->setJetA(jetArea);
+
+  std::vector<float> corrections;
+  corrections = jetcorrector->getSubCorrections();
+
+  if (printDebug) cout << "Computing Jet Energy Corrections for jet with raw momentum: " << jetRawPt << " " << jetEta << " " << jetPhi << "\n";
+
+  double cumulativeCorrection = 1.0;
+  for (UInt_t j=0; j<corrections.size(); ++j) {
+
+    //only correct up to the required level. if -1, then do all correction levels
+    if (jetCorrectionLevel >= 0 && int(j) > jetCorrectionLevel) continue;
+
+    double currentCorrection = corrections.at(j)/cumulativeCorrection;
+    cumulativeCorrection = corrections.at(j);
+    if (printDebug) cout << "Correction Level " << j << " : current correction = " << currentCorrection << " , cumulative correction = " << cumulativeCorrection << "\n";
+  }
+  if (printDebug) cout << "Final Cumulative Correction: " << cumulativeCorrection << "\n";
+
+  return cumulativeCorrection;
+
 }
 
 
@@ -338,8 +430,33 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 
 
     //----------------------------------------
-    //---jet energy scale uncertainty
+    //---jet energy scale and uncertainty
     //----------------------------------------
+
+    std::vector<FactorizedJetCorrector*> JetCorrector = std::vector<FactorizedJetCorrector*>();
+    std::vector<std::pair<int,int> > JetCorrectorIOV = std::vector<std::pair<int,int> >();
+    std::vector<std::vector<JetCorrectorParameters> > correctionParameters = std::vector<std::vector<JetCorrectorParameters> >();
+    std::vector<std::pair<int,int> > JetCorrectionsIOV = std::vector<std::pair<int,int> >();
+      
+    string jecPathname = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Summer22_22Sep2023_RunCD_V2_DATA/";
+    std::vector<JetCorrectorParameters> correctionParametersTemp = std::vector<JetCorrectorParameters> ();
+    correctionParametersTemp.push_back(JetCorrectorParameters(
+                  Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L1FastJet_AK4PFchs.txt", jecPathname.c_str())));
+    correctionParametersTemp.push_back(JetCorrectorParameters(
+                  Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L2Relative_AK4PFchs.txt", jecPathname.c_str())));
+    correctionParametersTemp.push_back(JetCorrectorParameters(
+                  Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L3Absolute_AK4PFchs.txt", jecPathname.c_str())));
+    correctionParametersTemp.push_back(JetCorrectorParameters(
+                  Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L2L3Residual_AK4PFchs.txt", jecPathname.c_str())));
+
+    FactorizedJetCorrector *JetCorrectorTemp = new FactorizedJetCorrector(correctionParametersTemp);
+    correctionParameters.push_back(correctionParametersTemp);
+    JetCorrector.push_back( JetCorrectorTemp );
+    JetCorrectionsIOV.push_back( std::pair<int,int>( 0, 99999999 ));    
+
+    cout << Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L1FastJet_AK4PFchs.txt", jecPathname.c_str()) << "\n";
+    
+    
     string JECUncertaintyFile = "";
     if (year == "2016") {
       JECUncertaintyFile = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Summer16_07Aug2017_V11_MC/Summer16_07Aug2017_V11_MC_Uncertainty_AK8PFPuppi.txt";
@@ -2944,7 +3061,20 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
        //   jet4Flav = Jet_partonFlavour[i];
        //   Farjet = 0;
        // }
-        
+
+	double JEC = JetEnergyCorrectionFactor(Jet_pt[i], Jet_eta[i], Jet_phi[i],
+					       sqrt( pow(Jet_mass[i],2) + pow(Jet_pt[i]*cosh(Jet_eta[i]),2)),
+					       fixedGridRhoFastjetAll, Jet_area[i],
+					       run,
+					       JetCorrectorIOV,JetCorrector);
+	double jetCorrPt = Jet_pt[i]*JEC;
+	//use jetCorrPt from here on
+
+	cout << "Jet " << i << " | " << Jet_pt[i] << " " << JEC << " " << jetCorrPt << " : " << Jet_eta[i] << " " << Jet_phi[i] << "\n";
+
+	
+	
+	
         if (year == "2022") {	  
           if (Jet_pt[i] > 20 && fabs(Jet_eta[i]) < 2.5 && deltaR(Jet_eta[i], Jet_phi[i], pho1Eta, pho1Phi) > 0.4 && deltaR(Jet_eta[i], Jet_phi[i], pho2Eta, pho2Phi) > 0.4){ 
             NJets++;
