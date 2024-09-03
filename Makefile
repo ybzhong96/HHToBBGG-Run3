@@ -29,7 +29,7 @@ SRC5 = app/RunDileptonNtupler.cc src/DileptonNtupler.cc src/EventAnalyzer.cc inc
 #SRC7 = app/RunJetHTTriggerNtupler.cc src/JetHTTriggerNtupler.cc src/EventAnalyzer.cc include/Events.hh
 SRC8 = app/RunMakeMCPileupDistribution.cc src/MakeMCPileupDistribution.cc src/EventAnalyzer.cc include/Events.hh
 #SRC9 = app/RunHHHTo6BNtupler.cc src/HHHTo6BNtupler.cc src/JetCorrectionUncertainty.cc src/JetCorrectorParameters.cc src/SimpleJetCorrectionUncertainty.cc src/EventAnalyzer.cc include/Events.hh
-SRC10 = app/RunHHTo2B2GNtupler.cc src/HHTo2B2GNtupler.cc src/JetCorrectionUncertainty.cc src/JetCorrectorParameters.cc src/SimpleJetCorrectionUncertainty.cc src/EventAnalyzer.cc include/Events.hh
+SRC10 = app/RunHHTo2B2GNtupler.cc src/HHTo2B2GNtupler.cc src/JetCorrUtilities.cc src/SimpleJetCorrector.cc src/FactorizedJetCorrector.cc src/JetCorrectionUncertainty.cc src/JetCorrectorParameters.cc src/SimpleJetCorrectionUncertainty.cc src/EventAnalyzer.cc include/Events.hh
 
 OBJ = $(SRC:.cc=.o)
 OBJ1 = $(SRC1:.cc=.o)
