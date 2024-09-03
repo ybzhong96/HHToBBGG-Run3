@@ -2794,7 +2794,8 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	if (!Muon_mediumId) continue;
 	if (deltaR(Muon_eta[i], Muon_phi[i], pho1Eta, pho1Phi)<0.2) continue;
 	if (deltaR(Muon_eta[i], Muon_phi[i], pho2Eta, pho2Phi)<0.2) continue;
-	
+	if (deltaR(Muon_eta[i], Muon_phi[i], Diphoton_Eta, Diphoton_Pt)<0.2) continue;
+
 	if (lep1Id == 0) {
 	  lep1Pt = Muon_pt[i];
 	  lep1Eta = Muon_eta[i];
@@ -2823,6 +2824,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	if (!Electron_mvaIso_WP80) continue;
         if (deltaR(Electron_eta[i], Electron_phi[i], pho1Eta, pho1Phi)<0.2) continue;
         if (deltaR(Electron_eta[i], Electron_phi[i], pho2Eta, pho2Phi)<0.2) continue;
+	if (deltaR(Electron_eta[i], Electron_phi[i], Diphoton_Eta, Diphoton_Pt)<0.2) continue;
      //   if (Electron_miniPFRelIso_all[i] > 0.2) continue;
        // if (!Electron_cutBased[i]) continue;
 	if (lep1Id == 0) {
@@ -3212,13 +3214,13 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       b2_jet.SetPtEtaPhiM( b_jet2Pt, b_jet2Eta, b_jet2Phi, b_jet2Mass);
       if (b_jet1Pt>0){
         DeltaPhi_j1MET = deltaPhi(b_jet1Phi, METPhi);
-        leadB_leadLep = deltaR(b_jet1Eta, b_jet1Phi, lep1Eta, lep1Phi);
-        leadB_subleadLep = deltaR(b_jet1Eta, b_jet1Phi, lep2Eta, lep2Phi);
+        if (lep1Pt>0) leadB_leadLep = deltaR(b_jet1Eta, b_jet1Phi, lep1Eta, lep1Phi);
+        if (lep2Pt>0) leadB_subleadLep = deltaR(b_jet1Eta, b_jet1Phi, lep2Eta, lep2Phi);
       }
       if (b_jet2Pt>0){
         DeltaPhi_j2MET = deltaPhi(b_jet2Phi, METPhi);
-        subleadB_leadLep = deltaR(b_jet2Eta, b_jet2Phi, lep1Eta, lep1Phi);
-        subleadB_subleadLep = deltaR(b_jet2Eta, b_jet2Phi, lep2Eta, lep2Phi);
+        if (lep1Pt>0) subleadB_leadLep = deltaR(b_jet2Eta, b_jet2Phi, lep1Eta, lep1Phi);
+        if (lep2Pt>0) subleadB_subleadLep = deltaR(b_jet2Eta, b_jet2Phi, lep2Eta, lep2Phi);
       }
       if (b_jet1Pt>0 && b_jet2Pt>0){
         Dijetsall_Mass = (b1_jet+b2_jet).M();

@@ -235,10 +235,40 @@ datasets = {
 #---------------------------------------------------------------------
 #---------------GJ_MGG 22EE-------------------------------------------
 #---------------------------------------------------------------------
-'GJet_PT-20_DoubleEMEnriched_MGG-40to80_TuneCP5_13p6TeV_pythia8_2022EE':'/GJet_PT-20_DoubleEMEnriched_MGG-40to80_TuneCP5_13p6TeV_pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM',
-'GJet_PT-20to40_DoubleEMEnriched_MGG-80_TuneCP5_13p6TeV_pythia8_2022EE':'/GJet_PT-20to40_DoubleEMEnriched_MGG-80_TuneCP5_13p6TeV_pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM',
-'GJet_PT-40_DoubleEMEnriched_MGG-80_TuneCP5_13p6TeV_pythia8_2022EE': '/GJet_PT-40_DoubleEMEnriched_MGG-80_TuneCP5_13p6TeV_pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM',
+#'GJet_PT-20_DoubleEMEnriched_MGG-40to80_TuneCP5_13p6TeV_pythia8_2022EE':'/GJet_PT-20_DoubleEMEnriched_MGG-40to80_TuneCP5_13p6TeV_pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM',
+#'GJet_PT-20to40_DoubleEMEnriched_MGG-80_TuneCP5_13p6TeV_pythia8_2022EE':'/GJet_PT-20to40_DoubleEMEnriched_MGG-80_TuneCP5_13p6TeV_pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM',
+#'GJet_PT-40_DoubleEMEnriched_MGG-80_TuneCP5_13p6TeV_pythia8_2022EE': '/GJet_PT-40_DoubleEMEnriched_MGG-80_TuneCP5_13p6TeV_pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM',
+#---------------------------------------------------------------------
+#---------------Fake Jets --------------------------------------------
+#---------------------------------------------------------------------
+#'QCD_PT-30to40_DoubleEMEnriched_MGG-80toInf_TuneCP5_13p6TeV_pythia8_2022EE':'/QCD_PT-30to40_DoubleEMEnriched_MGG-80toInf_TuneCP5_13p6TeV_pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM',
+#'QCD_PT-30to40_DoubleEMEnriched_MGG-80toInf_TuneCP5_13p6TeV_pythia8_2022':'/QCD_PT-30to40_DoubleEMEnriched_MGG-80toInf_TuneCP5_13p6TeV_pythia8/Run3Summer22NanoAODv12-130X_mcRun3_2022_realistic_v5-v2/NANOAODSIM',
+#'QCD_PT-40toInf_DoubleEMEnriched_MGG-80toInf_TuneCP5_13p6TeV_pythia8_2022EE':'/QCD_PT-40toInf_DoubleEMEnriched_MGG-80toInf_TuneCP5_13p6TeV_pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM',
+#'QCD_PT-40toInf_DoubleEMEnriched_MGG-80toInf_TuneCP5_13p6TeV_pythia8_2022':'/QCD_PT-40toInf_DoubleEMEnriched_MGG-80toInf_TuneCP5_13p6TeV_pythia8/Run3Summer22NanoAODv12-130X_mcRun3_2022_realistic_v5-v2/NANOAODSIM',
+#-----------------------------------------------------------------------
+#----------------2022 SingleH & ggF Signal  -----------------------------------------
+#-----------------------------------------------------------------------
 
+'ttHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022': '/ttHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8/Run3Summer22NanoAODv12-130X_mcRun3_2022_realistic_v5-v2/NANOAODSIM',
+
+'VHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022': '/VHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8/Run3Summer22NanoAODv12-130X_mcRun3_2022_realistic_v5-v2/NANOAODSIM',
+
+'VBFHtoGG_M-125_TuneCP5_13p6TeV_amcatnlo-pythia8_2022': '/VBFHtoGG_M-125_TuneCP5_13p6TeV_amcatnlo-pythia8/Run3Summer22NanoAODv12-130X_mcRun3_2022_realistic_v5-v3/NANOAODSIM',
+
+'GluGluHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-pythia8_2022': '/GluGluHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/Run3Summer22NanoAODv12-130X_mcRun3_2022_realistic_v5-v2/NANOAODSIM',
+
+'GluGlutoHHto2B2G_kl-1p00_kt-1p00_c2-0p00_TuneCP5_13p6TeV_powheg-pythia8_2022':'/GluGlutoHHto2B2G_kl-1p00_kt-1p00_c2-0p00_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22NanoAODv12-130X_mcRun3_2022_realistic_v5-v2/NANOAODSIM',
+#----------------------------------------------------------------------
+#---------------EGamma 22EE
+#----------------------------------------------------------------------
+#'Run2022B-22Sep2023-v2':'/EGamma/Run2022B-22Sep2023-v2/NANOAOD',
+#'Run2022C-22Sep2023-v1':'/EGamma/Run2022C-22Sep2023-v1/NANOAOD',
+#'Run2022D-22Sep2023-v1':'/EGamma/Run2022D-22Sep2023-v1/NANOAOD',
+
+
+#'Run2022E-22Sep2023-v1':'/EGamma/Run2022E-22Sep2023-v1/NANOAOD',
+#'Run2022F-22Sep2023-v1':'/EGamma/Run2022F-22Sep2023-v1/NANOAOD',
+#'Run2022G-22Sep2023-v2':'/EGamma/Run2022G-22Sep2023-v2/NANOAOD',
 }
 
 # if (len(sys.argv) -1 < 1):
