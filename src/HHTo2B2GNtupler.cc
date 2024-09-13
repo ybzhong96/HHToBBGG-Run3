@@ -945,6 +945,8 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
     float pho2_energyErr = -99;
     float pho2_energyRaw = -99;
     float Dijetsall_Pt = -99;
+    float Dijetsall_Eta = -99;
+    float Dijetsall_Phi = -99;
     float M_jjgg = -99;
     float jet1PtRes = -99;
     float jet1PtCorr = -99;
@@ -1055,6 +1057,24 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       outputTree->Branch("genPhoton2Eta", &genPhoton2Eta, "genPhoton2Eta/F");
       outputTree->Branch("genPhoton2Phi", &genPhoton2Phi, "genPhoton2Phi/F");
     }
+      outputTree->Branch("b_jet1Pt", &b_jet1Pt, "b_jet1Pt/F");
+      outputTree->Branch("b_jet1Eta", &b_jet1Eta, "b_jet1Eta/F");
+      outputTree->Branch("b_jet1Phi", &b_jet1Phi, "b_jet1Phi/F");
+      outputTree->Branch("b_jet1PNet", &b_jet1PNet, "b_jet1PNet/F");
+      outputTree->Branch("b_jet1Mass", &b_jet1Mass, "b_jet1Mass/F");
+      outputTree->Branch("b_jet1PtRes", &b_jet1PtRes, "b_jet1PtRes/F");
+      outputTree->Branch("b_jet1PtCorr", &b_jet1PtCorr, "b_jet1PtCorr/F");
+      outputTree->Branch("b_jet1PtCorrNeutrino", &b_jet1PtCorrNeutrino, "b_jet1PtCorrNeutrino/F");
+      
+      outputTree->Branch("b_jet2Pt", &b_jet2Pt, "b_jet2Pt/F");
+      outputTree->Branch("b_jet2Eta", &b_jet2Eta, "b_jet2Eta/F");
+      outputTree->Branch("b_jet2Phi", &b_jet2Phi, "b_jet2Phi/F");
+      outputTree->Branch("b_jet2PNet", &b_jet2PNet, "b_jet2PNet/F");
+      outputTree->Branch("b_jet2Mass", &b_jet2Mass, "b_jet2Mass/F");
+      outputTree->Branch("b_jet2PtRes", &b_jet2PtRes, "b_jet2PtRes/F");
+      outputTree->Branch("b_jet2PtCorr", &b_jet2PtCorr, "b_jet2PtCorr/F");
+      outputTree->Branch("b_jet2PtCorrNeutrino", &b_jet2PtCorrNeutrino, "b_jet2PtCorrNeutrino/F");
+
       outputTree->Branch("jet1Pt", &jet1Pt, "jet1Pt/F");
       outputTree->Branch("jet1Eta", &jet1Eta, "jet1Eta/F");
       outputTree->Branch("jet1Phi", &jet1Phi, "jet1Phi/F");
@@ -1098,10 +1118,13 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       outputTree->Branch("jet5Eta", &jet5Eta, "jet5Eta/F");
       outputTree->Branch("jet5Phi", &jet5Phi, "jet5Phi/F");
       outputTree->Branch("jet5PNet", &jet5PNet, "jet5PNet/F");
+      outputTree->Branch("jet5Mass", &jet5Mass, "jet5Mass/F");
+
       outputTree->Branch("jet6Pt", &jet6Pt, "jet6Pt/F");
       outputTree->Branch("jet6Eta", &jet6Eta, "jet6Eta/F");
       outputTree->Branch("jet6Phi", &jet6Phi, "jet6Phi/F");
       outputTree->Branch("jet6PNet", &jet6PNet, "jet6PNet/F");
+      outputTree->Branch("jet6Mass", &jet6Mass, "jet6Mass/F");
    //   outputTree->Branch("jet5DeepFlavB", &jet5DeepFlavB, "jet5DeepFlavB/F");
    //   outputTree->Branch("jet5Flav", &jet5Flav, "jet5Flav/I");
     //  outputTree->Branch("Dijets_Mass", &Dijets_Mass, "Dijets_Mass/F");  
@@ -1338,7 +1361,11 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       outputTree->Branch("pho2_energyErr", &pho2_energyErr, "pho2_energyErr/F");
       outputTree->Branch("pho2_energyRaw", &pho2_energyRaw, "pho2_energyRaw/F");
       outputTree->Branch("Diphoton_Pt", &Diphoton_Pt, "Diphoton_Pt/F");
+      outputTree->Branch("Diphoton_Eta", &Diphoton_Eta, "Diphoton_Eta/F");
+      outputTree->Branch("Diphoton_Phi", &Diphoton_Phi, "Diphoton_Phi/F");
       outputTree->Branch("Dijetsall_Pt", &Dijetsall_Pt, "Dijetsall_Pt/F");
+      outputTree->Branch("Dijetsall_Eta", &Dijetsall_Eta, "Dijetsall_Eta/F");
+      outputTree->Branch("Dijetsall_Phi", &Dijetsall_Phi, "Dijetsall_Phi/F");
       outputTree->Branch("M_jjgg", &M_jjgg, "M_jjgg/F");
       outputTree->Branch("rho", &rho, "rho/F");
       outputTree->Branch("minR_jg", &minR_jg, "minR_jg/F");
@@ -1351,6 +1378,10 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       outputTree->Branch("leadB_subleadLep", &leadB_subleadLep, "leadB_subleadLep/F");
       outputTree->Branch("subleadB_leadLep", &subleadB_leadLep, "subleadB_leadLep/F");
       outputTree->Branch("subleadB_subleadLep", &subleadB_subleadLep, "subleadB_subleadLep/F");
+
+      outputTree->Branch("chi_t0sq", &chi_t0sq, "chi_t0sq/F");
+      outputTree->Branch("chi_t1sq", &chi_t1sq, "chi_t1sq/F");
+
       }
       
 
@@ -1408,7 +1439,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       //outputTree->Branch("HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p20",        &HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p20,       "HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p20/O");
       //outputTree->Branch("HLT_AK8DiPFJet250_200_TrimMass30_BTagCSV_p20",        &HLT_AK8DiPFJet250_200_TrimMass30_BTagCSV_p20,       "HLT_AK8DiPFJet250_200_TrimMass30_BTagCSV_p20/O");
       outputTree->Branch("HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90",  &HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90,"HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90/O");
-    //  outputTree->Branch("HLT_Diphoton30_18_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90",  &HLT_Diphoton30_18_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90,"HLT_Diphoton30_18_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90/O");
+      outputTree->Branch("HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass95",  &HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass95,"HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass95/O");
     
     }
 
@@ -1874,6 +1905,8 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       pho2_energyErr = -99;
       pho2_energyRaw = -99;
       Dijetsall_Pt = -99;
+      Dijetsall_Eta = -99;
+      Dijetsall_Phi = -99;
       Diphoton_Pt = -99;
       Diphoton_Eta = -99;
       Diphoton_Phi = -99;
@@ -3194,18 +3227,30 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
               b_jet2Phi = b_jet1Phi;
               b_jet2Mass = b_jet1Mass;
               b_jet2PNet = b_jet1PNet;
+              b_jet2PtRes = b_jet1PtRes;
+              b_jet2PtCorr = b_jet1PtCorr; 
+              b_jet2PtCorrNeutrino = b_jet1PtCorrNeutrino;
+
+
 
               b_jet1Pt = Jet_pt[i];
               b_jet1Eta = Jet_eta[i];
               b_jet1Phi = Jet_phi[i];
               b_jet1Mass = Jet_mass[i];
               b_jet1PNet = Jet_btagPNetB[i]; 
+              b_jet1PtRes = Jet_PNetRegPtRawRes[i];
+              b_jet1PtCorr = Jet_PNetRegPtRawCorr[i];
+              b_jet1PtCorrNeutrino = Jet_PNetRegPtRawCorrNeutrino[i];
+
 	    } else if (Jet_btagPNetB[i]>b_jet2PNet) {
 	      b_jet2Pt = Jet_pt[i];
               b_jet2Eta = Jet_eta[i];
               b_jet2Phi = Jet_phi[i];
               b_jet2Mass = Jet_mass[i];
               b_jet2PNet = Jet_btagPNetB[i];
+	      b_jet2PtRes = Jet_PNetRegPtRawRes[i];
+              b_jet2PtCorr = Jet_PNetRegPtRawCorr[i];
+              b_jet2PtCorrNeutrino = Jet_PNetRegPtRawCorrNeutrino[i];
 	    } 
 	  }
 
@@ -3305,44 +3350,53 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
         subleadB_leadLep = deltaR(b_jet2Eta, b_jet2Phi, lep1Eta, lep1Phi);
         subleadB_subleadLep = deltaR(b_jet2Eta, b_jet2Phi, lep2Eta, lep2Phi);
       }
-      if (jet1Pt>0 && jet2Pt>0){
+      if (b_jet1Pt>0 && b_jet2Pt>0){
         Dijetsall_Mass = (b1_jet+b2_jet).M();
         Dijetsall_Pt = (b1_jet+b2_jet).Pt();
+	Dijetsall_Eta = (b1_jet+b2_jet).Eta();
+	Dijetsall_Phi = (b1_jet+b2_jet).Phi();
       }
        
       float jetpt[6];
       float jeteta[6];
       float jetphi[6];
       float jetmass[6];
-      
+      float jetpnet[6];
+
       jetpt[0] = jet1Pt;
       jeteta[0] = jet1Eta;
       jetphi[0] = jet1Phi;
       jetmass[0] = jet1Mass;
+      jetpnet[0] = jet1PNet;
       jetpt[1] = jet2Pt;
       jeteta[1] = jet2Eta;
       jetphi[1] = jet2Phi;
       jetmass[1] = jet2Mass;
+      jetpnet[1] = jet2PNet;
       jetpt[2] = jet3Pt;
       jeteta[2] = jet3Eta;
       jetphi[2] = jet3Phi;
       jetmass[2] = jet3Mass;
+      jetpnet[2] = jet3PNet;
       jetpt[3] = jet4Pt;
       jeteta[3] = jet4Eta;
       jetphi[3] = jet4Phi;
       jetmass[3] = jet4Mass;
+      jetpnet[3] = jet4PNet;
       jetpt[4] = jet5Pt;
       jeteta[4] = jet5Eta;
       jetphi[4] = jet5Phi;
       jetmass[4] = jet5Mass;
+      jetpnet[4] = jet5PNet;
       jetpt[5] = jet6Pt;
       jeteta[5] = jet6Eta;
       jetphi[5] = jet6Phi;
       jetmass[5] = jet6Mass;
+      jetpnet[5] = jet6PNet;
       int index_1=-99;
       int index_2=-99; 
       for (int i=0; i<6; i++){
-          if (b_jet1Pt == jetpt[i] && b_jet1Eta == jeteta[i]){
+          if ((jetpt[i]>0) && (deltaR(b_jet1Eta, b_jet1Phi, jeteta[i], jetphi[i])<0.2)){
 	      index_1 = i;
 	  }
       }
@@ -3350,19 +3404,21 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
           for (int i=index_1; i<6; i++){
               if (i<5){
 	          jetpt[i] = jetpt[i+1];
-                  jeteta[i] = jetpt[i+1];
-                  jetphi[i] = jetpt[i+1];
-                  jetmass[i] = jetpt[i+1];
+                  jeteta[i] = jeteta[i+1];
+                  jetphi[i] = jetphi[i+1];
+                  jetmass[i] = jetmass[i+1];
+		  jetpnet[i] = jetpnet[i+1];
 	      }else{
 	          jetpt[i]=-99;
 		  jeteta[i]=-99;
                   jetphi[i]=-99;
 		  jetmass[i]=-99;
+		  jetpnet[i]=-99;
 	      }
           }
       }
       for (int i=0; i<6; i++){
-          if (b_jet2Pt == jetpt[i] && b_jet2Eta == jeteta[i]){
+          if ((jetpt[i]>0) && (deltaR(b_jet2Eta, b_jet2Phi, jeteta[i], jetphi[i])<0.2)){
               index_2 = i;
           }      
       }
@@ -3370,14 +3426,16 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
           for (int i=index_2; i<6; i++){
               if (i<5){
                   jetpt[i] = jetpt[i+1];
-                  jeteta[i] = jetpt[i+1];
-                  jetphi[i] = jetpt[i+1];
-                  jetmass[i] = jetpt[i+1];
+                  jeteta[i] = jeteta[i+1];
+                  jetphi[i] = jetphi[i+1];
+                  jetmass[i] = jetmass[i+1];
+		  jetpnet[i] = jetpnet[i+1];
               }else{
                   jetpt[i]=-99;
                   jeteta[i]=-99;
                   jetphi[i]=-99;
                   jetmass[i]=-99;
+		  jetpnet[i]=-99;
               }
           }
       }
@@ -3407,7 +3465,8 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       if (Nnb_jets>=2){
           for (int i = 0; i < Nnb_jets; ++i) {
               for (int j = i + 1; j < Nnb_jets; ++j) {
-                  dR = deltaR(jeteta[i], jetphi[i], jeteta[j], jetphi[j]);
+                  if (jetpt[j]<0) continue;
+		  dR = deltaR(jeteta[i], jetphi[i], jeteta[j], jetphi[j]);
                   if (dR < minR_Wjets) {
                       minR_Wjets = dR;
                       minI = i;
@@ -3454,6 +3513,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	      if (i==minI) continue;
               for (int j = i + 1; j < Nnb_jets; ++j) {
                   if (j==minJ) continue;
+		  if (jetpt[j]<0) continue;
                   dR = deltaR(jeteta[i], jetphi[i], jeteta[j], jetphi[j]);
                   if (dR < minR_Wjets) {
                       minR_Wjets = dR;
@@ -3482,9 +3542,40 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	  }
             
           chi_t1sq = chi_t0sq + pow((80.377-W_mass2)/(0.1*80.377), 2)+pow((172.76-top2_Mass)/(0.1* 172.76),2); 
+	  chi_t0sq = -99;
 
       }
-
+      jet1Pt = jetpt[0];
+      jet1Eta = jeteta[0];
+      jet1Phi = jetphi[0];
+      jet1Mass = jetmass[0];
+      jet1PNet = jetpnet[0];
+      jet2Pt = jetpt[1];
+      jet2Eta = jeteta[1];
+      jet2Phi = jetphi[1];
+      jet2Mass = jetmass[1];
+      jet2PNet = jetpnet[1];
+      jet3Pt = jetpt[2];
+      jet3Eta = jeteta[2];
+      jet3Phi = jetphi[2];
+      jet3Mass = jetmass[2];
+      jet3PNet = jetpnet[2];
+      jet4Pt = jetpt[3];
+      jet4Eta = jeteta[3];
+      jet4Phi = jetphi[3];
+      jet4Mass = jetmass[3];
+      jet4PNet = jetpnet[3];
+      jet5Pt = jetpt[4];
+      jet5Eta = jeteta[4];
+      jet5Phi = jetphi[4];
+      jet5Mass = jetmass[4];
+      jet5PNet = jetpnet[4];
+      jet6Pt = jetpt[5];
+      jet6Eta = jeteta[5];
+      jet6Phi = jetphi[5];
+      jet6Mass = jetmass[5];
+      jet6PNet = jetpnet[5];
+      
       float R_j1g1 = 1.0;
       float R_j1g2 = 1.0;
       float R_j2g1 = 1.0;
