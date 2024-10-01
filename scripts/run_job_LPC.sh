@@ -74,7 +74,6 @@ cp Summer22_22Sep2023_RunCD_V2_DATA_L1FastJet_AK4PFchs.txt $cmsswReleaseVersion/
 #get cmssw environment
 ###########################
 cd $cmsswReleaseVersion/src/
-eval `scram runtime -sh`
 tar vxzf input_list.tgz
 #tar vxzf code.tgz
 #make clean
@@ -93,12 +92,23 @@ xrdcp $i ./inputs/
 done
 ls inputs/* > tmp_input_list.txt 
 
+pwd
+###########################
+#get cmssw environment
+###########################
+cd /uscms_data/d2/sxie/releases/run3/HH/CMSSW_14_0_7/
+eval `scram runtime -sh`
+cd -
+
+
 ###########################
 #run executable
 ###########################
+pwd
 echo "Executing Analysis executable:"
-echo "./${executable} tmp_input_list.txt --outputFile=${outputfile}_${filenumber}_Part${jobIndex}Of${nJobsPerFile}.root --optionNumber=${option} --isData=${isData} --numberOfJobs=${nJobsPerFile} --jobIndex=${jobIndex}"
+echo "./${executable} tmp_input_list.txt --outputFile=${outputfile}_${filenumber}_Part${jobIndex}Of${nJobsPerFile}.root --optionNumber=${option} --isData=${isData} --year=${year} --pileupWeightName=${sampleName} --numberOfJobs=${nJobsPerFile} --jobIndex=${jobIndex}"
 ./${executable} tmp_input_list.txt --outputFile=${outputfile}_${filenumber}_Part${jobIndex}Of${nJobsPerFile}.root --optionNumber=${option} --isData=${isData} --year=${year} --pileupWeightName=${sampleName} --numberOfJobs=${nJobsPerFile} --jobIndex=${jobIndex}
+pwd
 
 ls -l
 ##########################################################
