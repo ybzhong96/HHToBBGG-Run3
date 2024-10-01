@@ -32,7 +32,7 @@ jobIndex=$((($jobnumber-1)%$nJobsPerFile))
 workDir=`pwd`
 executable=Run${analysisType}
 source /cvmfs/cms.cern.ch/cmsset_default.sh
-export SCRAM_ARCH=el8_amd64_gcc12
+export SCRAM_ARCH=el9_amd64_gcc12
 #export SCRAM_ARCH=el8_aarch64_gcc11
 #tar -zxvf cms_setup.tar.gz
 scramv1 project CMSSW $cmsswReleaseVersion
@@ -67,6 +67,8 @@ mkdir -p $cmsswReleaseVersion/src/HHToBBGG-Run3/data/JEC/Fall17_17Nov2017_V32_MC
 cp Fall17_17Nov2017_V32_MC_Uncertainty_AK8PFPuppi.txt $cmsswReleaseVersion/src/HHToBBGG-Run3/data/JEC/Fall17_17Nov2017_V32_MC/
 mkdir -p $cmsswReleaseVersion/src/HHToBBGG-Run3/data/JEC/Autumn18_V19_MC/
 cp Autumn18_V19_MC_Uncertainty_AK8PFPuppi.txt $cmsswReleaseVersion/src/HHToBBGG-Run3/data/JEC/Autumn18_V19_MC/
+mkdir -p $cmsswReleaseVersion/src/HHToBBGG-Run3/data/JEC/Summer22_22Sep2023_RunCD_V2_DATA/
+cp Summer22_22Sep2023_RunCD_V2_DATA_L1FastJet_AK4PFchs.txt $cmsswReleaseVersion/src/HHToBBGG-Run3/data/JEC/Summer22_22Sep2023_RunCD_V2_DATA/
 
 ###########################
 #get cmssw environment
