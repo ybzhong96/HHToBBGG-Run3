@@ -44,20 +44,10 @@ scramv1 project CMSSW $cmsswReleaseVersion
 cp $executable $cmsswReleaseVersion/src/
 cp input_list.tgz $cmsswReleaseVersion/src/
 mkdir -p $cmsswReleaseVersion/src/HHToBBGG-Run3/data/PileupWeights/
-#cp HHBoostedAnalyzer/data/JetHTTriggerEfficiency_2016.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
-cp JetHTTriggerEfficiency_2016.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
-#cp HHBoostedAnalyzer/data/JetHTTriggerEfficiency_2017.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
-cp JetHTTriggerEfficiency_2017.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
-#cp HHBoostedAnalyzer/data/JetHTTriggerEfficiency_2018.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
-cp JetHTTriggerEfficiency_2018.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
-#cp HHBoostedAnalyzer/data/JetHTTriggerEfficiency_Summer16.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
-cp JetHTTriggerEfficiency_Summer16.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
-#cp HHBoostedAnalyzer/data/JetHTTriggerEfficiency_Fall17.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
-cp JetHTTriggerEfficiency_Fall17.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
-#cp HHBoostedAnalyzer/data/JetHTTriggerEfficiency_Fall18.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
-cp JetHTTriggerEfficiency_Fall18.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
-#cp HHBoostedAnalyzer/data/PileupWeights/PileupWeights.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/PileupWeights/
-cp PileupWeights.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/PileupWeights/
+xrdcp root://cmsxrootd.fnal.gov//store/user/lpcdihiggsboost/sixie/analyzer/HHTo4BNtupler/ArmenVersion/inputs/data/PileupReweight_Summer22.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/PileupWeights/
+xrdcp root://cmsxrootd.fnal.gov//store/user/lpcdihiggsboost/sixie/analyzer/HHTo4BNtupler/ArmenVersion/inputs/data/PileupReweight_Summer22EE.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/PileupWeights/
+xrdcp root://cmsxrootd.fnal.gov//store/user/lpcdihiggsboost/sixie/analyzer/HHTo4BNtupler/ArmenVersion/inputs/data/PileupReweight_Summer23.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/PileupWeights/
+xrdcp root://cmsxrootd.fnal.gov//store/user/lpcdihiggsboost/sixie/analyzer/HHTo4BNtupler/ArmenVersion/inputs/data/PileupReweight_Summer23BPix.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/PileupWeights/
 
 cp Run3_2022_2023_Golden.json $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
 

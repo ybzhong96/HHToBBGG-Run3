@@ -317,15 +317,15 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
  
       string pileupWeightFilename = "";
       if (year == "2022") {
-	pileupWeightFilename = CMSSWDir + "/src/HHBoostedAnalyzer/data/PileupWeights/PileupReweight_Summer22.root";
+	pileupWeightFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/PileupWeights/PileupReweight_Summer22.root";
       } else if (year == "2022EE") {
-	pileupWeightFilename = CMSSWDir + "/src/HHBoostedAnalyzer/data/PileupWeights/PileupReweight_Summer22EE.root";
+	pileupWeightFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/PileupWeights/PileupReweight_Summer22EE.root";
       } else if (year == "2023") {
-	pileupWeightFilename = CMSSWDir + "/src/HHBoostedAnalyzer/data/PileupWeights/PileupReweight_Summer23.root";
+	pileupWeightFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/PileupWeights/PileupReweight_Summer23.root";
       } else if (year == "2023BPix") {
-	pileupWeightFilename = CMSSWDir + "/src/HHBoostedAnalyzer/data/PileupWeights/PileupReweight_Summer23BPix.root";
+	pileupWeightFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/PileupWeights/PileupReweight_Summer23BPix.root";
       } else if (year == "2024") {
-	pileupWeightFilename = CMSSWDir + "/src/HHBoostedAnalyzer/data/PileupWeights/PileupReweight_Summer23.root";
+	pileupWeightFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/PileupWeights/PileupReweight_Summer23.root";
       }
       	  
       TFile *pileupWeightFile = new TFile(pileupWeightFilename.c_str(),"READ");
