@@ -3067,7 +3067,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	double jetCorrPt = Jet_pt[i]*JEC;
 	//use jetCorrPt from here on
 
-	cout << "Jet " << i << " | " << Jet_pt[i] << " " << JEC << " " << jetCorrPt << " : " << Jet_eta[i] << " " << Jet_phi[i] << "\n";
+	//cout << "Jet " << i << " | " << Jet_pt[i] << " " << JEC << " " << jetCorrPt << " : " << Jet_eta[i] << " " << Jet_phi[i] << "\n";
 
 	
 	
