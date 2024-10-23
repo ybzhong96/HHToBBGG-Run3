@@ -315,7 +315,19 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       if (triggerEffMCHist_Xbb0p95To0p98) cout << "Found triggerEffMCHist_Xbb0p95To0p98 in file " << triggerEffMCFilename << "\n";
       if (triggerEffMCHist_Xbb0p98To1p0) cout << "Found triggerEffMCHist_Xbb0p98To1p0 in file " << triggerEffMCFilename << "\n";
  
-      string pileupWeightFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/PileupWeights/PileupWeights.root";
+      string pileupWeightFilename = "";
+      if (year == "2022") {
+	pileupWeightFilename = CMSSWDir + "/src/HHBoostedAnalyzer/data/PileupWeights/PileupReweight_Summer22.root";
+      } else if (year == "2022EE") {
+	pileupWeightFilename = CMSSWDir + "/src/HHBoostedAnalyzer/data/PileupWeights/PileupReweight_Summer22EE.root";
+      } else if (year == "2023") {
+	pileupWeightFilename = CMSSWDir + "/src/HHBoostedAnalyzer/data/PileupWeights/PileupReweight_Summer23.root";
+      } else if (year == "2023BPix") {
+	pileupWeightFilename = CMSSWDir + "/src/HHBoostedAnalyzer/data/PileupWeights/PileupReweight_Summer23BPix.root";
+      } else if (year == "2024") {
+	pileupWeightFilename = CMSSWDir + "/src/HHBoostedAnalyzer/data/PileupWeights/PileupReweight_Summer23.root";
+      }
+      	  
       TFile *pileupWeightFile = new TFile(pileupWeightFilename.c_str(),"READ");
       if (!pileupWeightFile) {
 	cout << "Warning : pileupWeightFile " << pileupWeightFile << " could not be opened.\n";  
@@ -324,9 +336,12 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       }
       string pileupWeightHistname = "PUWeight_" + pileupWeightName + "_" + year;
       if (pileupWeightFile) {
-	pileupWeightHist = (TH1F*)pileupWeightFile->Get(pileupWeightHistname.c_str());
-	pileupWeightUpHist = (TH1F*)pileupWeightFile->Get((pileupWeightHistname+"_SysUp").c_str());
-	pileupWeightDownHist = (TH1F*)pileupWeightFile->Get((pileupWeightHistname+"_SysDown").c_str());
+	pileupWeightHist = (TH1F*)(pileupWeightFile->Get("npu_nominal"));
+	pileupWeightHist->SetDirectory(0);
+	pileupWeightUpHist = (TH1F*)(pileupWeightFile->Get("npu_up"));
+	pileupWeightUpHist->SetDirectory(0);
+	pileupWeightDownHist = (TH1F*)(pileupWeightFile->Get("npu_down"));
+	pileupWeightDownHist->SetDirectory(0);
       } 
       if (pileupWeightHist) {
 	cout << "Found pileupWeightHist " << pileupWeightHistname << "in file " << pileupWeightFilename << "\n";
@@ -349,7 +364,8 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	     << pileupWeightHistname +"_SysDown"
 	     << " in file " << pileupWeightFilename << "\n";
       }
-    
+      pileupWeightFile->Close();
+      pileupWeightHist->Print();   
     }
 
     //----------------------------------------
