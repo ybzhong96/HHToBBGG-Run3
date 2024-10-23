@@ -29,67 +29,100 @@ filesPerJob = 1
 
 datasetList = OrderedDict()
 
+########################################################
 #2022 ntuples
-#datasetList["nano/run3/2022/EGamma_2022A.list"] = [1, 1, "2022", "", 1]
-#datasetList["nano/run3/2022/EGamma_2022B.list"] = [1, 1, "2022", "", 1]
-#datasetList["nano/run3/2022/EGamma_2022C.list"] = [1, 1, "2022", "", 1]
-#datasetList["nano/run3/2022/EGamma_2022D.list"] = [1, 1, "2022", "", 1]
+########################################################
+datasetList["nano/run3/2022/EGamma_2022C.list"] = [1, 1, "2022", "", 1]
+datasetList["nano/run3/2022/EGamma_2022D.list"] = [1, 1, "2022", "", 1]
 
-datasetList["nano/run3/2022/Run2022B-22Sep2023-v2.list"] = [1, 1, "2022", "", 1]
-datasetList["nano/run3/2022/Run2022C-22Sep2023-v1.list"] = [1, 1, "2022", "", 1]
-datasetList["nano/run3/2022/Run2022D-22Sep2023-v1.list"] = [1, 1, "2022", "", 1]
 
-datasetList["nano/run3/2022/Run2022E-22Sep2023-v1.list"] = [1, 1, "2022", "", 1]
-datasetList["nano/run3/2022/Run2022F-22Sep2023-v1.list"] = [1, 1, "2022", "", 1]
-datasetList["nano/run3/2022/Run2022G-22Sep2023-v2.list"] = [1, 1, "2022", "", 1]
+# datasetList["nano/run3/2022/Run2022B-22Sep2023-v2.list"] = [1, 1, "2022", "", 1]
+# datasetList["nano/run3/2022/Run2022C-22Sep2023-v1.list"] = [1, 1, "2022", "", 1]
+# datasetList["nano/run3/2022/Run2022D-22Sep2023-v1.list"] = [1, 1, "2022", "", 1]
 
-#datasetList['nano/run3/2022/JetMET_2022C.list'] = [1, 1, "2022", "", 1]
-#datasetList['nano/run3/2022/JetMET_2022D.list'] = [1, 1, "2022", "", 1]
-#datasetList['nano/run3/2022/JetMET_2022D-v2.list'] = [1, 1, "2022", "", 10]
-#datasetList['nano/run3/2022/JetMET_2022E.list'] = [1, 1, "2022", "", 1]
-#datasetList['nano/run3/2022/JetMET_2022F.list'] = [1, 1, "2022", "", 1]
-#datasetList['nano/run3/2022/JetMET_2022G.list'] = [1, 1, "2022", "", 1]
+# datasetList["nano/run3/2022/Run2022E-22Sep2023-v1.list"] = [1, 1, "2022", "", 1]
+# datasetList["nano/run3/2022/Run2022F-22Sep2023-v1.list"] = [1, 1, "2022", "", 1]
+# datasetList["nano/run3/2022/Run2022G-22Sep2023-v2.list"] = [1, 1, "2022", "", 1]
 
-datasetList['nano/run3/2022/ggHHTo2B2G_cHHH_1_PrivProd.list'] = [2, 1, "2022", "", 1]
-datasetList['nano/run3/2022/GG-Box-3Jets_MGG-0to40_13p6TeV_sherpa_2022.list'] = [2, 1, "2022", "", 1]
-datasetList['nano/run3/2022/GG-Box-3Jets_MGG-40to80_13p6TeV_sherpa_2022.list'] = [2, 1, "2022", "", 1]
-datasetList['nano/run3/2022/GG-Box-3Jets_MGG-80_13p6TeV_sherpa_2022.list'] = [2, 1, "2022", "", 1]
-datasetList['nano/run3/2022/GG-Box-3Jets_MGG-0to40_13p6TeV_sherpa_2022EE.list'] = [2, 1, "2022", "", 1]
-datasetList['nano/run3/2022/GG-Box-3Jets_MGG-40to80_13p6TeV_sherpa_2022EE.list'] = [2, 1, "2022", "", 1]
-datasetList['nano/run3/2022/GG-Box-3Jets_MGG-80_13p6TeV_sherpa_2022EE.list'] = [2, 1, "2022", "", 1]
-datasetList['nano/run3/2022/GJet_PT-10to40_DoubleEMEnriched_TuneCP5_13p6TeV_pythia8_2022.list']=[2,1,"2022","",1]
-datasetList['nano/run3/2022/GJet_PT-10to40_DoubleEMEnriched_TuneCP5_13p6TeV_pythia8_2022EE.list']=[2,1,"2022","",1]
-datasetList['nano/run3/2022/GJet_PT-40_DoubleEMEnriched_TuneCP5_13p6TeV_pythia8_2022.list']=[2,1,"2022","",1]
-datasetList['nano/run3/2022/GJet_PT-40_DoubleEMEnriched_TuneCP5_13p6TeV_pythia8_2022EE.list']=[2,1,"2022","",1]
-datasetList['nano/run3/2022/GJet_PT-20to40_DoubleEMEnriched_MGG-80_TuneCP5_13p6TeV_pythia8_2022.list']=[2,1,"2022","",1]
-datasetList['nano/run3/2022/GJet_PT-20to40_DoubleEMEnriched_MGG-80_TuneCP5_13p6TeV_pythia8_2022EE.list']=[2,1,"2022","",1]
-datasetList['nano/run3/2022/GJet_PT-40_DoubleEMEnriched_MGG-80_TuneCP5_13p6TeV_pythia8_2022.list']=[2,1,"2022","",1]
-datasetList['nano/run3/2022/GJet_PT-40_DoubleEMEnriched_MGG-80_TuneCP5_13p6TeV_pythia8_2022EE.list']=[2,1,"2022","",1]
+# datasetList['nano/run3/2022/ggHHTo2B2G_cHHH_1_PrivProd.list'] = [2, 1, "2022", "", 1]
+# datasetList['nano/run3/2022/GG-Box-3Jets_MGG-0to40_13p6TeV_sherpa_2022.list'] = [2, 1, "2022", "", 1]
+# datasetList['nano/run3/2022/GG-Box-3Jets_MGG-40to80_13p6TeV_sherpa_2022.list'] = [2, 1, "2022", "", 1]
+# datasetList['nano/run3/2022/GG-Box-3Jets_MGG-80_13p6TeV_sherpa_2022.list'] = [2, 1, "2022", "", 1]
+# datasetList['nano/run3/2022/GJet_PT-10to40_DoubleEMEnriched_TuneCP5_13p6TeV_pythia8_2022.list']=[2,1,"2022","",1]
+# datasetList['nano/run3/2022/GJet_PT-40_DoubleEMEnriched_TuneCP5_13p6TeV_pythia8_2022.list']=[2,1,"2022","",1]
+# datasetList['nano/run3/2022/GJet_PT-20to40_DoubleEMEnriched_MGG-80_TuneCP5_13p6TeV_pythia8_2022.list']=[2,1,"2022","",1]
+# datasetList['nano/run3/2022/GJet_PT-40_DoubleEMEnriched_MGG-80_TuneCP5_13p6TeV_pythia8_2022.list']=[2,1,"2022","",1]
 
-datasetList['nano/run3/2022/GluGluHtoGG_M-120_TuneCP5_13p6TeV_amcatnloFXFX-pythia8_2022EE.list']=[2,1,"2022","",1]
-datasetList['nano/run3/2022/GluGluHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-pythia8_2022EE.list']=[2,1,"2022","",1]
-datasetList['nano/run3/2022/GluGluHtoGG_M-130_TuneCP5_13p6TeV_amcatnloFXFX-pythia8_2022EE.list']=[2,1,"2022","",1]
-datasetList['nano/run3/2022/VBFHtoGG_M-120_TuneCP5_13p6TeV_amcatnlo-pythia8_2022EE.list']=[2,1,"2022","",1]
-datasetList['nano/run3/2022/VBFHtoGG_M-125_TuneCP5_13p6TeV_amcatnlo-pythia8_2022EE.list']=[2,1,"2022","",1]
-datasetList['nano/run3/2022/VBFHtoGG_M-130_TuneCP5_13p6TeV_amcatnlo-pythia8_2022EE.list']=[2,1,"2022","",1]
-datasetList['nano/run3/2022/VHtoGG_M-120_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE.list']=[2,1,"2022","",1]
-datasetList['nano/run3/2022/VHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE.list']=[2,1,"2022","",1]
-datasetList['nano/run3/2022/VHtoGG_M-130_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE.list']=[2,1,"2022","",1]
-datasetList['nano/run3/2022/ttHtoGG_M-120_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE.list']=[2,1,"2022","",1]
-datasetList['nano/run3/2022/ttHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE.list']=[2,1,"2022","",1]
-datasetList['nano/run3/2022/ttHtoGG_M-130_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE.list']=[2,1,"2022","",1]
-datasetList['nano/run3/2022/GluGlutoHHto2B2G_kl-1p00_kt-1p00_c2-0p00_TuneCP5_13p6TeV_powheg-pythia8_2022EE.list']=[2,1,"2022","",1]
-#datasetList['nano/run3/2022/QCDPt80to120_postEE.list']=[2,1,"2022","",1]
-#datasetList['nano/run3/2022/QCDPt120to170_postEE.list']=[2,1,"2022","",1]
-#datasetList['nano/run3/2022/QCDPt170to300_postEE.list']=[2,1,"2022","",1]
-#datasetList['nano/run3/2022/QCDPt300to470_postEE.list']=[2,1,"2022","",1]
-#datasetList['nano/run3/2022/QCDPt470to600_postEE.list']=[2,1,"2022","",1]
-#datasetList['nano/run3/2022/QCDPt600to800_postEE.list']=[2,1,"2022","",1]
-#datasetList['nano/run3/2022/QCDPt800to1000_postEE.list']=[2,1,"2022","",1]
-#datasetList['nano/run3/2022/QCDPt1000to1400_postEE.list']=[2,1,"2022","",1]
-#datasetList['nano/run3/2022/QCDPt1400to1800_postEE.list']=[2,1,"2022","",1]
-#datasetList['nano/run3/2022/QCDPt1800to2400_postEE.list']=[2,1,"2022","",1]
-#datasetList['nano/run3/2022/QCDPt2400to3200_postEE.list']=[2,1,"2022","",1]
+########################################################
+#2022 ntuples
+########################################################
+datasetList["nano/run3/2022/EGamma_2022E.list"] = [1, 1, "2022EE", "", 1]
+datasetList["nano/run3/2022/EGamma_2022F.list"] = [1, 1, "2022EE", "", 1]
+datasetList["nano/run3/2022/EGamma_2022G.list"] = [1, 1, "2022EE", "", 1]
+
+# datasetList['nano/run3/2022/GG-Box-3Jets_MGG-0to40_13p6TeV_sherpa_2022EE.list'] = [2, 1, "2022", "", 1]
+# datasetList['nano/run3/2022/GG-Box-3Jets_MGG-40to80_13p6TeV_sherpa_2022EE.list'] = [2, 1, "2022", "", 1]
+# datasetList['nano/run3/2022/GG-Box-3Jets_MGG-80_13p6TeV_sherpa_2022EE.list'] = [2, 1, "2022", "", 1]
+# datasetList['nano/run3/2022/GJet_PT-10to40_DoubleEMEnriched_TuneCP5_13p6TeV_pythia8_2022EE.list']=[2,1,"2022","",1]
+# datasetList['nano/run3/2022/GJet_PT-40_DoubleEMEnriched_TuneCP5_13p6TeV_pythia8_2022EE.list']=[2,1,"2022","",1]
+# datasetList['nano/run3/2022/GJet_PT-20to40_DoubleEMEnriched_MGG-80_TuneCP5_13p6TeV_pythia8_2022EE.list']=[2,1,"2022","",1]
+# datasetList['nano/run3/2022/GJet_PT-40_DoubleEMEnriched_MGG-80_TuneCP5_13p6TeV_pythia8_2022EE.list']=[2,1,"2022","",1]
+
+# datasetList['nano/run3/2022/GluGluHtoGG_M-120_TuneCP5_13p6TeV_amcatnloFXFX-pythia8_2022EE.list']=[2,1,"2022","",1]
+# datasetList['nano/run3/2022/GluGluHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-pythia8_2022EE.list']=[2,1,"2022","",1]
+# datasetList['nano/run3/2022/GluGluHtoGG_M-130_TuneCP5_13p6TeV_amcatnloFXFX-pythia8_2022EE.list']=[2,1,"2022","",1]
+# datasetList['nano/run3/2022/VBFHtoGG_M-120_TuneCP5_13p6TeV_amcatnlo-pythia8_2022EE.list']=[2,1,"2022","",1]
+# datasetList['nano/run3/2022/VBFHtoGG_M-125_TuneCP5_13p6TeV_amcatnlo-pythia8_2022EE.list']=[2,1,"2022","",1]
+# datasetList['nano/run3/2022/VBFHtoGG_M-130_TuneCP5_13p6TeV_amcatnlo-pythia8_2022EE.list']=[2,1,"2022","",1]
+# datasetList['nano/run3/2022/VHtoGG_M-120_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE.list']=[2,1,"2022","",1]
+# datasetList['nano/run3/2022/VHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE.list']=[2,1,"2022","",1]
+# datasetList['nano/run3/2022/VHtoGG_M-130_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE.list']=[2,1,"2022","",1]
+# datasetList['nano/run3/2022/ttHtoGG_M-120_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE.list']=[2,1,"2022","",1]
+# datasetList['nano/run3/2022/ttHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE.list']=[2,1,"2022","",1]
+# datasetList['nano/run3/2022/ttHtoGG_M-130_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8_2022EE.list']=[2,1,"2022","",1]
+# datasetList['nano/run3/2022/GluGlutoHHto2B2G_kl-1p00_kt-1p00_c2-0p00_TuneCP5_13p6TeV_powheg-pythia8_2022EE.list']=[2,1,"2022","",1]
+# #datasetList['nano/run3/2022/QCDPt80to120_postEE.list']=[2,1,"2022","",1]
+# #datasetList['nano/run3/2022/QCDPt120to170_postEE.list']=[2,1,"2022","",1]
+# #datasetList['nano/run3/2022/QCDPt170to300_postEE.list']=[2,1,"2022","",1]
+# #datasetList['nano/run3/2022/QCDPt300to470_postEE.list']=[2,1,"2022","",1]
+# #datasetList['nano/run3/2022/QCDPt470to600_postEE.list']=[2,1,"2022","",1]
+# #datasetList['nano/run3/2022/QCDPt600to800_postEE.list']=[2,1,"2022","",1]
+# #datasetList['nano/run3/2022/QCDPt800to1000_postEE.list']=[2,1,"2022","",1]
+# #datasetList['nano/run3/2022/QCDPt1000to1400_postEE.list']=[2,1,"2022","",1]
+# #datasetList['nano/run3/2022/QCDPt1400to1800_postEE.list']=[2,1,"2022","",1]
+# #datasetList['nano/run3/2022/QCDPt1800to2400_postEE.list']=[2,1,"2022","",1]
+# #datasetList['nano/run3/2022/QCDPt2400to3200_postEE.list']=[2,1,"2022","",1]
+
+########################################################
+#2023 ntuples
+########################################################
+datasetList['nano/run3/2023/EGamma_2023C_v1.list'] = [1, 1, "2023", "", 1]
+datasetList['nano/run3/2023/EGamma_2023C_v2.list'] = [1, 1, "2023", "", 1]
+datasetList['nano/run3/2023/EGamma_2023C_v3.list'] = [1, 1, "2023", "", 1]
+datasetList['nano/run3/2023/EGamma_2023C_v4.list'] = [1, 1, "2023", "", 1]
+
+
+
+########################################################
+#2023BPix ntuples
+########################################################
+datasetList['nano/run3/2023/EGamma_2023D_v1.list'] = [1, 1, "2023BPix", "", 1]
+datasetList['nano/run3/2023/EGamma_2023D_v2.list'] = [1, 1, "2023BPix", "", 1]
+
+
+########################################################
+#2024 ntuples
+########################################################
+datasetList['nano/run3/2024/EGamma_2024B.list'] = [1, 1, "2024", "", 1]
+datasetList['nano/run3/2024/EGamma_2024C.list'] = [1, 1, "2024", "", 1]
+datasetList['nano/run3/2024/EGamma_2024D.list'] = [1, 1, "2024", "", 1]
+datasetList['nano/run3/2024/EGamma_2024E-v1.list'] = [1, 1, "2024", "", 1]
+datasetList['nano/run3/2024/EGamma_2024E-v2.list'] = [1, 1, "2024", "", 1]
+datasetList['nano/run3/2024/EGamma_2024F.list'] = [1, 1, "2024", "", 1]
+datasetList['nano/run3/2024/EGamma_2024G.list'] = [1, 1, "2024", "", 1]
+datasetList['nano/run3/2024/EGamma_2024H.list'] = [1, 1, "2024", "", 1]
+
+
 
 CMSSW_BASE_DIR = os.getenv('CMSSW_BASE')
 Analyzer_DIR = CMSSW_BASE_DIR+"/src/HHToBBGG-Run3/"

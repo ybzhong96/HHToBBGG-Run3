@@ -1386,58 +1386,39 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       
 
     if (Option != 100) {
-      //outputTree->Branch("HLT_Ele27_WPTight_Gsf", &HLT_Ele27_WPTight_Gsf, "HLT_Ele27_WPTight_Gsf/O");
-      //outputTree->Branch("HLT_Ele28_WPTight_Gsf", &HLT_Ele28_WPTight_Gsf, "HLT_Ele28_WPTight_Gsf/O");
-      //outputTree->Branch("HLT_Ele30_WPTight_Gsf", &HLT_Ele30_WPTight_Gsf, "HLT_Ele30_WPTight_Gsf/O");
-      //outputTree->Branch("HLT_Ele32_WPTight_Gsf", &HLT_Ele32_WPTight_Gsf, "HLT_Ele32_WPTight_Gsf/O");
-      //outputTree->Branch("HLT_Ele35_WPTight_Gsf", &HLT_Ele35_WPTight_Gsf, "HLT_Ele35_WPTight_Gsf/O");
-      //outputTree->Branch("HLT_Ele38_WPTight_Gsf", &HLT_Ele38_WPTight_Gsf, "HLT_Ele38_WPTight_Gsf/O");
-      //outputTree->Branch("HLT_Ele40_WPTight_Gsf", &HLT_Ele40_WPTight_Gsf, "HLT_Ele40_WPTight_Gsf/O");
-      //outputTree->Branch("HLT_IsoMu20", &HLT_IsoMu20, "HLT_IsoMu20/O");
-      //outputTree->Branch("HLT_IsoMu24", &HLT_IsoMu24, "HLT_IsoMu24/O");
-      //outputTree->Branch("HLT_IsoMu24_eta2p1", &HLT_IsoMu24_eta2p1, "HLT_IsoMu24_eta2p1/O");
-      //outputTree->Branch("HLT_IsoMu27", &HLT_IsoMu27, "HLT_IsoMu27/O");
-      //outputTree->Branch("HLT_IsoMu30", &HLT_IsoMu30, "HLT_IsoMu30/O");
-      //outputTree->Branch("HLT_Mu50", &HLT_Mu50, "HLT_Mu50/O");
-      //outputTree->Branch("HLT_Mu55", &HLT_Mu55, "HLT_Mu55/O");
-      //outputTree->Branch("HLT_Photon175",                                      &HLT_Photon175,                         "HLT_Photon175/O");
-      //outputTree->Branch("HLT_PFHT780",                                        &HLT_PFHT780,                                       "HLT_PFHT780/O");
-      //outputTree->Branch("HLT_PFHT890",                                        &HLT_PFHT890,                                       "HLT_PFHT890/O");
-      //outputTree->Branch("HLT_PFHT1050",                                        &HLT_PFHT1050,                                       "HLT_PFHT1050/O");
-      //outputTree->Branch("HLT_AK8PFJet360_TrimMass30",                          &HLT_AK8PFJet360_TrimMass30,                         "HLT_AK8PFJet360_TrimMass30/O");
-      //outputTree->Branch("HLT_AK8PFJet380_TrimMass30",                          &HLT_AK8PFJet380_TrimMass30,                         "HLT_AK8PFJet380_TrimMass30/O");
-      //outputTree->Branch("HLT_AK8PFJet400_TrimMass30",                          &HLT_AK8PFJet400_TrimMass30,                         "HLT_AK8PFJet400_TrimMass30/O");
-      //outputTree->Branch("HLT_AK8PFJet420_TrimMass30",                          &HLT_AK8PFJet420_TrimMass30,                         "HLT_AK8PFJet420_TrimMass30/O");
-      //outputTree->Branch("HLT_AK8PFHT750_TrimMass50",                           &HLT_AK8PFHT750_TrimMass50,                          "HLT_AK8PFHT750_TrimMass50/O");
-      //outputTree->Branch("HLT_AK8PFHT800_TrimMass50",                           &HLT_AK8PFHT800_TrimMass50,                          "HLT_AK8PFHT800_TrimMass50/O");
-      //outputTree->Branch("HLT_AK8PFHT850_TrimMass50",                           &HLT_AK8PFHT850_TrimMass50,                          "HLT_AK8PFHT850_TrimMass50/O");
-      //outputTree->Branch("HLT_AK8PFHT900_TrimMass50",                           &HLT_AK8PFHT900_TrimMass50,                          "HLT_AK8PFHT900_TrimMass50/O");
-      
-      
-      //outputTree->Branch("HLT_AK8PFHT700_TrimR0p1PT0p03Mass50",                 &HLT_AK8PFHT700_TrimR0p1PT0p03Mass50,                "HLT_AK8PFHT700_TrimR0p1PT0p03Mass50/O");
-      // outputTree->Branch("HLT_PFHT650_WideJetMJJ950DEtaJJ1p5",                  &HLT_PFHT650_WideJetMJJ950DEtaJJ1p5,                 "HLT_PFHT650_WideJetMJJ950DEtaJJ1p5/O");
-      // outputTree->Branch("HLT_PFHT650_WideJetMJJ900DEtaJJ1p5",                  &HLT_PFHT650_WideJetMJJ900DEtaJJ1p5,                  "HLT_PFHT650_WideJetMJJ900DEtaJJ1p5/O");
-      
-
-      //outputTree->Branch("HLT_PFJet450",                                        &HLT_PFJet450,                                       "HLT_PFJet450/O");
-      //outputTree->Branch("HLT_PFJet500",                                        &HLT_PFJet500,                                       "HLT_PFJet500/O");
-      //outputTree->Branch("HLT_PFJet550",                                        &HLT_PFJet550,                                       "HLT_PFJet550/O");
-      //outputTree->Branch("HLT_AK8PFJet400",                                     &HLT_AK8PFJet400,                                    "HLT_AK8PFJet400/O");
-      //outputTree->Branch("HLT_AK8PFJet450",                                     &HLT_AK8PFJet450,                                    "HLT_AK8PFJet450/O");
-      //outputTree->Branch("HLT_AK8PFJet500",                                     &HLT_AK8PFJet500,                                    "HLT_AK8PFJet500/O");
-      //outputTree->Branch("HLT_AK8PFJet550",                                     &HLT_AK8PFJet550,                                    "HLT_AK8PFJet550/O");
-      //outputTree->Branch("HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p17",     &HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p17,    "HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p17/O");
-      //outputTree->Branch("HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p1",      &HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p1,     "HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p1/O");
-      //outputTree->Branch("HLT_AK8PFJet330_PFAK8BTagCSV_p17",                    &HLT_AK8PFJet330_PFAK8BTagCSV_p17,                   "HLT_AK8PFJet330_PFAK8BTagCSV_p17/O");
-      //outputTree->Branch("HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_p02",  &HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_p02, "HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_p02/O");
-      //outputTree->Branch("HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np2",  &HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np2, "HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np2/O");
-      //outputTree->Branch("HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np4",  &HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np4, "HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np4/O"); 
-      //outputTree->Branch("HLT_AK8DiPFJet300_200_TrimMass30_BTagCSV_p20",        &HLT_AK8DiPFJet300_200_TrimMass30_BTagCSV_p20,       "HLT_AK8DiPFJet300_200_TrimMass30_BTagCSV_p20/O");
-      //outputTree->Branch("HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p087",       &HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p087,      "HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p087/O");
-      //outputTree->Branch("HLT_AK8DiPFJet300_200_TrimMass30_BTagCSV_p087",       &HLT_AK8DiPFJet300_200_TrimMass30_BTagCSV_p087,      "HLT_AK8DiPFJet300_200_TrimMass30_BTagCSV_p087/O");
-      //outputTree->Branch("HLT_AK8PFHT600_TrimR0p1PT0p03Mass50_BTagCSV_p20",     &HLT_AK8PFHT600_TrimR0p1PT0p03Mass50_BTagCSV_p20,    "HLT_AK8PFHT600_TrimR0p1PT0p03Mass50_BTagCSV_p20/O");
-      //outputTree->Branch("HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p20",        &HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p20,       "HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p20/O");
-      //outputTree->Branch("HLT_AK8DiPFJet250_200_TrimMass30_BTagCSV_p20",        &HLT_AK8DiPFJet250_200_TrimMass30_BTagCSV_p20,       "HLT_AK8DiPFJet250_200_TrimMass30_BTagCSV_p20/O");
+ 
+      outputTree->Branch("HLT_AK8PFJet380_SoftDropMass30",  &HLT_AK8PFJet380_SoftDropMass30,"HLT_AK8PFJet380_SoftDropMass30/O");
+      outputTree->Branch("HLT_AK8PFJet400_SoftDropMass30",  &HLT_AK8PFJet400_SoftDropMass30,"HLT_AK8PFJet400_SoftDropMass30/O");
+      outputTree->Branch("HLT_AK8PFJet425_SoftDropMass30",  &HLT_AK8PFJet425_SoftDropMass30,"HLT_AK8PFJet425_SoftDropMass30/O");
+      outputTree->Branch("HLT_AK8PFJet450_SoftDropMass30",  &HLT_AK8PFJet450_SoftDropMass30,"HLT_AK8PFJet450_SoftDropMass30/O");
+      outputTree->Branch("HLT_AK8DiPFJet250_250_SoftDropMass40",  &HLT_AK8DiPFJet250_250_SoftDropMass40,"HLT_AK8DiPFJet250_250_SoftDropMass40/O");
+      outputTree->Branch("HLT_AK8DiPFJet250_250_SoftDropMass50",  &HLT_AK8DiPFJet250_250_SoftDropMass50,"HLT_AK8DiPFJet250_250_SoftDropMass50/O");
+      outputTree->Branch("HLT_AK8DiPFJet260_260_SoftDropMass30",  &HLT_AK8DiPFJet260_260_SoftDropMass30,"HLT_AK8DiPFJet260_260_SoftDropMass30/O");
+      outputTree->Branch("HLT_AK8DiPFJet260_260_SoftDropMass40",  &HLT_AK8DiPFJet260_260_SoftDropMass40,"HLT_AK8DiPFJet260_260_SoftDropMass40/O");
+      outputTree->Branch("HLT_AK8DiPFJet270_270_SoftDropMass30",  &HLT_AK8DiPFJet270_270_SoftDropMass30,"HLT_AK8DiPFJet270_270_SoftDropMass30/O");
+      outputTree->Branch("HLT_AK8DiPFJet280_280_SoftDropMass30",  &HLT_AK8DiPFJet280_280_SoftDropMass30,"HLT_AK8DiPFJet280_280_SoftDropMass30/O");
+      outputTree->Branch("HLT_AK8DiPFJet290_290_SoftDropMass30",  &HLT_AK8DiPFJet290_290_SoftDropMass30,"HLT_AK8DiPFJet290_290_SoftDropMass30/O");
+      outputTree->Branch("HLT_AK8PFJet220_SoftDropMass40",  &HLT_AK8PFJet220_SoftDropMass40,"HLT_AK8PFJet220_SoftDropMass40/O");
+      outputTree->Branch("HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p50",  &HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p50,"HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p50/O");
+      outputTree->Branch("HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p53",  &HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p53,"HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p53/O");
+      outputTree->Branch("HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p55",  &HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p55,"HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p55/O");
+      outputTree->Branch("HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p60",  &HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p60,"HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p60/O");
+      outputTree->Branch("HLT_AK8PFJet230_SoftDropMass40",  &HLT_AK8PFJet230_SoftDropMass40,"HLT_AK8PFJet230_SoftDropMass40/O");
+      outputTree->Branch("HLT_AK8PFJet230_SoftDropMass40_PNetBB0p06",  &HLT_AK8PFJet230_SoftDropMass40_PNetBB0p06,"HLT_AK8PFJet230_SoftDropMass40_PNetBB0p06/O");
+      outputTree->Branch("HLT_AK8PFJet230_SoftDropMass40_PNetBB0p10",  &HLT_AK8PFJet230_SoftDropMass40_PNetBB0p10,"HLT_AK8PFJet230_SoftDropMass40_PNetBB0p10/O");
+      outputTree->Branch("HLT_AK8PFJet250_SoftDropMass40_PNetBB0p06",  &HLT_AK8PFJet250_SoftDropMass40_PNetBB0p06,"HLT_AK8PFJet250_SoftDropMass40_PNetBB0p06/O");
+      outputTree->Branch("HLT_AK8PFJet250_SoftDropMass40_PNetBB0p10",  &HLT_AK8PFJet250_SoftDropMass40_PNetBB0p10,"HLT_AK8PFJet250_SoftDropMass40_PNetBB0p10/O");
+      outputTree->Branch("HLT_AK8PFJet275_SoftDropMass40_PNetBB0p06",  &HLT_AK8PFJet275_SoftDropMass40_PNetBB0p06,"HLT_AK8PFJet275_SoftDropMass40_PNetBB0p06/O");
+      outputTree->Branch("HLT_AK8PFJet275_SoftDropMass40_PNetBB0p10",  &HLT_AK8PFJet275_SoftDropMass40_PNetBB0p10,"HLT_AK8PFJet275_SoftDropMass40_PNetBB0p10/O");
+  
+      outputTree->Branch("HLT_DoublePhoton33_CaloIdL",  &HLT_DoublePhoton33_CaloIdL,"HLT_DoublePhoton33_CaloIdL/O");
+      outputTree->Branch("HLT_DoublePhoton70",  &HLT_DoublePhoton70,"HLT_DoublePhoton70/O");
+      outputTree->Branch("HLT_DoublePhoton85",  &HLT_DoublePhoton85,"HLT_DoublePhoton85/O");
+      outputTree->Branch("HLT_DiphotonMVA14p25_Mass90",  &HLT_DiphotonMVA14p25_Mass90,"HLT_DiphotonMVA14p25_Mass90/O");
+      outputTree->Branch("HLT_DiphotonMVA14p25_Tight_Mass90",  &HLT_DiphotonMVA14p25_Tight_Mass90,"HLT_DiphotonMVA14p25_Tight_Mass90/O");
+      outputTree->Branch("HLT_Photon165_R9Id90_HE10_IsoM",  &HLT_Photon165_R9Id90_HE10_IsoM,"HLT_Photon165_R9Id90_HE10_IsoM/O");
+      outputTree->Branch("HLT_Photon120_R9Id90_HE10_IsoM",  &HLT_Photon120_R9Id90_HE10_IsoM,"HLT_Photon120_R9Id90_HE10_IsoM/O");
+      outputTree->Branch("HLT_Photon90_R9Id90_HE10_IsoM",  &HLT_Photon90_R9Id90_HE10_IsoM,"HLT_Photon90_R9Id90_HE10_IsoM/O");  
       outputTree->Branch("HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90",  &HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90,"HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90/O");
       outputTree->Branch("HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass95",  &HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass95,"HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass95/O");
     
