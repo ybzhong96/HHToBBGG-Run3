@@ -23,8 +23,7 @@ outputfile = "HHTo2B2GNtuple" + "_" + label
 cmsswReleaseVersion = "CMSSW_14_0_7"
 
 
-
-outputDirectoryBase = "/store/user/yzhong/Run3/HiggsDNA_selection/analyzer/"+analysis+"/"+label+"/"
+outputDirectoryBase = "/store/group/lpcdihiggsboost/sixie/analyzer/"+analysis+"/"+label+"/"
 filesPerJob = 1
 
 datasetList = OrderedDict()
