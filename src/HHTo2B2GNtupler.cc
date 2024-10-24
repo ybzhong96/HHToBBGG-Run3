@@ -472,17 +472,17 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
     // cout << Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L1FastJet_AK4PFchs.txt", jecPathname.c_str()) << "\n";
     
     
-    string JECUncertaintyFile = "";
-    if (year == "2016") {
-      JECUncertaintyFile = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Summer16_07Aug2017_V11_MC/Summer16_07Aug2017_V11_MC_Uncertainty_AK8PFPuppi.txt";
-    } else if (year == "2017") {
-      JECUncertaintyFile = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Fall17_17Nov2017_V32_MC/Fall17_17Nov2017_V32_MC_Uncertainty_AK8PFPuppi.txt";
-    } else if (year == "2018") {
-     JECUncertaintyFile = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Autumn18_V19_MC/Autumn18_V19_MC_Uncertainty_AK8PFPuppi.txt";
-    } else if (year == "2022") {
-     JECUncertaintyFile = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Autumn18_V19_MC/Autumn18_V19_MC_Uncertainty_AK8PFPuppi.txt";
-    }
-    JetCorrectionUncertainty *jecUnc = new JetCorrectionUncertainty(JECUncertaintyFile.c_str());
+    // string JECUncertaintyFile = "";
+    // if (year == "2016") {
+    //   JECUncertaintyFile = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Summer16_07Aug2017_V11_MC/Summer16_07Aug2017_V11_MC_Uncertainty_AK8PFPuppi.txt";
+    // } else if (year == "2017") {
+    //   JECUncertaintyFile = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Fall17_17Nov2017_V32_MC/Fall17_17Nov2017_V32_MC_Uncertainty_AK8PFPuppi.txt";
+    // } else if (year == "2018") {
+    //  JECUncertaintyFile = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Autumn18_V19_MC/Autumn18_V19_MC_Uncertainty_AK8PFPuppi.txt";
+    // } else if (year == "2022") {
+    //  JECUncertaintyFile = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Autumn18_V19_MC/Autumn18_V19_MC_Uncertainty_AK8PFPuppi.txt";
+    // }
+    // JetCorrectionUncertainty *jecUnc = new JetCorrectionUncertainty(JECUncertaintyFile.c_str());
     
     //----------------------------------------
     //Output file
@@ -2554,11 +2554,11 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 
       //For MC apply jet energy and mass corrections
       if (!isData){
-	jecUnc->setJetEta(fatJet1Eta);
-	jecUnc->setJetPt(fatJet1Pt);
-	double unc = jecUnc->getUncertainty(true);
-	fatJet1Pt_JES_Up   = fatJet1Pt*(1+unc);
-	fatJet1Pt_JES_Down = fatJet1Pt/(1+unc);
+	// jecUnc->setJetEta(fatJet1Eta);
+	// jecUnc->setJetPt(fatJet1Pt);
+	// double unc = jecUnc->getUncertainty(true);
+	// fatJet1Pt_JES_Up   = fatJet1Pt*(1+unc);
+	// fatJet1Pt_JES_Down = fatJet1Pt/(1+unc);
 	fatJet1MassSD             = ( 1.0 + corr_fatJet1_mass )*jmsValues[0]*fatJet1MassSD_UnCorrected;//correct, mass scale and resolution, for resolution subtract 1.0 from width
 	fatJet1MassSD_JMS_Down    = (jmsValues[1]/jmsValues[0])*fatJet1MassSD;//jet mass scale down
 	fatJet1MassSD_JMS_Up      = (jmsValues[2]/jmsValues[0])*fatJet1MassSD;//jrt mass scale up
@@ -2677,11 +2677,11 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 
      //For MC apply jet energy and mass corrections
       if ( !isData ) {
-	jecUnc->setJetEta(fatJet2Eta);
-	jecUnc->setJetPt(fatJet2Pt);
-	double unc                = jecUnc->getUncertainty(true);
-	fatJet2Pt_JES_Up   = fatJet2Pt*(1+unc);
-	fatJet2Pt_JES_Down = fatJet2Pt/(1+unc);
+	// jecUnc->setJetEta(fatJet2Eta);
+	// jecUnc->setJetPt(fatJet2Pt);
+	// double unc                = jecUnc->getUncertainty(true);
+	// fatJet2Pt_JES_Up   = fatJet2Pt*(1+unc);
+	// fatJet2Pt_JES_Down = fatJet2Pt/(1+unc);
         fatJet2MassSD             = ( 1.0 + corr_fatJet2_mass )*jmsValues[0]*fatJet2MassSD_UnCorrected;//correct, mass scale and resolution, for resolution subtract 1.0 from width
 	fatJet2MassSD_JMS_Down    = (jmsValues[1]/jmsValues[0])*fatJet2MassSD;//jet mass scale down
 	fatJet2MassSD_JMS_Up      = (jmsValues[2]/jmsValues[0])*fatJet2MassSD;//jrt mass scale up
@@ -2780,11 +2780,11 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       fatJet3MassSD_UnCorrected = FatJet_msoftdrop[fatJet3Index];
       fatJet3MassSD             = jmsValues[0]*fatJet3MassSD_UnCorrected;//correct, mass scale and resolution, for resolution subtract 1.0 from width
       if ( !isData ) {
-          jecUnc->setJetEta(fatJet3Eta);
-          jecUnc->setJetPt(fatJet3Pt);
-          double unc                = jecUnc->getUncertainty(true);
-          fatJet3Pt_JES_Up   = fatJet3Pt*(1+unc);
-          fatJet3Pt_JES_Down = fatJet3Pt/(1+unc);
+          // jecUnc->setJetEta(fatJet3Eta);
+          // jecUnc->setJetPt(fatJet3Pt);
+          // double unc                = jecUnc->getUncertainty(true);
+          // fatJet3Pt_JES_Up   = fatJet3Pt*(1+unc);
+          // fatJet3Pt_JES_Down = fatJet3Pt/(1+unc);
 	  fatJet3MassSD             = ( 1.0 + corr_fatJet3_mass )*jmsValues[0]*fatJet3MassSD_UnCorrected;//correct, mass scale and resolution, for resolution subtract 1.0 from width
 	  fatJet3MassSD_JMS_Down    = (jmsValues[1]/jmsValues[0])*fatJet3MassSD;//jet mass scale down
 	  fatJet3MassSD_JMS_Up      = (jmsValues[2]/jmsValues[0])*fatJet3MassSD;//jrt mass scale up
