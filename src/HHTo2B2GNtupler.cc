@@ -431,13 +431,19 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	float tmp_jmr[] = {1.065, 1.031, 1.099}; //Tuned to our Top control region
         jmrValues = tmp_jmr;
       } 
-    else if(year == "2022")
+    else if(year == "2022" || year == "2022EE")
       {
 	//float tmp_jmr[] = {1.24, 1.20, 1.28};
 	float tmp_jmr[] = {1.065, 1.031, 1.099}; //Tuned to our Top control region
         jmrValues = tmp_jmr;
       }
-    else if(year == "2023")
+    else if(year == "2023" || year == "2023BPix")
+      {
+	//float tmp_jmr[] = {1.24, 1.20, 1.28};
+        float tmp_jmr[] = {1.065, 1.031, 1.099}; //Tuned to our Top control region
+	jmrValues = tmp_jmr;
+      }
+    else if(year == "2024" )
       {
 	//float tmp_jmr[] = {1.24, 1.20, 1.28};
         float tmp_jmr[] = {1.065, 1.031, 1.099}; //Tuned to our Top control region
