@@ -81,14 +81,8 @@ echo "Copying Input File: " $i
 xrdcp $i ./inputs/
 done
 ls inputs/* > tmp_input_list.txt 
-
+cat tmp_input_list.txt 
 pwd
-###########################
-#get cmssw environment
-###########################
-cd /uscms_data/d2/sxie/releases/run3/HH/CMSSW_14_0_7/
-eval `scram runtime -sh`
-cd -
 
 
 ###########################
