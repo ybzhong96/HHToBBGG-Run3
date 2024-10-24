@@ -388,12 +388,17 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	float tmp_jms[] = {0.997, 0.993, 1.001};
 	jmsValues = tmp_jms;
       }
-    else if(year == "2022")
+    else if(year == "2022" || year == "2022EE")
       {
 	float tmp_jms[] = {0.997, 0.993, 1.001};
 	jmsValues = tmp_jms;
       }
-    else if(year == "2023")
+    else if(year == "2023" || year == "2023BPix")
+      {
+	float tmp_jms[] = {0.997, 0.993, 1.001};
+	jmsValues = tmp_jms;
+      }
+     else if(year == "2024" )
       {
 	float tmp_jms[] = {0.997, 0.993, 1.001};
 	jmsValues = tmp_jms;
