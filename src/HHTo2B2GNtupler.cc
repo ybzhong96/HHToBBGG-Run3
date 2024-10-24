@@ -448,29 +448,28 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
     //----------------------------------------
     //---jet energy scale and uncertainty
     //----------------------------------------
-
-    std::vector<FactorizedJetCorrector*> JetCorrector = std::vector<FactorizedJetCorrector*>();
-    std::vector<std::pair<int,int> > JetCorrectorIOV = std::vector<std::pair<int,int> >();
-    std::vector<std::vector<JetCorrectorParameters> > correctionParameters = std::vector<std::vector<JetCorrectorParameters> >();
-    std::vector<std::pair<int,int> > JetCorrectionsIOV = std::vector<std::pair<int,int> >();
+    // std::vector<FactorizedJetCorrector*> JetCorrector = std::vector<FactorizedJetCorrector*>();
+    // std::vector<std::pair<int,int> > JetCorrectorIOV = std::vector<std::pair<int,int> >();
+    // std::vector<std::vector<JetCorrectorParameters> > correctionParameters = std::vector<std::vector<JetCorrectorParameters> >();
+    // std::vector<std::pair<int,int> > JetCorrectionsIOV = std::vector<std::pair<int,int> >();
       
-    string jecPathname = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Summer22_22Sep2023_RunCD_V2_DATA/";
-    std::vector<JetCorrectorParameters> correctionParametersTemp = std::vector<JetCorrectorParameters> ();
-    correctionParametersTemp.push_back(JetCorrectorParameters(
-                  Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L1FastJet_AK4PFchs.txt", jecPathname.c_str())));
-    correctionParametersTemp.push_back(JetCorrectorParameters(
-                  Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L2Relative_AK4PFchs.txt", jecPathname.c_str())));
-    correctionParametersTemp.push_back(JetCorrectorParameters(
-                  Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L3Absolute_AK4PFchs.txt", jecPathname.c_str())));
-    correctionParametersTemp.push_back(JetCorrectorParameters(
-                  Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L2L3Residual_AK4PFchs.txt", jecPathname.c_str())));
+    // string jecPathname = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Summer22_22Sep2023_RunCD_V2_DATA/";
+    // std::vector<JetCorrectorParameters> correctionParametersTemp = std::vector<JetCorrectorParameters> ();
+    // correctionParametersTemp.push_back(JetCorrectorParameters(
+    //               Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L1FastJet_AK4PFchs.txt", jecPathname.c_str())));
+    // correctionParametersTemp.push_back(JetCorrectorParameters(
+    //               Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L2Relative_AK4PFchs.txt", jecPathname.c_str())));
+    // correctionParametersTemp.push_back(JetCorrectorParameters(
+    //               Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L3Absolute_AK4PFchs.txt", jecPathname.c_str())));
+    // correctionParametersTemp.push_back(JetCorrectorParameters(
+    //               Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L2L3Residual_AK4PFchs.txt", jecPathname.c_str())));
 
-    FactorizedJetCorrector *JetCorrectorTemp = new FactorizedJetCorrector(correctionParametersTemp);
-    correctionParameters.push_back(correctionParametersTemp);
-    JetCorrector.push_back( JetCorrectorTemp );
-    JetCorrectionsIOV.push_back( std::pair<int,int>( 0, 99999999 ));    
+    // FactorizedJetCorrector *JetCorrectorTemp = new FactorizedJetCorrector(correctionParametersTemp);
+    // correctionParameters.push_back(correctionParametersTemp);
+    // JetCorrector.push_back( JetCorrectorTemp );
+    // JetCorrectionsIOV.push_back( std::pair<int,int>( 0, 99999999 ));    
 
-    cout << Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L1FastJet_AK4PFchs.txt", jecPathname.c_str()) << "\n";
+    // cout << Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L1FastJet_AK4PFchs.txt", jecPathname.c_str()) << "\n";
     
     
     string JECUncertaintyFile = "";
@@ -3058,12 +3057,12 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
        //   jet4Flav = Jet_partonFlavour[i];
        //   Farjet = 0;
        // }
-
-	double JEC = JetEnergyCorrectionFactor(Jet_pt[i], Jet_eta[i], Jet_phi[i],
-					       sqrt( pow(Jet_mass[i],2) + pow(Jet_pt[i]*cosh(Jet_eta[i]),2)),
-					       fixedGridRhoFastjetAll, Jet_area[i],
-					       run,
-					       JetCorrectorIOV,JetCorrector);
+	double JEC = 1;
+	// JEC = JetEnergyCorrectionFactor(Jet_pt[i], Jet_eta[i], Jet_phi[i],
+	// 				       sqrt( pow(Jet_mass[i],2) + pow(Jet_pt[i]*cosh(Jet_eta[i]),2)),
+	// 				       fixedGridRhoFastjetAll, Jet_area[i],
+	// 				       run,
+	// 				       JetCorrectorIOV,JetCorrector);
 	double jetCorrPt = Jet_pt[i]*JEC;
 	//use jetCorrPt from here on
 

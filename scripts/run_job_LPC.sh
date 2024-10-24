@@ -64,6 +64,7 @@ cp Summer22_22Sep2023_RunCD_V2_DATA_L1FastJet_AK4PFchs.txt $cmsswReleaseVersion/
 #get cmssw environment
 ###########################
 cd $cmsswReleaseVersion/src/
+eval `scram runtime -sh`
 tar vxzf input_list.tgz
 #tar vxzf code.tgz
 #make clean
