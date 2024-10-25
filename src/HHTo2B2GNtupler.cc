@@ -265,7 +265,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       } else if (year == "2018") {
 	triggerEffFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/JetHTTriggerEfficiency_2018.root";
 	triggerEffMCFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/JetHTTriggerEfficiency_Fall18.root";
-      } else if (year == "2022"){
+      } else if (year == "2022" || year == "2022EE" || year == "2023" || year == "2023BPix" || year == "2024"){
         triggerEffFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/JetHTTriggerEfficiency_2018.root";
         triggerEffMCFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/JetHTTriggerEfficiency_Fall18.root";
       }
@@ -1560,8 +1560,10 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
               }
           }
       }
-   //   cout << isInRange << endl;
-      if(isData && !isInRange) continue;
+
+      //Let's not apply good lumi at analyzer stage. we will do it later.
+      //   cout << isInRange << endl;
+      //if(isData && !isInRange) continue;
 
       //Use the non-normalized version because some samples have non-equal genWeights
       weight = genWeight;
@@ -2620,7 +2622,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       //if (year == "2016") btagMediumCut = 0.3033;
       //else if (year == "2017") btagMediumCut = 0.3033 ;
       //else if (year == "2018") btagMediumCut = 0.2770 ;
-      if (year == "2022") btagMediumCut = 0.2605 ;
+      if (year == "2022" || year == "2022EE" || year == "2023" || year == "2023BPix" || year == "2024") btagMediumCut = 0.2605 ;
       for(unsigned int q = 0; q < nJet; q++ ) {       
 	if (Jet_pt[q] > 25 && Jet_btagPNetB[q] > btagMediumCut && 
 	    deltaPhi(fatJet1Phi, Jet_phi[q]) > 2.5
@@ -3082,7 +3084,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	
 	
 	
-        if (year == "2022") {	  
+        if (year == "2022" || year == "2022EE" || year == "2023" || year == "2023BPix" || year == "2024") {	  
           if (Jet_pt[i] > 20 && fabs(Jet_eta[i]) < 2.5 && deltaR(Jet_eta[i], Jet_phi[i], pho1Eta, pho1Phi) > 0.4 && deltaR(Jet_eta[i], Jet_phi[i], pho2Eta, pho2Phi) > 0.4){ 
             NJets++;
             if(Jet_pt[i]>jet1Pt){
