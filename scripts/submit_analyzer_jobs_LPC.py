@@ -31,9 +31,7 @@ datasetList = OrderedDict()
 #Make line from list of inputs
 #ls | awk '{print "datasetList[\"nano/run3/2022EE/"$1"\"] = [1, 1, \"2022EE\", \"\", 1]"}'
 
-########################################################
 #2022 ntuples
-########################################################
 
 datasetList["nano/run3/2022/Run2022B-22Sep2023-v2.list"] = [1, 1, "2022", "", 1]
 datasetList["nano/run3/2022/Run2022C-22Sep2023-v1.list"] = [1, 1, "2022", "", 1]
