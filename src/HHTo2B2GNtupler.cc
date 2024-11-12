@@ -265,7 +265,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       } else if (year == "2018") {
 	triggerEffFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/JetHTTriggerEfficiency_2018.root";
 	triggerEffMCFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/JetHTTriggerEfficiency_Fall18.root";
-      } else if (year == "2022"){
+      } else if (year == "2022" || year == "2022EE" || year == "2023" || year == "2023BPix" || year == "2024"){
         triggerEffFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/JetHTTriggerEfficiency_2018.root";
         triggerEffMCFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/JetHTTriggerEfficiency_Fall18.root";
       }
@@ -315,7 +315,19 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       if (triggerEffMCHist_Xbb0p95To0p98) cout << "Found triggerEffMCHist_Xbb0p95To0p98 in file " << triggerEffMCFilename << "\n";
       if (triggerEffMCHist_Xbb0p98To1p0) cout << "Found triggerEffMCHist_Xbb0p98To1p0 in file " << triggerEffMCFilename << "\n";
  
-      string pileupWeightFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/PileupWeights/PileupWeights.root";
+      string pileupWeightFilename = "";
+      if (year == "2022") {
+	pileupWeightFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/PileupWeights/PileupReweight_Summer22.root";
+      } else if (year == "2022EE") {
+	pileupWeightFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/PileupWeights/PileupReweight_Summer22EE.root";
+      } else if (year == "2023") {
+	pileupWeightFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/PileupWeights/PileupReweight_Summer23.root";
+      } else if (year == "2023BPix") {
+	pileupWeightFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/PileupWeights/PileupReweight_Summer23BPix.root";
+      } else if (year == "2024") {
+	pileupWeightFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/PileupWeights/PileupReweight_Summer23.root";
+      }
+      	  
       TFile *pileupWeightFile = new TFile(pileupWeightFilename.c_str(),"READ");
       if (!pileupWeightFile) {
 	cout << "Warning : pileupWeightFile " << pileupWeightFile << " could not be opened.\n";  
@@ -324,9 +336,12 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       }
       string pileupWeightHistname = "PUWeight_" + pileupWeightName + "_" + year;
       if (pileupWeightFile) {
-	pileupWeightHist = (TH1F*)pileupWeightFile->Get(pileupWeightHistname.c_str());
-	pileupWeightUpHist = (TH1F*)pileupWeightFile->Get((pileupWeightHistname+"_SysUp").c_str());
-	pileupWeightDownHist = (TH1F*)pileupWeightFile->Get((pileupWeightHistname+"_SysDown").c_str());
+	pileupWeightHist = (TH1F*)(pileupWeightFile->Get("npu_nominal"));
+	pileupWeightHist->SetDirectory(0);
+	pileupWeightUpHist = (TH1F*)(pileupWeightFile->Get("npu_up"));
+	pileupWeightUpHist->SetDirectory(0);
+	pileupWeightDownHist = (TH1F*)(pileupWeightFile->Get("npu_down"));
+	pileupWeightDownHist->SetDirectory(0);
       } 
       if (pileupWeightHist) {
 	cout << "Found pileupWeightHist " << pileupWeightHistname << "in file " << pileupWeightFilename << "\n";
@@ -349,7 +364,8 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	     << pileupWeightHistname +"_SysDown"
 	     << " in file " << pileupWeightFilename << "\n";
       }
-    
+      pileupWeightFile->Close();
+      pileupWeightHist->Print();   
     }
 
     //----------------------------------------
@@ -372,12 +388,17 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	float tmp_jms[] = {0.997, 0.993, 1.001};
 	jmsValues = tmp_jms;
       }
-    else if(year == "2022")
+    else if(year == "2022" || year == "2022EE")
       {
 	float tmp_jms[] = {0.997, 0.993, 1.001};
 	jmsValues = tmp_jms;
       }
-    else if(year == "2023")
+    else if(year == "2023" || year == "2023BPix")
+      {
+	float tmp_jms[] = {0.997, 0.993, 1.001};
+	jmsValues = tmp_jms;
+      }
+     else if(year == "2024" )
       {
 	float tmp_jms[] = {0.997, 0.993, 1.001};
 	jmsValues = tmp_jms;
@@ -410,13 +431,19 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	float tmp_jmr[] = {1.065, 1.031, 1.099}; //Tuned to our Top control region
         jmrValues = tmp_jmr;
       } 
-    else if(year == "2022")
+    else if(year == "2022" || year == "2022EE")
       {
 	//float tmp_jmr[] = {1.24, 1.20, 1.28};
 	float tmp_jmr[] = {1.065, 1.031, 1.099}; //Tuned to our Top control region
         jmrValues = tmp_jmr;
       }
-    else if(year == "2023")
+    else if(year == "2023" || year == "2023BPix")
+      {
+	//float tmp_jmr[] = {1.24, 1.20, 1.28};
+        float tmp_jmr[] = {1.065, 1.031, 1.099}; //Tuned to our Top control region
+	jmrValues = tmp_jmr;
+      }
+    else if(year == "2024" )
       {
 	//float tmp_jmr[] = {1.24, 1.20, 1.28};
         float tmp_jmr[] = {1.065, 1.031, 1.099}; //Tuned to our Top control region
@@ -432,42 +459,41 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
     //----------------------------------------
     //---jet energy scale and uncertainty
     //----------------------------------------
-
-    std::vector<FactorizedJetCorrector*> JetCorrector = std::vector<FactorizedJetCorrector*>();
-    std::vector<std::pair<int,int> > JetCorrectorIOV = std::vector<std::pair<int,int> >();
-    std::vector<std::vector<JetCorrectorParameters> > correctionParameters = std::vector<std::vector<JetCorrectorParameters> >();
-    std::vector<std::pair<int,int> > JetCorrectionsIOV = std::vector<std::pair<int,int> >();
+    // std::vector<FactorizedJetCorrector*> JetCorrector = std::vector<FactorizedJetCorrector*>();
+    // std::vector<std::pair<int,int> > JetCorrectorIOV = std::vector<std::pair<int,int> >();
+    // std::vector<std::vector<JetCorrectorParameters> > correctionParameters = std::vector<std::vector<JetCorrectorParameters> >();
+    // std::vector<std::pair<int,int> > JetCorrectionsIOV = std::vector<std::pair<int,int> >();
       
-    string jecPathname = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Summer22_22Sep2023_RunCD_V2_DATA/";
-    std::vector<JetCorrectorParameters> correctionParametersTemp = std::vector<JetCorrectorParameters> ();
-    correctionParametersTemp.push_back(JetCorrectorParameters(
-                  Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L1FastJet_AK4PFchs.txt", jecPathname.c_str())));
-    correctionParametersTemp.push_back(JetCorrectorParameters(
-                  Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L2Relative_AK4PFchs.txt", jecPathname.c_str())));
-    correctionParametersTemp.push_back(JetCorrectorParameters(
-                  Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L3Absolute_AK4PFchs.txt", jecPathname.c_str())));
-    correctionParametersTemp.push_back(JetCorrectorParameters(
-                  Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L2L3Residual_AK4PFchs.txt", jecPathname.c_str())));
+    // string jecPathname = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Summer22_22Sep2023_RunCD_V2_DATA/";
+    // std::vector<JetCorrectorParameters> correctionParametersTemp = std::vector<JetCorrectorParameters> ();
+    // correctionParametersTemp.push_back(JetCorrectorParameters(
+    //               Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L1FastJet_AK4PFchs.txt", jecPathname.c_str())));
+    // correctionParametersTemp.push_back(JetCorrectorParameters(
+    //               Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L2Relative_AK4PFchs.txt", jecPathname.c_str())));
+    // correctionParametersTemp.push_back(JetCorrectorParameters(
+    //               Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L3Absolute_AK4PFchs.txt", jecPathname.c_str())));
+    // correctionParametersTemp.push_back(JetCorrectorParameters(
+    //               Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L2L3Residual_AK4PFchs.txt", jecPathname.c_str())));
 
-    FactorizedJetCorrector *JetCorrectorTemp = new FactorizedJetCorrector(correctionParametersTemp);
-    correctionParameters.push_back(correctionParametersTemp);
-    JetCorrector.push_back( JetCorrectorTemp );
-    JetCorrectionsIOV.push_back( std::pair<int,int>( 0, 99999999 ));    
+    // FactorizedJetCorrector *JetCorrectorTemp = new FactorizedJetCorrector(correctionParametersTemp);
+    // correctionParameters.push_back(correctionParametersTemp);
+    // JetCorrector.push_back( JetCorrectorTemp );
+    // JetCorrectionsIOV.push_back( std::pair<int,int>( 0, 99999999 ));    
 
-    cout << Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L1FastJet_AK4PFchs.txt", jecPathname.c_str()) << "\n";
+    // cout << Form("%s/Summer22_22Sep2023_RunCD_V2_DATA_L1FastJet_AK4PFchs.txt", jecPathname.c_str()) << "\n";
     
     
-    string JECUncertaintyFile = "";
-    if (year == "2016") {
-      JECUncertaintyFile = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Summer16_07Aug2017_V11_MC/Summer16_07Aug2017_V11_MC_Uncertainty_AK8PFPuppi.txt";
-    } else if (year == "2017") {
-      JECUncertaintyFile = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Fall17_17Nov2017_V32_MC/Fall17_17Nov2017_V32_MC_Uncertainty_AK8PFPuppi.txt";
-    } else if (year == "2018") {
-     JECUncertaintyFile = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Autumn18_V19_MC/Autumn18_V19_MC_Uncertainty_AK8PFPuppi.txt";
-    } else if (year == "2022") {
-     JECUncertaintyFile = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Autumn18_V19_MC/Autumn18_V19_MC_Uncertainty_AK8PFPuppi.txt";
-    }
-    JetCorrectionUncertainty *jecUnc = new JetCorrectionUncertainty(JECUncertaintyFile.c_str());
+    // string JECUncertaintyFile = "";
+    // if (year == "2016") {
+    //   JECUncertaintyFile = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Summer16_07Aug2017_V11_MC/Summer16_07Aug2017_V11_MC_Uncertainty_AK8PFPuppi.txt";
+    // } else if (year == "2017") {
+    //   JECUncertaintyFile = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Fall17_17Nov2017_V32_MC/Fall17_17Nov2017_V32_MC_Uncertainty_AK8PFPuppi.txt";
+    // } else if (year == "2018") {
+    //  JECUncertaintyFile = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Autumn18_V19_MC/Autumn18_V19_MC_Uncertainty_AK8PFPuppi.txt";
+    // } else if (year == "2022") {
+    //  JECUncertaintyFile = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Autumn18_V19_MC/Autumn18_V19_MC_Uncertainty_AK8PFPuppi.txt";
+    // }
+    // JetCorrectionUncertainty *jecUnc = new JetCorrectionUncertainty(JECUncertaintyFile.c_str());
     
     //----------------------------------------
     //Output file
@@ -1386,58 +1412,39 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       
 
     if (Option != 100) {
-      //outputTree->Branch("HLT_Ele27_WPTight_Gsf", &HLT_Ele27_WPTight_Gsf, "HLT_Ele27_WPTight_Gsf/O");
-      //outputTree->Branch("HLT_Ele28_WPTight_Gsf", &HLT_Ele28_WPTight_Gsf, "HLT_Ele28_WPTight_Gsf/O");
-      //outputTree->Branch("HLT_Ele30_WPTight_Gsf", &HLT_Ele30_WPTight_Gsf, "HLT_Ele30_WPTight_Gsf/O");
-      //outputTree->Branch("HLT_Ele32_WPTight_Gsf", &HLT_Ele32_WPTight_Gsf, "HLT_Ele32_WPTight_Gsf/O");
-      //outputTree->Branch("HLT_Ele35_WPTight_Gsf", &HLT_Ele35_WPTight_Gsf, "HLT_Ele35_WPTight_Gsf/O");
-      //outputTree->Branch("HLT_Ele38_WPTight_Gsf", &HLT_Ele38_WPTight_Gsf, "HLT_Ele38_WPTight_Gsf/O");
-      //outputTree->Branch("HLT_Ele40_WPTight_Gsf", &HLT_Ele40_WPTight_Gsf, "HLT_Ele40_WPTight_Gsf/O");
-      //outputTree->Branch("HLT_IsoMu20", &HLT_IsoMu20, "HLT_IsoMu20/O");
-      //outputTree->Branch("HLT_IsoMu24", &HLT_IsoMu24, "HLT_IsoMu24/O");
-      //outputTree->Branch("HLT_IsoMu24_eta2p1", &HLT_IsoMu24_eta2p1, "HLT_IsoMu24_eta2p1/O");
-      //outputTree->Branch("HLT_IsoMu27", &HLT_IsoMu27, "HLT_IsoMu27/O");
-      //outputTree->Branch("HLT_IsoMu30", &HLT_IsoMu30, "HLT_IsoMu30/O");
-      //outputTree->Branch("HLT_Mu50", &HLT_Mu50, "HLT_Mu50/O");
-      //outputTree->Branch("HLT_Mu55", &HLT_Mu55, "HLT_Mu55/O");
-      //outputTree->Branch("HLT_Photon175",                                      &HLT_Photon175,                         "HLT_Photon175/O");
-      //outputTree->Branch("HLT_PFHT780",                                        &HLT_PFHT780,                                       "HLT_PFHT780/O");
-      //outputTree->Branch("HLT_PFHT890",                                        &HLT_PFHT890,                                       "HLT_PFHT890/O");
-      //outputTree->Branch("HLT_PFHT1050",                                        &HLT_PFHT1050,                                       "HLT_PFHT1050/O");
-      //outputTree->Branch("HLT_AK8PFJet360_TrimMass30",                          &HLT_AK8PFJet360_TrimMass30,                         "HLT_AK8PFJet360_TrimMass30/O");
-      //outputTree->Branch("HLT_AK8PFJet380_TrimMass30",                          &HLT_AK8PFJet380_TrimMass30,                         "HLT_AK8PFJet380_TrimMass30/O");
-      //outputTree->Branch("HLT_AK8PFJet400_TrimMass30",                          &HLT_AK8PFJet400_TrimMass30,                         "HLT_AK8PFJet400_TrimMass30/O");
-      //outputTree->Branch("HLT_AK8PFJet420_TrimMass30",                          &HLT_AK8PFJet420_TrimMass30,                         "HLT_AK8PFJet420_TrimMass30/O");
-      //outputTree->Branch("HLT_AK8PFHT750_TrimMass50",                           &HLT_AK8PFHT750_TrimMass50,                          "HLT_AK8PFHT750_TrimMass50/O");
-      //outputTree->Branch("HLT_AK8PFHT800_TrimMass50",                           &HLT_AK8PFHT800_TrimMass50,                          "HLT_AK8PFHT800_TrimMass50/O");
-      //outputTree->Branch("HLT_AK8PFHT850_TrimMass50",                           &HLT_AK8PFHT850_TrimMass50,                          "HLT_AK8PFHT850_TrimMass50/O");
-      //outputTree->Branch("HLT_AK8PFHT900_TrimMass50",                           &HLT_AK8PFHT900_TrimMass50,                          "HLT_AK8PFHT900_TrimMass50/O");
-      
-      
-      //outputTree->Branch("HLT_AK8PFHT700_TrimR0p1PT0p03Mass50",                 &HLT_AK8PFHT700_TrimR0p1PT0p03Mass50,                "HLT_AK8PFHT700_TrimR0p1PT0p03Mass50/O");
-      // outputTree->Branch("HLT_PFHT650_WideJetMJJ950DEtaJJ1p5",                  &HLT_PFHT650_WideJetMJJ950DEtaJJ1p5,                 "HLT_PFHT650_WideJetMJJ950DEtaJJ1p5/O");
-      // outputTree->Branch("HLT_PFHT650_WideJetMJJ900DEtaJJ1p5",                  &HLT_PFHT650_WideJetMJJ900DEtaJJ1p5,                  "HLT_PFHT650_WideJetMJJ900DEtaJJ1p5/O");
-      
-
-      //outputTree->Branch("HLT_PFJet450",                                        &HLT_PFJet450,                                       "HLT_PFJet450/O");
-      //outputTree->Branch("HLT_PFJet500",                                        &HLT_PFJet500,                                       "HLT_PFJet500/O");
-      //outputTree->Branch("HLT_PFJet550",                                        &HLT_PFJet550,                                       "HLT_PFJet550/O");
-      //outputTree->Branch("HLT_AK8PFJet400",                                     &HLT_AK8PFJet400,                                    "HLT_AK8PFJet400/O");
-      //outputTree->Branch("HLT_AK8PFJet450",                                     &HLT_AK8PFJet450,                                    "HLT_AK8PFJet450/O");
-      //outputTree->Branch("HLT_AK8PFJet500",                                     &HLT_AK8PFJet500,                                    "HLT_AK8PFJet500/O");
-      //outputTree->Branch("HLT_AK8PFJet550",                                     &HLT_AK8PFJet550,                                    "HLT_AK8PFJet550/O");
-      //outputTree->Branch("HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p17",     &HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p17,    "HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p17/O");
-      //outputTree->Branch("HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p1",      &HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p1,     "HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p1/O");
-      //outputTree->Branch("HLT_AK8PFJet330_PFAK8BTagCSV_p17",                    &HLT_AK8PFJet330_PFAK8BTagCSV_p17,                   "HLT_AK8PFJet330_PFAK8BTagCSV_p17/O");
-      //outputTree->Branch("HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_p02",  &HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_p02, "HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_p02/O");
-      //outputTree->Branch("HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np2",  &HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np2, "HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np2/O");
-      //outputTree->Branch("HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np4",  &HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np4, "HLT_AK8PFJet330_TrimMass30_PFAK8BoostedDoubleB_np4/O"); 
-      //outputTree->Branch("HLT_AK8DiPFJet300_200_TrimMass30_BTagCSV_p20",        &HLT_AK8DiPFJet300_200_TrimMass30_BTagCSV_p20,       "HLT_AK8DiPFJet300_200_TrimMass30_BTagCSV_p20/O");
-      //outputTree->Branch("HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p087",       &HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p087,      "HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p087/O");
-      //outputTree->Branch("HLT_AK8DiPFJet300_200_TrimMass30_BTagCSV_p087",       &HLT_AK8DiPFJet300_200_TrimMass30_BTagCSV_p087,      "HLT_AK8DiPFJet300_200_TrimMass30_BTagCSV_p087/O");
-      //outputTree->Branch("HLT_AK8PFHT600_TrimR0p1PT0p03Mass50_BTagCSV_p20",     &HLT_AK8PFHT600_TrimR0p1PT0p03Mass50_BTagCSV_p20,    "HLT_AK8PFHT600_TrimR0p1PT0p03Mass50_BTagCSV_p20/O");
-      //outputTree->Branch("HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p20",        &HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p20,       "HLT_AK8DiPFJet280_200_TrimMass30_BTagCSV_p20/O");
-      //outputTree->Branch("HLT_AK8DiPFJet250_200_TrimMass30_BTagCSV_p20",        &HLT_AK8DiPFJet250_200_TrimMass30_BTagCSV_p20,       "HLT_AK8DiPFJet250_200_TrimMass30_BTagCSV_p20/O");
+ 
+      outputTree->Branch("HLT_AK8PFJet380_SoftDropMass30",  &HLT_AK8PFJet380_SoftDropMass30,"HLT_AK8PFJet380_SoftDropMass30/O");
+      outputTree->Branch("HLT_AK8PFJet400_SoftDropMass30",  &HLT_AK8PFJet400_SoftDropMass30,"HLT_AK8PFJet400_SoftDropMass30/O");
+      outputTree->Branch("HLT_AK8PFJet425_SoftDropMass30",  &HLT_AK8PFJet425_SoftDropMass30,"HLT_AK8PFJet425_SoftDropMass30/O");
+      outputTree->Branch("HLT_AK8PFJet450_SoftDropMass30",  &HLT_AK8PFJet450_SoftDropMass30,"HLT_AK8PFJet450_SoftDropMass30/O");
+      outputTree->Branch("HLT_AK8DiPFJet250_250_SoftDropMass40",  &HLT_AK8DiPFJet250_250_SoftDropMass40,"HLT_AK8DiPFJet250_250_SoftDropMass40/O");
+      outputTree->Branch("HLT_AK8DiPFJet250_250_SoftDropMass50",  &HLT_AK8DiPFJet250_250_SoftDropMass50,"HLT_AK8DiPFJet250_250_SoftDropMass50/O");
+      outputTree->Branch("HLT_AK8DiPFJet260_260_SoftDropMass30",  &HLT_AK8DiPFJet260_260_SoftDropMass30,"HLT_AK8DiPFJet260_260_SoftDropMass30/O");
+      outputTree->Branch("HLT_AK8DiPFJet260_260_SoftDropMass40",  &HLT_AK8DiPFJet260_260_SoftDropMass40,"HLT_AK8DiPFJet260_260_SoftDropMass40/O");
+      outputTree->Branch("HLT_AK8DiPFJet270_270_SoftDropMass30",  &HLT_AK8DiPFJet270_270_SoftDropMass30,"HLT_AK8DiPFJet270_270_SoftDropMass30/O");
+      outputTree->Branch("HLT_AK8DiPFJet280_280_SoftDropMass30",  &HLT_AK8DiPFJet280_280_SoftDropMass30,"HLT_AK8DiPFJet280_280_SoftDropMass30/O");
+      outputTree->Branch("HLT_AK8DiPFJet290_290_SoftDropMass30",  &HLT_AK8DiPFJet290_290_SoftDropMass30,"HLT_AK8DiPFJet290_290_SoftDropMass30/O");
+      outputTree->Branch("HLT_AK8PFJet220_SoftDropMass40",  &HLT_AK8PFJet220_SoftDropMass40,"HLT_AK8PFJet220_SoftDropMass40/O");
+      outputTree->Branch("HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p50",  &HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p50,"HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p50/O");
+      outputTree->Branch("HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p53",  &HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p53,"HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p53/O");
+      outputTree->Branch("HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p55",  &HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p55,"HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p55/O");
+      outputTree->Branch("HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p60",  &HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p60,"HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p60/O");
+      outputTree->Branch("HLT_AK8PFJet230_SoftDropMass40",  &HLT_AK8PFJet230_SoftDropMass40,"HLT_AK8PFJet230_SoftDropMass40/O");
+      outputTree->Branch("HLT_AK8PFJet230_SoftDropMass40_PNetBB0p06",  &HLT_AK8PFJet230_SoftDropMass40_PNetBB0p06,"HLT_AK8PFJet230_SoftDropMass40_PNetBB0p06/O");
+      outputTree->Branch("HLT_AK8PFJet230_SoftDropMass40_PNetBB0p10",  &HLT_AK8PFJet230_SoftDropMass40_PNetBB0p10,"HLT_AK8PFJet230_SoftDropMass40_PNetBB0p10/O");
+      outputTree->Branch("HLT_AK8PFJet250_SoftDropMass40_PNetBB0p06",  &HLT_AK8PFJet250_SoftDropMass40_PNetBB0p06,"HLT_AK8PFJet250_SoftDropMass40_PNetBB0p06/O");
+      outputTree->Branch("HLT_AK8PFJet250_SoftDropMass40_PNetBB0p10",  &HLT_AK8PFJet250_SoftDropMass40_PNetBB0p10,"HLT_AK8PFJet250_SoftDropMass40_PNetBB0p10/O");
+      outputTree->Branch("HLT_AK8PFJet275_SoftDropMass40_PNetBB0p06",  &HLT_AK8PFJet275_SoftDropMass40_PNetBB0p06,"HLT_AK8PFJet275_SoftDropMass40_PNetBB0p06/O");
+      outputTree->Branch("HLT_AK8PFJet275_SoftDropMass40_PNetBB0p10",  &HLT_AK8PFJet275_SoftDropMass40_PNetBB0p10,"HLT_AK8PFJet275_SoftDropMass40_PNetBB0p10/O");
+  
+      outputTree->Branch("HLT_DoublePhoton33_CaloIdL",  &HLT_DoublePhoton33_CaloIdL,"HLT_DoublePhoton33_CaloIdL/O");
+      outputTree->Branch("HLT_DoublePhoton70",  &HLT_DoublePhoton70,"HLT_DoublePhoton70/O");
+      outputTree->Branch("HLT_DoublePhoton85",  &HLT_DoublePhoton85,"HLT_DoublePhoton85/O");
+      outputTree->Branch("HLT_DiphotonMVA14p25_Mass90",  &HLT_DiphotonMVA14p25_Mass90,"HLT_DiphotonMVA14p25_Mass90/O");
+      outputTree->Branch("HLT_DiphotonMVA14p25_Tight_Mass90",  &HLT_DiphotonMVA14p25_Tight_Mass90,"HLT_DiphotonMVA14p25_Tight_Mass90/O");
+      outputTree->Branch("HLT_Photon165_R9Id90_HE10_IsoM",  &HLT_Photon165_R9Id90_HE10_IsoM,"HLT_Photon165_R9Id90_HE10_IsoM/O");
+      outputTree->Branch("HLT_Photon120_R9Id90_HE10_IsoM",  &HLT_Photon120_R9Id90_HE10_IsoM,"HLT_Photon120_R9Id90_HE10_IsoM/O");
+      outputTree->Branch("HLT_Photon90_R9Id90_HE10_IsoM",  &HLT_Photon90_R9Id90_HE10_IsoM,"HLT_Photon90_R9Id90_HE10_IsoM/O");  
       outputTree->Branch("HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90",  &HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90,"HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90/O");
       outputTree->Branch("HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass95",  &HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass95,"HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass95/O");
     
@@ -1553,8 +1560,10 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
               }
           }
       }
-   //   cout << isInRange << endl;
-      if(isData && !isInRange) continue;
+
+      //Let's not apply good lumi at analyzer stage. we will do it later.
+      //   cout << isInRange << endl;
+      //if(isData && !isInRange) continue;
 
       //Use the non-normalized version because some samples have non-equal genWeights
       weight = genWeight;
@@ -2558,11 +2567,11 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 
       //For MC apply jet energy and mass corrections
       if (!isData){
-	jecUnc->setJetEta(fatJet1Eta);
-	jecUnc->setJetPt(fatJet1Pt);
-	double unc = jecUnc->getUncertainty(true);
-	fatJet1Pt_JES_Up   = fatJet1Pt*(1+unc);
-	fatJet1Pt_JES_Down = fatJet1Pt/(1+unc);
+	// jecUnc->setJetEta(fatJet1Eta);
+	// jecUnc->setJetPt(fatJet1Pt);
+	// double unc = jecUnc->getUncertainty(true);
+	// fatJet1Pt_JES_Up   = fatJet1Pt*(1+unc);
+	// fatJet1Pt_JES_Down = fatJet1Pt/(1+unc);
 	fatJet1MassSD             = ( 1.0 + corr_fatJet1_mass )*jmsValues[0]*fatJet1MassSD_UnCorrected;//correct, mass scale and resolution, for resolution subtract 1.0 from width
 	fatJet1MassSD_JMS_Down    = (jmsValues[1]/jmsValues[0])*fatJet1MassSD;//jet mass scale down
 	fatJet1MassSD_JMS_Up      = (jmsValues[2]/jmsValues[0])*fatJet1MassSD;//jrt mass scale up
@@ -2613,7 +2622,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       //if (year == "2016") btagMediumCut = 0.3033;
       //else if (year == "2017") btagMediumCut = 0.3033 ;
       //else if (year == "2018") btagMediumCut = 0.2770 ;
-      if (year == "2022") btagMediumCut = 0.2605 ;
+      if (year == "2022" || year == "2022EE" || year == "2023" || year == "2023BPix" || year == "2024") btagMediumCut = 0.2605 ;
       for(unsigned int q = 0; q < nJet; q++ ) {       
 	if (Jet_pt[q] > 25 && Jet_btagPNetB[q] > btagMediumCut && 
 	    deltaPhi(fatJet1Phi, Jet_phi[q]) > 2.5
@@ -2681,11 +2690,11 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 
      //For MC apply jet energy and mass corrections
       if ( !isData ) {
-	jecUnc->setJetEta(fatJet2Eta);
-	jecUnc->setJetPt(fatJet2Pt);
-	double unc                = jecUnc->getUncertainty(true);
-	fatJet2Pt_JES_Up   = fatJet2Pt*(1+unc);
-	fatJet2Pt_JES_Down = fatJet2Pt/(1+unc);
+	// jecUnc->setJetEta(fatJet2Eta);
+	// jecUnc->setJetPt(fatJet2Pt);
+	// double unc                = jecUnc->getUncertainty(true);
+	// fatJet2Pt_JES_Up   = fatJet2Pt*(1+unc);
+	// fatJet2Pt_JES_Down = fatJet2Pt/(1+unc);
         fatJet2MassSD             = ( 1.0 + corr_fatJet2_mass )*jmsValues[0]*fatJet2MassSD_UnCorrected;//correct, mass scale and resolution, for resolution subtract 1.0 from width
 	fatJet2MassSD_JMS_Down    = (jmsValues[1]/jmsValues[0])*fatJet2MassSD;//jet mass scale down
 	fatJet2MassSD_JMS_Up      = (jmsValues[2]/jmsValues[0])*fatJet2MassSD;//jrt mass scale up
@@ -2784,11 +2793,11 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       fatJet3MassSD_UnCorrected = FatJet_msoftdrop[fatJet3Index];
       fatJet3MassSD             = jmsValues[0]*fatJet3MassSD_UnCorrected;//correct, mass scale and resolution, for resolution subtract 1.0 from width
       if ( !isData ) {
-          jecUnc->setJetEta(fatJet3Eta);
-          jecUnc->setJetPt(fatJet3Pt);
-          double unc                = jecUnc->getUncertainty(true);
-          fatJet3Pt_JES_Up   = fatJet3Pt*(1+unc);
-          fatJet3Pt_JES_Down = fatJet3Pt/(1+unc);
+          // jecUnc->setJetEta(fatJet3Eta);
+          // jecUnc->setJetPt(fatJet3Pt);
+          // double unc                = jecUnc->getUncertainty(true);
+          // fatJet3Pt_JES_Up   = fatJet3Pt*(1+unc);
+          // fatJet3Pt_JES_Down = fatJet3Pt/(1+unc);
 	  fatJet3MassSD             = ( 1.0 + corr_fatJet3_mass )*jmsValues[0]*fatJet3MassSD_UnCorrected;//correct, mass scale and resolution, for resolution subtract 1.0 from width
 	  fatJet3MassSD_JMS_Down    = (jmsValues[1]/jmsValues[0])*fatJet3MassSD;//jet mass scale down
 	  fatJet3MassSD_JMS_Up      = (jmsValues[2]/jmsValues[0])*fatJet3MassSD;//jrt mass scale up
@@ -3061,21 +3070,21 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
        //   jet4Flav = Jet_partonFlavour[i];
        //   Farjet = 0;
        // }
-
-	double JEC = JetEnergyCorrectionFactor(Jet_pt[i], Jet_eta[i], Jet_phi[i],
-					       sqrt( pow(Jet_mass[i],2) + pow(Jet_pt[i]*cosh(Jet_eta[i]),2)),
-					       fixedGridRhoFastjetAll, Jet_area[i],
-					       run,
-					       JetCorrectorIOV,JetCorrector);
+	double JEC = 1;
+	// JEC = JetEnergyCorrectionFactor(Jet_pt[i], Jet_eta[i], Jet_phi[i],
+	// 				       sqrt( pow(Jet_mass[i],2) + pow(Jet_pt[i]*cosh(Jet_eta[i]),2)),
+	// 				       fixedGridRhoFastjetAll, Jet_area[i],
+	// 				       run,
+	// 				       JetCorrectorIOV,JetCorrector);
 	double jetCorrPt = Jet_pt[i]*JEC;
 	//use jetCorrPt from here on
 
-	cout << "Jet " << i << " | " << Jet_pt[i] << " " << JEC << " " << jetCorrPt << " : " << Jet_eta[i] << " " << Jet_phi[i] << "\n";
+	//cout << "Jet " << i << " | " << Jet_pt[i] << " " << JEC << " " << jetCorrPt << " : " << Jet_eta[i] << " " << Jet_phi[i] << "\n";
 
 	
 	
 	
-        if (year == "2022") {	  
+        if (year == "2022" || year == "2022EE" || year == "2023" || year == "2023BPix" || year == "2024") {	  
           if (Jet_pt[i] > 20 && fabs(Jet_eta[i]) < 2.5 && deltaR(Jet_eta[i], Jet_phi[i], pho1Eta, pho1Phi) > 0.4 && deltaR(Jet_eta[i], Jet_phi[i], pho2Eta, pho2Phi) > 0.4){ 
             NJets++;
             if(Jet_pt[i]>jet1Pt){
@@ -3621,13 +3630,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       //Fill Event - skim for events with two jets found
       //****************************************************
       if (
-	  Option == 100 || 
-	  Option == 0 || 
-	  (Option == 5 && fatJet1Pt > 250 && fatJet2Pt > 250 && fatJet1MassSD > 50 
-	   && fatJet2MassSD > 50 && fatJet1PNetXbb > 0.8) || 
-	  (Option == 10 && ( (fatJet1Pt > 250 && fatJet2Pt > 250) || (fatJet1Pt > 250 && lep1Id != 0)) ) || 
-	  (Option == 20 && fatJet1Pt > 250 && fatJet1MassSD > 30 && lep1Id == 0) ||
-	  (Option == 21 && fatJet1Pt > 250 && fatJet1MassSD > 30 )
+	  Diphoton_Mass >= 0	  
 	  ) {
 	 
 

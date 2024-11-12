@@ -32,7 +32,7 @@ jobIndex=$((($jobnumber-1)%$nJobsPerFile))
 workDir=`pwd`
 executable=Run${analysisType}
 source /cvmfs/cms.cern.ch/cmsset_default.sh
-export SCRAM_ARCH=el8_amd64_gcc12
+export SCRAM_ARCH=el9_amd64_gcc12
 #export SCRAM_ARCH=el8_aarch64_gcc11
 #tar -zxvf cms_setup.tar.gz
 scramv1 project CMSSW $cmsswReleaseVersion
@@ -44,20 +44,10 @@ scramv1 project CMSSW $cmsswReleaseVersion
 cp $executable $cmsswReleaseVersion/src/
 cp input_list.tgz $cmsswReleaseVersion/src/
 mkdir -p $cmsswReleaseVersion/src/HHToBBGG-Run3/data/PileupWeights/
-#cp HHBoostedAnalyzer/data/JetHTTriggerEfficiency_2016.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
-cp JetHTTriggerEfficiency_2016.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
-#cp HHBoostedAnalyzer/data/JetHTTriggerEfficiency_2017.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
-cp JetHTTriggerEfficiency_2017.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
-#cp HHBoostedAnalyzer/data/JetHTTriggerEfficiency_2018.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
-cp JetHTTriggerEfficiency_2018.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
-#cp HHBoostedAnalyzer/data/JetHTTriggerEfficiency_Summer16.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
-cp JetHTTriggerEfficiency_Summer16.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
-#cp HHBoostedAnalyzer/data/JetHTTriggerEfficiency_Fall17.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
-cp JetHTTriggerEfficiency_Fall17.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
-#cp HHBoostedAnalyzer/data/JetHTTriggerEfficiency_Fall18.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/
-cp JetHTTriggerEfficiency_Fall18.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
-#cp HHBoostedAnalyzer/data/PileupWeights/PileupWeights.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/PileupWeights/
-cp PileupWeights.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/PileupWeights/
+xrdcp root://cmsxrootd.fnal.gov//store/user/lpcdihiggsboost/sixie/analyzer/HHTo4BNtupler/ArmenVersion/inputs/data/PileupReweight_Summer22.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/PileupWeights/
+xrdcp root://cmsxrootd.fnal.gov//store/user/lpcdihiggsboost/sixie/analyzer/HHTo4BNtupler/ArmenVersion/inputs/data/PileupReweight_Summer22EE.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/PileupWeights/
+xrdcp root://cmsxrootd.fnal.gov//store/user/lpcdihiggsboost/sixie/analyzer/HHTo4BNtupler/ArmenVersion/inputs/data/PileupReweight_Summer23.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/PileupWeights/
+xrdcp root://cmsxrootd.fnal.gov//store/user/lpcdihiggsboost/sixie/analyzer/HHTo4BNtupler/ArmenVersion/inputs/data/PileupReweight_Summer23BPix.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/PileupWeights/
 
 cp Run3_2022_2023_Golden.json $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
 
@@ -67,6 +57,8 @@ mkdir -p $cmsswReleaseVersion/src/HHToBBGG-Run3/data/JEC/Fall17_17Nov2017_V32_MC
 cp Fall17_17Nov2017_V32_MC_Uncertainty_AK8PFPuppi.txt $cmsswReleaseVersion/src/HHToBBGG-Run3/data/JEC/Fall17_17Nov2017_V32_MC/
 mkdir -p $cmsswReleaseVersion/src/HHToBBGG-Run3/data/JEC/Autumn18_V19_MC/
 cp Autumn18_V19_MC_Uncertainty_AK8PFPuppi.txt $cmsswReleaseVersion/src/HHToBBGG-Run3/data/JEC/Autumn18_V19_MC/
+mkdir -p $cmsswReleaseVersion/src/HHToBBGG-Run3/data/JEC/Summer22_22Sep2023_RunCD_V2_DATA/
+cp Summer22_22Sep2023_RunCD_V2_DATA_L1FastJet_AK4PFchs.txt $cmsswReleaseVersion/src/HHToBBGG-Run3/data/JEC/Summer22_22Sep2023_RunCD_V2_DATA/
 
 ###########################
 #get cmssw environment
@@ -90,13 +82,18 @@ echo "Copying Input File: " $i
 xrdcp $i ./inputs/
 done
 ls inputs/* > tmp_input_list.txt 
+cat tmp_input_list.txt 
+pwd
+
 
 ###########################
 #run executable
 ###########################
+pwd
 echo "Executing Analysis executable:"
-echo "./${executable} tmp_input_list.txt --outputFile=${outputfile}_${filenumber}_Part${jobIndex}Of${nJobsPerFile}.root --optionNumber=${option} --isData=${isData} --numberOfJobs=${nJobsPerFile} --jobIndex=${jobIndex}"
+echo "./${executable} tmp_input_list.txt --outputFile=${outputfile}_${filenumber}_Part${jobIndex}Of${nJobsPerFile}.root --optionNumber=${option} --isData=${isData} --year=${year} --pileupWeightName=${sampleName} --numberOfJobs=${nJobsPerFile} --jobIndex=${jobIndex}"
 ./${executable} tmp_input_list.txt --outputFile=${outputfile}_${filenumber}_Part${jobIndex}Of${nJobsPerFile}.root --optionNumber=${option} --isData=${isData} --year=${year} --pileupWeightName=${sampleName} --numberOfJobs=${nJobsPerFile} --jobIndex=${jobIndex}
+pwd
 
 ls -l
 ##########################################################

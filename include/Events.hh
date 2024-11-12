@@ -649,6 +649,34 @@ public :
    Bool_t          HLT_AK8PFJet380_TrimMass30;
    Bool_t          HLT_AK8PFJet400_TrimMass30;
    Bool_t          HLT_AK8PFJet420_TrimMass30;
+   Bool_t          HLT_AK8PFJet380_SoftDropMass30;
+   Bool_t          HLT_AK8PFJet400_SoftDropMass30;
+   Bool_t          HLT_AK8PFJet425_SoftDropMass30;
+   Bool_t          HLT_AK8PFJet450_SoftDropMass30;
+   Bool_t          HLT_AK8DiPFJet250_250_SoftDropMass40;
+   Bool_t          HLT_AK8DiPFJet250_250_SoftDropMass50;
+   Bool_t          HLT_AK8DiPFJet260_260_SoftDropMass30;
+   Bool_t          HLT_AK8DiPFJet260_260_SoftDropMass40;
+   Bool_t          HLT_AK8DiPFJet270_270_SoftDropMass30;
+   Bool_t          HLT_AK8DiPFJet280_280_SoftDropMass30;
+   Bool_t          HLT_AK8DiPFJet290_290_SoftDropMass30;
+   Bool_t          HLT_AK8PFJet220_SoftDropMass40;
+   Bool_t          HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p50;
+   Bool_t          HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p53;
+   Bool_t          HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p55;
+   Bool_t          HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p60;
+   Bool_t          HLT_AK8PFJet230_SoftDropMass40_PNetBB0p06;
+   Bool_t          HLT_AK8PFJet230_SoftDropMass40_PNetBB0p10;
+   Bool_t          HLT_AK8PFJet230_SoftDropMass40_PNetTauTau0p03;
+   Bool_t          HLT_AK8PFJet230_SoftDropMass40_PNetTauTau0p05;
+   Bool_t          HLT_AK8PFJet250_SoftDropMass40_PNetBB0p06;
+   Bool_t          HLT_AK8PFJet250_SoftDropMass40_PNetBB0p10;
+   Bool_t          HLT_AK8PFJet250_SoftDropMass40_PNetTauTau0p03;
+   Bool_t          HLT_AK8PFJet250_SoftDropMass40_PNetTauTau0p05;
+   Bool_t          HLT_AK8PFJet275_SoftDropMass40_PNetBB0p06;
+   Bool_t          HLT_AK8PFJet275_SoftDropMass40_PNetBB0p10;
+   Bool_t          HLT_AK8PFJet275_SoftDropMass40_PNetTauTau0p03;
+   Bool_t          HLT_AK8PFJet275_SoftDropMass40_PNetTauTau0p05;
    Bool_t          HLT_AK8PFJet400_MassSD30;
    Bool_t          HLT_AK8PFJet420_MassSD30;
    Bool_t          HLT_AK8PFJet450_MassSD30;
@@ -998,6 +1026,8 @@ public :
    Bool_t          HLT_Photon90_CaloIdL_PFHT700;
    Bool_t          HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90;
    Bool_t          HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass95;
+   Bool_t          HLT_DiphotonMVA14p25_Mass90;
+   Bool_t          HLT_DiphotonMVA14p25_Tight_Mass90;
    Bool_t          HLT_Diphoton30PV_18PV_R9Id_AND_IsoCaloId_AND_HE_R9Id_PixelVeto_Mass55;
    Bool_t          HLT_Diphoton30PV_18PV_R9Id_AND_IsoCaloId_AND_HE_R9Id_NoPixelVeto_Mass55;
    Bool_t          HLT_Photon35_TwoProngs35;
@@ -2278,6 +2308,34 @@ public :
    TBranch        *b_HLT_AK8PFJet380_TrimMass30;   //!
    TBranch        *b_HLT_AK8PFJet400_TrimMass30;   //!
    TBranch        *b_HLT_AK8PFJet420_TrimMass30;   //!
+   TBranch        *b_HLT_AK8PFJet380_SoftDropMass30;   //!
+   TBranch        *b_HLT_AK8PFJet400_SoftDropMass30;   //!
+   TBranch        *b_HLT_AK8PFJet425_SoftDropMass30;   //!
+   TBranch        *b_HLT_AK8PFJet450_SoftDropMass30;   //!
+   TBranch        *b_HLT_AK8DiPFJet250_250_SoftDropMass40;   //!
+   TBranch        *b_HLT_AK8DiPFJet250_250_SoftDropMass50;   //!
+   TBranch        *b_HLT_AK8DiPFJet260_260_SoftDropMass30;   //!
+   TBranch        *b_HLT_AK8DiPFJet260_260_SoftDropMass40;   //!
+   TBranch        *b_HLT_AK8DiPFJet270_270_SoftDropMass30;   //!
+   TBranch        *b_HLT_AK8DiPFJet280_280_SoftDropMass30;   //!
+   TBranch        *b_HLT_AK8DiPFJet290_290_SoftDropMass30;   //!
+   TBranch        *b_HLT_AK8PFJet220_SoftDropMass40;   //!
+   TBranch        *b_HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p50;   //!
+   TBranch        *b_HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p53;   //!
+   TBranch        *b_HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p55;   //!
+   TBranch        *b_HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p60;   //!
+   TBranch        *b_HLT_AK8PFJet230_SoftDropMass40_PNetBB0p06;   //!
+   TBranch        *b_HLT_AK8PFJet230_SoftDropMass40_PNetBB0p10;   //!
+   TBranch        *b_HLT_AK8PFJet230_SoftDropMass40_PNetTauTau0p03;   //!
+   TBranch        *b_HLT_AK8PFJet230_SoftDropMass40_PNetTauTau0p05;   //!
+   TBranch        *b_HLT_AK8PFJet250_SoftDropMass40_PNetBB0p06;   //!
+   TBranch        *b_HLT_AK8PFJet250_SoftDropMass40_PNetBB0p10;   //!
+   TBranch        *b_HLT_AK8PFJet250_SoftDropMass40_PNetTauTau0p03;   //!
+   TBranch        *b_HLT_AK8PFJet250_SoftDropMass40_PNetTauTau0p05;   //!
+   TBranch        *b_HLT_AK8PFJet275_SoftDropMass40_PNetBB0p06;   //!
+   TBranch        *b_HLT_AK8PFJet275_SoftDropMass40_PNetBB0p10;   //!
+   TBranch        *b_HLT_AK8PFJet275_SoftDropMass40_PNetTauTau0p03;   //!
+   TBranch        *b_HLT_AK8PFJet275_SoftDropMass40_PNetTauTau0p05;   //!
    TBranch        *b_HLT_AK8PFJet400_MassSD30;   //!
    TBranch        *b_HLT_AK8PFJet420_MassSD30;   //!
    TBranch        *b_HLT_AK8PFJet450_MassSD30;   //!
@@ -2627,6 +2685,8 @@ public :
    TBranch        *b_HLT_Photon90_CaloIdL_PFHT700;   //!
    TBranch        *b_HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90;   //!
    TBranch        *b_HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass95;   //!
+   TBranch        *b_HLT_DiphotonMVA14p25_Mass90;   //!
+   TBranch        *b_HLT_DiphotonMVA14p25_Tight_Mass90;   //!
    TBranch        *b_HLT_Diphoton30PV_18PV_R9Id_AND_IsoCaloId_AND_HE_R9Id_PixelVeto_Mass55;   //!
    TBranch        *b_HLT_Diphoton30PV_18PV_R9Id_AND_IsoCaloId_AND_HE_R9Id_NoPixelVeto_Mass55;   //!
    TBranch        *b_HLT_Photon35_TwoProngs35;   //!
@@ -4054,6 +4114,35 @@ void Events::Init(TTree *tree)
    fChain->SetBranchAddress("HLT_AK8PFJet380_TrimMass30", &HLT_AK8PFJet380_TrimMass30, &b_HLT_AK8PFJet380_TrimMass30);
    fChain->SetBranchAddress("HLT_AK8PFJet400_TrimMass30", &HLT_AK8PFJet400_TrimMass30, &b_HLT_AK8PFJet400_TrimMass30);
    fChain->SetBranchAddress("HLT_AK8PFJet420_TrimMass30", &HLT_AK8PFJet420_TrimMass30, &b_HLT_AK8PFJet420_TrimMass30);
+    fChain->SetBranchAddress("HLT_AK8PFJet380_SoftDropMass30", &HLT_AK8PFJet380_SoftDropMass30, &b_HLT_AK8PFJet380_SoftDropMass30);
+   fChain->SetBranchAddress("HLT_AK8PFJet400_SoftDropMass30", &HLT_AK8PFJet400_SoftDropMass30, &b_HLT_AK8PFJet400_SoftDropMass30);
+   fChain->SetBranchAddress("HLT_AK8PFJet425_SoftDropMass30", &HLT_AK8PFJet425_SoftDropMass30, &b_HLT_AK8PFJet425_SoftDropMass30);
+   fChain->SetBranchAddress("HLT_AK8PFJet450_SoftDropMass30", &HLT_AK8PFJet450_SoftDropMass30, &b_HLT_AK8PFJet450_SoftDropMass30);
+   fChain->SetBranchAddress("HLT_AK8DiPFJet250_250_SoftDropMass40", &HLT_AK8DiPFJet250_250_SoftDropMass40, &b_HLT_AK8DiPFJet250_250_SoftDropMass40);
+   fChain->SetBranchAddress("HLT_AK8DiPFJet250_250_SoftDropMass50", &HLT_AK8DiPFJet250_250_SoftDropMass50, &b_HLT_AK8DiPFJet250_250_SoftDropMass50);
+   fChain->SetBranchAddress("HLT_AK8DiPFJet260_260_SoftDropMass30", &HLT_AK8DiPFJet260_260_SoftDropMass30, &b_HLT_AK8DiPFJet260_260_SoftDropMass30);
+   fChain->SetBranchAddress("HLT_AK8DiPFJet260_260_SoftDropMass40", &HLT_AK8DiPFJet260_260_SoftDropMass40, &b_HLT_AK8DiPFJet260_260_SoftDropMass40);
+   fChain->SetBranchAddress("HLT_AK8DiPFJet270_270_SoftDropMass30", &HLT_AK8DiPFJet270_270_SoftDropMass30, &b_HLT_AK8DiPFJet270_270_SoftDropMass30);
+   fChain->SetBranchAddress("HLT_AK8DiPFJet280_280_SoftDropMass30", &HLT_AK8DiPFJet280_280_SoftDropMass30, &b_HLT_AK8DiPFJet280_280_SoftDropMass30);
+   fChain->SetBranchAddress("HLT_AK8DiPFJet290_290_SoftDropMass30", &HLT_AK8DiPFJet290_290_SoftDropMass30, &b_HLT_AK8DiPFJet290_290_SoftDropMass30);
+   fChain->SetBranchAddress("HLT_AK8PFJet220_SoftDropMass40", &HLT_AK8PFJet220_SoftDropMass40, &b_HLT_AK8PFJet220_SoftDropMass40);
+   fChain->SetBranchAddress("HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p50", &HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p50, &b_HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p50);
+   fChain->SetBranchAddress("HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p53", &HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p53, &b_HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p53);
+   fChain->SetBranchAddress("HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p55", &HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p55, &b_HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p55);
+   fChain->SetBranchAddress("HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p60", &HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p60, &b_HLT_AK8PFJet220_SoftDropMass40_PNetBB0p06_DoubleAK4PFJet60_30_PNet2BTagMean0p60);
+   fChain->SetBranchAddress("HLT_AK8PFJet230_SoftDropMass40", &HLT_AK8PFJet230_SoftDropMass40, &b_HLT_AK8PFJet230_SoftDropMass40);
+   fChain->SetBranchAddress("HLT_AK8PFJet230_SoftDropMass40_PNetBB0p06", &HLT_AK8PFJet230_SoftDropMass40_PNetBB0p06, &b_HLT_AK8PFJet230_SoftDropMass40_PNetBB0p06);
+   fChain->SetBranchAddress("HLT_AK8PFJet230_SoftDropMass40_PNetBB0p10", &HLT_AK8PFJet230_SoftDropMass40_PNetBB0p10, &b_HLT_AK8PFJet230_SoftDropMass40_PNetBB0p10);
+   fChain->SetBranchAddress("HLT_AK8PFJet230_SoftDropMass40_PNetTauTau0p03", &HLT_AK8PFJet230_SoftDropMass40_PNetTauTau0p03, &b_HLT_AK8PFJet230_SoftDropMass40_PNetTauTau0p03);
+   fChain->SetBranchAddress("HLT_AK8PFJet230_SoftDropMass40_PNetTauTau0p05", &HLT_AK8PFJet230_SoftDropMass40_PNetTauTau0p05, &b_HLT_AK8PFJet230_SoftDropMass40_PNetTauTau0p05);
+   fChain->SetBranchAddress("HLT_AK8PFJet250_SoftDropMass40_PNetBB0p06", &HLT_AK8PFJet250_SoftDropMass40_PNetBB0p06, &b_HLT_AK8PFJet250_SoftDropMass40_PNetBB0p06);
+   fChain->SetBranchAddress("HLT_AK8PFJet250_SoftDropMass40_PNetBB0p10", &HLT_AK8PFJet250_SoftDropMass40_PNetBB0p10, &b_HLT_AK8PFJet250_SoftDropMass40_PNetBB0p10);
+   fChain->SetBranchAddress("HLT_AK8PFJet250_SoftDropMass40_PNetTauTau0p03", &HLT_AK8PFJet250_SoftDropMass40_PNetTauTau0p03, &b_HLT_AK8PFJet250_SoftDropMass40_PNetTauTau0p03);
+   fChain->SetBranchAddress("HLT_AK8PFJet250_SoftDropMass40_PNetTauTau0p05", &HLT_AK8PFJet250_SoftDropMass40_PNetTauTau0p05, &b_HLT_AK8PFJet250_SoftDropMass40_PNetTauTau0p05);
+   fChain->SetBranchAddress("HLT_AK8PFJet275_SoftDropMass40_PNetBB0p06", &HLT_AK8PFJet275_SoftDropMass40_PNetBB0p06, &b_HLT_AK8PFJet275_SoftDropMass40_PNetBB0p06);
+   fChain->SetBranchAddress("HLT_AK8PFJet275_SoftDropMass40_PNetBB0p10", &HLT_AK8PFJet275_SoftDropMass40_PNetBB0p10, &b_HLT_AK8PFJet275_SoftDropMass40_PNetBB0p10);
+   fChain->SetBranchAddress("HLT_AK8PFJet275_SoftDropMass40_PNetTauTau0p03", &HLT_AK8PFJet275_SoftDropMass40_PNetTauTau0p03, &b_HLT_AK8PFJet275_SoftDropMass40_PNetTauTau0p03);
+   fChain->SetBranchAddress("HLT_AK8PFJet275_SoftDropMass40_PNetTauTau0p05", &HLT_AK8PFJet275_SoftDropMass40_PNetTauTau0p05, &b_HLT_AK8PFJet275_SoftDropMass40_PNetTauTau0p05);
    fChain->SetBranchAddress("HLT_AK8PFJet400_MassSD30", &HLT_AK8PFJet400_MassSD30, &b_HLT_AK8PFJet400_MassSD30);
    fChain->SetBranchAddress("HLT_AK8PFJet420_MassSD30", &HLT_AK8PFJet420_MassSD30, &b_HLT_AK8PFJet420_MassSD30);
    fChain->SetBranchAddress("HLT_AK8PFJet450_MassSD30", &HLT_AK8PFJet450_MassSD30, &b_HLT_AK8PFJet450_MassSD30);
@@ -4403,6 +4492,9 @@ void Events::Init(TTree *tree)
    //fChain->SetBranchAddress("HLT_Photon90_CaloIdL_PFHT700", &HLT_Photon90_CaloIdL_PFHT700, &b_HLT_Photon90_CaloIdL_PFHT700);
    fChain->SetBranchAddress("HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90", &HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90, &b_HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90);
    fChain->SetBranchAddress("HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass95", &HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass95, &b_HLT_Diphoton30_22_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass95);
+   fChain->SetBranchAddress("HLT_DiphotonMVA14p25_Mass90", &HLT_DiphotonMVA14p25_Mass90, &b_HLT_DiphotonMVA14p25_Mass90);
+   fChain->SetBranchAddress("HLT_DiphotonMVA14p25_Tight_Mass90", &HLT_DiphotonMVA14p25_Tight_Mass90, &b_HLT_DiphotonMVA14p25_Tight_Mass90);
+   
    //fChain->SetBranchAddress("HLT_Diphoton30PV_18PV_R9Id_AND_IsoCaloId_AND_HE_R9Id_PixelVeto_Mass55", &HLT_Diphoton30PV_18PV_R9Id_AND_IsoCaloId_AND_HE_R9Id_PixelVeto_Mass55, &b_HLT_Diphoton30PV_18PV_R9Id_AND_IsoCaloId_AND_HE_R9Id_PixelVeto_Mass55);
    //fChain->SetBranchAddress("HLT_Diphoton30PV_18PV_R9Id_AND_IsoCaloId_AND_HE_R9Id_NoPixelVeto_Mass55", &HLT_Diphoton30PV_18PV_R9Id_AND_IsoCaloId_AND_HE_R9Id_NoPixelVeto_Mass55, &b_HLT_Diphoton30PV_18PV_R9Id_AND_IsoCaloId_AND_HE_R9Id_NoPixelVeto_Mass55);
    fChain->SetBranchAddress("HLT_Photon35_TwoProngs35", &HLT_Photon35_TwoProngs35, &b_HLT_Photon35_TwoProngs35);
