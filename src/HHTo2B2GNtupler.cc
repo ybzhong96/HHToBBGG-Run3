@@ -231,6 +231,22 @@ double HHTo2B2GNtupler::JetEnergyCorrectionFactor( double jetRawPt, double jetEt
 
 */
 
+struct Photon {
+    double pt;
+    double eta;
+    double phi;
+    double mva;
+    int iPhiOriY;
+    int iEtaOriX;
+    double pfRelIso03_chg_quadratic;
+    double pfRelIso03_all_quadratic;
+    double r9;
+    double energyErr;
+    double energyRaw;
+    bool bT;  //be True
+};
+
+
 // Define a Jet structure to hold the information for each jet
 struct Jet {
     double pt;
@@ -253,6 +269,44 @@ double calculateInvariantMass(const Jet& jet1, const Jet& jet2) {
     JetV2.SetPtEtaPhiM(jet2.pt, jet2.eta, jet2.phi, jet2.mass);
     double invariantMass = (JetV1+JetV2).M();
     return invariantMass;
+}
+
+
+void processPhoton(std::vector<Photon>& photons){
+    std::sort(photons.begin(), photons.end(), [](const Photon& a, const Photon& b) {
+        return a.pt > b.pt;
+    });
+
+    struct PhotonPair {
+        int photon1_index;
+        int photon2_index;
+        double pt_sum;
+    };
+
+    std::vector<PhotonPair> photon_pairs;
+
+    for (size_t i = 0; i < photons.size(); ++i) {
+        for (size_t j = i + 1; j < photons.size(); ++j) {
+            TLorentzVector phoV1;
+            TLorentzVector phoV2;
+            phoV1.SetPtEtaPhiM(photons[i].pt, photons[i].eta, photons[i].phi, 0);
+            phoV2.SetPtEtaPhiM(photons[j].pt, photons[j].eta, photons[j].phi, 0);
+		
+            double pT = (phoV1 +phoV2).Pt();
+	    if (photons[i].pt>35){
+              photon_pairs.push_back({(int)i, (int)j, pT});
+	    }
+        }
+    }
+    if (photon_pairs.empty()) return;
+
+    // Find the photon pair with the highest pT sum
+    auto best_pair = *std::max_element(photon_pairs.begin(), photon_pairs.end(), [](const PhotonPair& a, const PhotonPair& b) {
+        return a.pt_sum < b.pt_sum;
+    });
+    // Set the bT flag for the photon be selected
+    photons[best_pair.photon1_index].bT = true;
+    photons[best_pair.photon2_index].bT = true;
 }
 
 
@@ -2486,15 +2540,17 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       bool pho_ScEta = false;
 
       std::vector< TLorentzVector > recoPhotonVector;  
+      std::vector<Photon> photons;     
+      
       for(unsigned int i = 0; i < nPhoton; i++ ) {  
-        if (Photon_pt[i] < 25) continue;   
-        if (fabs(Photon_eta[i]) > 2.5) continue;  
-         // if (fabs(Photon_eta[i]) > 1.442 && fabs(Photon_eta[i]) < 1.566) continue;       
+        if (Photon_pt[i] <= 25) continue;   
+        if (fabs(Photon_eta[i]) >= 2.5) continue;  
+            // if (fabs(Photon_eta[i]) > 1.442 && fabs(Photon_eta[i]) < 1.566) continue;       
          
        // add preselections 
         if (Photon_r9[i] < 0.8 && Photon_pfRelIso03_chg_quadratic[i] > 0.3 && Photon_pfRelIso03_chg_quadratic[i]*Photon_pt[i]>20) continue;
         if (Photon_hoe[i] > 0.08) continue;
-        if (Photon_mvaID[i] < -0.9) continue;
+        if (Photon_mvaID[i] <= -0.9) continue;
         if (!Photon_electronVeto[i]) continue;
         pass_phoIso_rho_corr_EB = (
             ((fabs(Photon_eta[i]) > 0.0) && (fabs(Photon_eta[i]) < 1.0))
@@ -2580,85 +2636,64 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 
         if (!(pho_r9&&pho_ScEta)) continue;
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	if (Photon_pt[i]>=pho1Pt){
-         
-          pho2Pt = pho1Pt;
-          pho2Eta = pho1Eta;
-          pho2Phi = pho1Phi;
-	  pho2R9 = pho1R9;
-	  pho2ChIso = pho1ChIso;	    
-          pho2_r9_ScEta = pho1_r9_ScEta;
-	  pho2_mvaID = pho1_mvaID;
-          pho2genId =  pho1genId;
-          pho2_seediPhiOriY = pho1_seediPhiOriY;                                                       
-          pho2_seediEtaOriX = pho1_seediEtaOriX;
-	  pho2_energyErr = pho1_energyErr;
-          pho2_energyRaw = pho1_energyRaw;
-          pho2_pfRelIso03_all_quadratic = pho1_pfRelIso03_all_quadratic; 
-	  pho2_hoe = pho1_hoe;
-	  
-          pho1Pt = Photon_pt[i];
-          pho1Eta = Photon_eta[i];
-          pho1Phi = Photon_phi[i];
-	  pho1R9 = Photon_r9[i];
-          pho1ChIso = Photon_pfRelIso03_chg_quadratic[i];
-          pho1_r9_ScEta = (pho_r9&&pho_ScEta);
-          pho1_mvaID = Photon_mvaID[i];
-          pho1genId = GenPart_pdgId[Photon_genPartIdx[i]];
-	  pho1_energyErr = Photon_energyErr[i];
-	  pho1_energyRaw = Photon_energyRaw[i];
-          pho1_seediPhiOriY = Photon_seediPhiOriY[i];  
-          pho1_seediEtaOriX = Photon_seediEtaOriX[i];
-          pho1_pfRelIso03_all_quadratic = Photon_pfRelIso03_all_quadratic[i];
-	  pho1_hoe = Photon_trkSumPtHollowConeDR03[i]; 
+        // Only for Fake-Fake samples, 
+	// Remove this for other samlpes 
+//	for (int k=0; k<nGenPart; k++){
+  //          if (GenPart_pdgId[k]==22 && deltaR(Photon_eta[i], Photon_phi[i], GenPart_eta[k], GenPart_phi[k]) < 0.1 && (0.85*GenPart_pt[k]<Photon_pt[i]) && (GenPart_pt[k]*1.05>Photon_pt[i])){
+    //          pho1QCD_realMatched = 1;
+  //          }
+//	}
+     //   if (pho1QCD_realMatched == 1) continue;
 
-        }else if (Photon_pt[i]>pho2Pt){   
-          pho2Pt = Photon_pt[i]; 
-          pho2Eta = Photon_eta[i];
-          pho2Phi = Photon_phi[i];
-	  pho2R9 = Photon_r9[i];
-          pho2ChIso = Photon_pfRelIso03_chg_quadratic[i];
-          pho2_r9_ScEta = (pho_r9&&pho_ScEta);
-	  pho2_mvaID = Photon_mvaID[i];
-          pho2genId = GenPart_pdgId[Photon_genPartIdx[i]];
-	  pho2_energyErr = Photon_energyErr[i];
-	  pho2_energyRaw = Photon_energyRaw[i];
-          pho2_seediPhiOriY = Photon_seediPhiOriY[i];
-          pho2_seediEtaOriX = Photon_seediEtaOriX[i];
-	  pho2_pfRelIso03_all_quadratic = Photon_pfRelIso03_all_quadratic[i];
-	  pho2_hoe = Photon_trkSumPtHollowConeDR03[i];
-        }
-      }// end Photon loop
 
-      for (int i=0; i<nGenPart; i++){
-        if (GenPart_pdgId[i]==22 && deltaR(pho1Eta,pho1Phi, GenPart_eta[i], GenPart_phi[i]) < 0.1 && (0.85*GenPart_pt[i]<pho1Pt) && (GenPart_pt[i]*1.1>pho1Pt)){
-	  Matched_genpho1Pt = GenPart_pt[i];
-          pho1QCD_realMatched = 1;
-	}  
-	if (GenPart_pdgId[i]==22 && deltaR(pho2Eta,pho2Phi, GenPart_eta[i], GenPart_phi[i]) < 0.1 && (0.85*GenPart_pt[i]<pho2Pt) && (GenPart_pt[i]*1.1>pho2Pt)){
-	  Matched_genpho2Pt = GenPart_pt[i];
-	  pho2QCD_realMatched = 1;
+	photons.push_back({Photon_pt[i],Photon_eta[i],Photon_phi[i],Photon_mvaID[i],Photon_seediPhiOriY[i],Photon_seediEtaOriX[i],Photon_pfRelIso03_chg_quadratic[i], Photon_pfRelIso03_all_quadratic[i], Photon_r9[i], Photon_energyErr[i], Photon_energyRaw[i], false});
+      } // end Photon loop  
+	
+      processPhoton(photons);
+
+      for (int i=0; i<photons.size(); i++){
+        
+	if (photons.size()==1 || (photons[i].bT==true && photons[i].pt>pho1Pt)){
+	
+	  pho1Pt = photons[i].pt;
+          pho1Eta = photons[i].eta;
+          pho1Phi = photons[i].phi;
+          pho1R9 = photons[i].r9;
+          pho1ChIso = photons[i].pfRelIso03_chg_quadratic;
+          pho1_mvaID = photons[i].mva;
+          pho1_energyErr = photons[i].energyErr;
+          pho1_energyRaw = photons[i].energyRaw;
+          pho1_seediPhiOriY = photons[i].iPhiOriY;
+          pho1_seediEtaOriX = photons[i].iEtaOriX;
+          pho1_pfRelIso03_all_quadratic = photons[i].pfRelIso03_all_quadratic;
+	
+	}else if(photons[i].bT==true) {
+	  pho2Pt = photons[i].pt;
+          pho2Eta = photons[i].eta;
+          pho2Phi = photons[i].phi;
+          pho2R9 = photons[i].r9;
+          pho2ChIso = photons[i].pfRelIso03_chg_quadratic;
+          pho2_mvaID = photons[i].mva;
+          pho2_energyErr = photons[i].energyErr;
+          pho2_energyRaw = photons[i].energyRaw;
+          pho2_seediPhiOriY = photons[i].iPhiOriY;
+          pho2_seediEtaOriX = photons[i].iEtaOriX;
+          pho2_pfRelIso03_all_quadratic = photons[i].pfRelIso03_all_quadratic;
 	}
       }
-
-
-
+	
+      if (!isData) {
+          for (int i=0; i<nGenPart; i++){
+            if (GenPart_pdgId[i]==22 && deltaR(pho1Eta,pho1Phi, GenPart_eta[i], GenPart_phi[i]) < 0.1 && (0.85*GenPart_pt[i]<pho1Pt) && (GenPart_pt[i]*1.1>pho1Pt)){
+	      Matched_genpho1Pt = GenPart_pt[i];
+              pho1QCD_realMatched = 1;
+	    }  
+	    if (GenPart_pdgId[i]==22 && deltaR(pho2Eta,pho2Phi, GenPart_eta[i], GenPart_phi[i]) < 0.1 && (0.85*GenPart_pt[i]<pho2Pt) && (GenPart_pt[i]*1.1>pho2Pt)){
+	      Matched_genpho2Pt = GenPart_pt[i];
+	      pho2QCD_realMatched = 1;
+	    }
+          }
+      }
 
       TLorentzVector g1;
       TLorentzVector g2;
@@ -3330,6 +3365,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       }
 
       processJets(jets);
+      NJets = jets.size();
       for (int l=0; l<jets.size(); l++){
 	if (jets[l].bT == true && jets[l].pt>b_jet1Pt){
 	    b_jet1Pt = jets[l].pt;

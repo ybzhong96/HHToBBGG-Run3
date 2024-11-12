@@ -257,6 +257,7 @@ public :
    //bool* Electron_mvaFall17V1Iso_WP80 = new bool[NELECTRON];   //[nElectron]
    //bool* Electron_mvaFall17V1Iso_WP90 = new bool[NELECTRON];   //[nElectron]
    //bool* Electron_mvaFall17V1Iso_WPL = new bool[NELECTRON];   //[nElectron]
+   float* Electron_mvaIso = new float[NELECTRON];
    bool* Electron_mvaNoIso_WP80 = new bool[NELECTRON];   //[nElectron]
    bool* Electron_mvaNoIso_WP90 = new bool[NELECTRON];   //[nElectron]
    //bool* Electron_mvaFall17V1noIso_WPL = new bool[NELECTRON];   //[nElectron]
@@ -1887,7 +1888,7 @@ public :
    //TBranch        *b_Electron_mvaFall17V1Iso_WP80;   //!
    //TBranch        *b_Electron_mvaFall17V1Iso_WP90;   //!
    //TBranch        *b_Electron_mvaFall17V1Iso_WPL;   //!
-   //TBranch        *b_Electron_mvaFall17V1noIso_WP80;   //!
+   TBranch        *b_Electron_mvaIso;   //!
    TBranch        *b_Electron_mvaNoIso_WP90;   //!
    TBranch        *b_Electron_mvaNoIso_WP80;   //!
    TBranch        *b_Electron_mvaIso_WP80;   //!
@@ -2130,6 +2131,8 @@ public :
    TBranch        *b_Photon_seediPhiOriY;
    TBranch        *b_Photon_seediEtaOriX;
    TBranch        *b_Photon_trkSumPtHollowConeDR03; //
+   TBranch        *b_Photon_genPartIdx;
+   
    TBranch        *b_Rho_fixedGridRhoAll;
 
    TBranch        *b_Pileup_nTrueInt;   //!
@@ -2251,8 +2254,7 @@ public :
    TBranch        *b_Jet_genJetIdx;   //!
    TBranch        *b_Jet_hadronFlavour;   //!   //!
    TBranch        *b_Muon_genPartIdx;   //!
-   TBranch        *b_Muon_genPartFlav;   //!
-   TBranch        *b_Photon_genPartIdx;   //!
+   TBranch        *b_Muon_genPartFlav;   //!  //!
    TBranch        *b_Photon_genPartFlav;   //!
    TBranch        *b_MET_fiducialGenPhi;   //!
    TBranch        *b_MET_fiducialGenPt;   //!
@@ -3649,7 +3651,7 @@ void Events::Init(TTree *tree)
    fChain->SetBranchAddress("Electron_lostHits", Electron_lostHits, &b_Electron_lostHits);
    fChain->SetBranchAddress("Electron_mvaIso_WP80", Electron_mvaIso_WP80, &b_Electron_mvaIso_WP80);
    fChain->SetBranchAddress("Electron_mvaIso_WP90", Electron_mvaIso_WP90, &b_Electron_mvaIso_WP90);
-   //fChain->SetBranchAddress("Electron_mvaFall17V1Iso_WPL", Electron_mvaFall17V1Iso_WPL, &b_Electron_mvaFall17V1Iso_WPL);
+   fChain->SetBranchAddress("Electron_mvaIso", Electron_mvaIso, &b_Electron_mvaIso);
    //fChain->SetBranchAddress("Electron_mvaFall17V1noIso_WP80", Electron_mvaFall17V1noIso_WP80, &b_Electron_mvaFall17V1noIso_WP80);
    //fChain->SetBranchAddress("Electron_mvaFall17V1noIso_WPL", Electron_mvaFall17V1noIso_WPL, &b_Electron_mvaFall17V1noIso_WPL);
    fChain->SetBranchAddress("Electron_mvaNoIso_WP80", Electron_mvaNoIso_WP80, &b_Electron_mvaNoIso_WP80);
@@ -3898,6 +3900,9 @@ void Events::Init(TTree *tree)
    fChain->SetBranchAddress("Photon_seediEtaOriX", Photon_seediEtaOriX, &b_Photon_seediEtaOriX);
    fChain->SetBranchAddress("Photon_seediPhiOriY", Photon_seediPhiOriY, &b_Photon_seediPhiOriY);
    fChain->SetBranchAddress("Photon_seedGain", Photon_seedGain, &b_Photon_seedGain);
+   fChain->SetBranchAddress("Photon_trkSumPtHollowConeDR03", Photon_trkSumPtHollowConeDR03, &b_Photon_trkSumPtHollowConeDR03);
+
+
    b_Pileup_nTrueInt = fChain->GetBranch("Pileup_nTrueInt");
    if (b_Pileup_nTrueInt){
      fChain->SetBranchAddress("Pileup_nTrueInt", &Pileup_nTrueInt, &b_Pileup_nTrueInt);
