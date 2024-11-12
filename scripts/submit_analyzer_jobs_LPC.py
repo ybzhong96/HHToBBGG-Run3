@@ -23,13 +23,11 @@ outputfile = "HHTo2B2GNtuple" + "_" + label
 cmsswReleaseVersion = "CMSSW_14_0_7"
 
 
+
 outputDirectoryBase = "/store/group/lpcdihiggsboost/sixie/analyzer/"+analysis+"/"+label+"/"
 filesPerJob = 1
 
 datasetList = OrderedDict()
-
-#Make line from list of inputs
-#ls | awk '{print "datasetList[\"nano/run3/2022EE/"$1"\"] = [1, 1, \"2022EE\", \"\", 1]"}'
 
 #2022 ntuples
 
@@ -193,9 +191,6 @@ datasetList["nano/run3/2023BPix/ggZH_Hto2G_Zto2L_M-125_TuneCP5_13p6TeV_powheg-py
 datasetList["nano/run3/2023BPix/ggZH_Hto2G_Zto2Nu_M-125_TuneCP5_13p6TeV_powheg-pythia8.list"] = [2, 1, "2023BPix", "", 1]
 datasetList["nano/run3/2023BPix/ggZH_Hto2G_Zto2Q_M-125_TuneCP5_13p6TeV_powheg-pythia8.list"] = [2, 1, "2023BPix", "", 1]
 datasetList["nano/run3/2023BPix/ttHtoGG_M-125_TuneCP5_13p6TeV_amcatnloFXFX-madspin-pythia8.list"] = [2, 1, "2023BPix", "", 1]
-
-
-
 
 
 CMSSW_BASE_DIR = os.getenv('CMSSW_BASE')
