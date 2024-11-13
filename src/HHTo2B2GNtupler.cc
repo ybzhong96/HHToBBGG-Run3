@@ -386,7 +386,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       } else if (year == "2018") {
 	triggerEffFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/JetHTTriggerEfficiency_2018.root";
 	triggerEffMCFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/JetHTTriggerEfficiency_Fall18.root";
-      } else if (year == "2022"){
+      } else if (year == "2022" || year == "2022EE" || year == "2023" || year == "2023BPix" || year == "2024"){
         triggerEffFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/JetHTTriggerEfficiency_2018.root";
         triggerEffMCFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/JetHTTriggerEfficiency_Fall18.root";
       }
@@ -436,7 +436,20 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       if (triggerEffMCHist_Xbb0p95To0p98) cout << "Found triggerEffMCHist_Xbb0p95To0p98 in file " << triggerEffMCFilename << "\n";
       if (triggerEffMCHist_Xbb0p98To1p0) cout << "Found triggerEffMCHist_Xbb0p98To1p0 in file " << triggerEffMCFilename << "\n";
  
-      string pileupWeightFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/PileupWeights/PileupWeights.root";
+      string pileupWeightFilename = "";
+      if (year == "2022") {
+	pileupWeightFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/PileupWeights/PileupReweight_Summer22.root";
+      } else if (year == "2022EE") {
+	pileupWeightFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/PileupWeights/PileupReweight_Summer22EE.root";
+      } else if (year == "2023") {
+	pileupWeightFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/PileupWeights/PileupReweight_Summer23.root";
+      } else if (year == "2023BPix") {
+	pileupWeightFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/PileupWeights/PileupReweight_Summer23BPix.root";
+      } else if (year == "2024") {
+	pileupWeightFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/PileupWeights/PileupReweight_Summer23.root";
+      }
+
+
       TFile *pileupWeightFile = new TFile(pileupWeightFilename.c_str(),"READ");
       if (!pileupWeightFile) {
 	cout << "Warning : pileupWeightFile " << pileupWeightFile << " could not be opened.\n";  
@@ -445,9 +458,12 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       }
       string pileupWeightHistname = "PUWeight_" + pileupWeightName + "_" + year;
       if (pileupWeightFile) {
-	pileupWeightHist = (TH1F*)pileupWeightFile->Get(pileupWeightHistname.c_str());
-	pileupWeightUpHist = (TH1F*)pileupWeightFile->Get((pileupWeightHistname+"_SysUp").c_str());
-	pileupWeightDownHist = (TH1F*)pileupWeightFile->Get((pileupWeightHistname+"_SysDown").c_str());
+	pileupWeightHist = (TH1F*)(pileupWeightFile->Get("npu_nominal"));
+	pileupWeightHist->SetDirectory(0);
+	pileupWeightUpHist = (TH1F*)(pileupWeightFile->Get("npu_up"));
+	pileupWeightUpHist->SetDirectory(0);
+	pileupWeightDownHist = (TH1F*)(pileupWeightFile->Get("npu_down"));
+	pileupWeightDownHist->SetDirectory(0);
       } 
       if (pileupWeightHist) {
 	cout << "Found pileupWeightHist " << pileupWeightHistname << "in file " << pileupWeightFilename << "\n";
@@ -470,6 +486,8 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	     << pileupWeightHistname +"_SysDown"
 	     << " in file " << pileupWeightFilename << "\n";
       }
+      pileupWeightFile->Close();
+      pileupWeightHist->Print();
     
     }
 
@@ -498,7 +516,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	float tmp_jms[] = {0.997, 0.993, 1.001};
 	jmsValues = tmp_jms;
       }
-    else if(year == "2023")
+    else if(year == "2023" || year == "2023BPix")
       {
 	float tmp_jms[] = {0.997, 0.993, 1.001};
 	jmsValues = tmp_jms;
@@ -537,7 +555,13 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	float tmp_jmr[] = {1.065, 1.031, 1.099}; //Tuned to our Top control region
         jmrValues = tmp_jmr;
       }
-    else if(year == "2023")
+    else if(year == "2023" || year == "2023BPix")
+      {
+	//float tmp_jmr[] = {1.24, 1.20, 1.28};
+        float tmp_jmr[] = {1.065, 1.031, 1.099}; //Tuned to our Top control region
+	jmrValues = tmp_jmr;
+      }
+    else if(year == "2024" )
       {
 	//float tmp_jmr[] = {1.24, 1.20, 1.28};
         float tmp_jmr[] = {1.065, 1.031, 1.099}; //Tuned to our Top control region
@@ -2825,11 +2849,11 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 
       //For MC apply jet energy and mass corrections
       if (!isData){
-	jecUnc->setJetEta(fatJet1Eta);
-	jecUnc->setJetPt(fatJet1Pt);
-	double unc = jecUnc->getUncertainty(true);
-	fatJet1Pt_JES_Up   = fatJet1Pt*(1+unc);
-	fatJet1Pt_JES_Down = fatJet1Pt/(1+unc);
+//	jecUnc->setJetEta(fatJet1Eta);
+//	jecUnc->setJetPt(fatJet1Pt);
+//	double unc = jecUnc->getUncertainty(true);
+//	fatJet1Pt_JES_Up   = fatJet1Pt*(1+unc);
+//	fatJet1Pt_JES_Down = fatJet1Pt/(1+unc);
 	fatJet1MassSD             = ( 1.0 + corr_fatJet1_mass )*jmsValues[0]*fatJet1MassSD_UnCorrected;//correct, mass scale and resolution, for resolution subtract 1.0 from width
 	fatJet1MassSD_JMS_Down    = (jmsValues[1]/jmsValues[0])*fatJet1MassSD;//jet mass scale down
 	fatJet1MassSD_JMS_Up      = (jmsValues[2]/jmsValues[0])*fatJet1MassSD;//jrt mass scale up
@@ -2948,11 +2972,11 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 
      //For MC apply jet energy and mass corrections
       if ( !isData ) {
-	jecUnc->setJetEta(fatJet2Eta);
-	jecUnc->setJetPt(fatJet2Pt);
-	double unc                = jecUnc->getUncertainty(true);
-	fatJet2Pt_JES_Up   = fatJet2Pt*(1+unc);
-	fatJet2Pt_JES_Down = fatJet2Pt/(1+unc);
+//	jecUnc->setJetEta(fatJet2Eta);
+//	jecUnc->setJetPt(fatJet2Pt);
+//	double unc                = jecUnc->getUncertainty(true);
+//	fatJet2Pt_JES_Up   = fatJet2Pt*(1+unc);
+//	fatJet2Pt_JES_Down = fatJet2Pt/(1+unc);
         fatJet2MassSD             = ( 1.0 + corr_fatJet2_mass )*jmsValues[0]*fatJet2MassSD_UnCorrected;//correct, mass scale and resolution, for resolution subtract 1.0 from width
 	fatJet2MassSD_JMS_Down    = (jmsValues[1]/jmsValues[0])*fatJet2MassSD;//jet mass scale down
 	fatJet2MassSD_JMS_Up      = (jmsValues[2]/jmsValues[0])*fatJet2MassSD;//jrt mass scale up
@@ -3051,11 +3075,11 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       fatJet3MassSD_UnCorrected = FatJet_msoftdrop[fatJet3Index];
       fatJet3MassSD             = jmsValues[0]*fatJet3MassSD_UnCorrected;//correct, mass scale and resolution, for resolution subtract 1.0 from width
       if ( !isData ) {
-          jecUnc->setJetEta(fatJet3Eta);
-          jecUnc->setJetPt(fatJet3Pt);
-          double unc                = jecUnc->getUncertainty(true);
-          fatJet3Pt_JES_Up   = fatJet3Pt*(1+unc);
-          fatJet3Pt_JES_Down = fatJet3Pt/(1+unc);
+  //        jecUnc->setJetEta(fatJet3Eta);
+    //      jecUnc->setJetPt(fatJet3Pt);
+     //     double unc                = jecUnc->getUncertainty(true);
+     //     fatJet3Pt_JES_Up   = fatJet3Pt*(1+unc);
+     //     fatJet3Pt_JES_Down = fatJet3Pt/(1+unc);
 	  fatJet3MassSD             = ( 1.0 + corr_fatJet3_mass )*jmsValues[0]*fatJet3MassSD_UnCorrected;//correct, mass scale and resolution, for resolution subtract 1.0 from width
 	  fatJet3MassSD_JMS_Down    = (jmsValues[1]/jmsValues[0])*fatJet3MassSD;//jet mass scale down
 	  fatJet3MassSD_JMS_Up      = (jmsValues[2]/jmsValues[0])*fatJet3MassSD;//jrt mass scale up

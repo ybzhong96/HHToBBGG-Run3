@@ -59,6 +59,12 @@ cp JetHTTriggerEfficiency_Fall18.root $cmsswReleaseVersion/src/HHToBBGG-Run3/dat
 #cp HHBoostedAnalyzer/data/PileupWeights/PileupWeights.root $cmsswReleaseVersion/src/HHBoostedAnalyzer/data/PileupWeights/
 cp PileupWeights.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/PileupWeights/
 
+cp PileupReweight_Summer22.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/PileupWeights/
+cp PileupReweight_Summer22EE.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/PileupWeights/
+cp PileupReweight_Summer23.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/PileupWeights/
+cp PileupReweight_Summer23BPix.root $cmsswReleaseVersion/src/HHToBBGG-Run3/data/PileupWeights/
+
+
 cp Run3_2022_2023_Golden.json $cmsswReleaseVersion/src/HHToBBGG-Run3/data/
 
 mkdir -p $cmsswReleaseVersion/src/HHToBBGG-Run3/data/JEC/Summer16_07Aug2017_V11_MC/
