@@ -331,7 +331,7 @@ when_to_transfer_output = ON_EXIT
 # Resources request
 """
     tmpCondorJDLFile.write(tmpCondorJDLFileTemplate)
-    tmpCondorJDLFile.write("RequestMemory = 2000 \n")
+    tmpCondorJDLFile.write("RequestMemory = 4000 \n")
 
     tmpCondorJDLFileTemplate = """
 

@@ -895,7 +895,10 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
     int   lep2Id = 0;
     float lep1mva = -99;
     float lep2mva = -99;
-    
+    int n_leptons = 0;
+    int n_Electron = 0;
+    int n_Muon = 0;
+
     float Muon_1Pt = -99;
     float Muon_1Eta = -99;
     float Muon_1Phi = -99;
@@ -1502,6 +1505,10 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       outputTree->Branch("lep2Id", &lep2Id, "lep2Id/I");
       outputTree->Branch("lep1mva", &lep1mva, "lep1mva/F");
       outputTree->Branch("lep2mva", &lep2mva, "lep2mva/F");
+      outputTree->Branch("n_leptons", &n_leptons, "n_leptons/I");
+      outputTree->Branch("n_Muon", &n_Muon, "n_Muon/I");
+      outputTree->Branch("n_Electron", &n_Electron, "n_Electron/I");
+
 
       outputTree->Branch("Muon_1Pt", &Muon_1Pt, "Muon_1Pt/F");
       outputTree->Branch("Muon_1Eta", &Muon_1Eta, "Muon_1Eta/F");
@@ -1949,6 +1956,9 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       lep2Id = 0;
       lep1mva = -99;
       lep2mva = -99;
+      n_leptons = 0;
+      n_Muon = 0;
+      n_Electron = 0;
 
       Muon_1Pt = -99;
       Muon_1Eta = -99;
@@ -3198,11 +3208,10 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 
 	if (Muon_pt[i] <= 10) continue;
 	if (fabs(Muon_eta[i]) >= 2.4) continue;
-//if (Muon_miniPFRelIso_all[i] > 0.2) continue;
 	if (!Muon_mediumId[i]) continue;
         if (deltaR(Muon_eta[i], Muon_phi[i], pho1Eta, pho1Phi)<=0.2) continue;
 	if (deltaR(Muon_eta[i], Muon_phi[i], pho2Eta, pho2Phi)<=0.2) continue;
-	//if (deltaR(Muon_eta[i], Muon_phi[i], Diphoton_Eta, Diphoton_Pt)<=0.2) continue;
+	n_Muon = n_Muon+1;
 
 	if (lep1Id == 0) {
 	  lep1Pt = Muon_pt[i];
@@ -3237,9 +3246,8 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	if (!Electron_mvaIso_WP80[i]) continue;
         if (deltaR(Electron_eta[i], Electron_phi[i], pho1Eta, pho1Phi)<=0.2) continue;
         if (deltaR(Electron_eta[i], Electron_phi[i], pho2Eta, pho2Phi)<=0.2) continue;
-	//if (deltaR(Electron_eta[i], Electron_phi[i], Diphoton_Eta, Diphoton_Pt)<=0.2) continue;
-        //if (Electron_miniPFRelIso_all[i] > 0.2) continue;
-        //if (!Electron_cutBased[i]) continue;
+	n_Electron = n_Electron+1;
+
 	if (lep1Id == 0) {
 	  lep1Pt = Electron_pt[i];
 	  lep1Eta = Electron_eta[i];
@@ -3267,7 +3275,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	} 
       } //loop over electrons
 
-
+      n_leptons = n_Muon+n_Electron;
     
       //*******************************
       //Count additional AK4 jets 
@@ -3392,6 +3400,14 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       NJets = jets.size();
       for (int l=0; l<jets.size(); l++){
 	if (jets[l].bT == true && jets[l].pt>b_jet1Pt){
+	    b_jet2Pt = b_jet1Pt;
+            b_jet2Eta = b_jet1Eta;
+            b_jet2Phi = b_jet1Phi;
+            b_jet2Mass = b_jet1Mass;
+            b_jet2PNet = b_jet1PNet;
+            b_jet2PtRes = b_jet1PtRes;
+            b_jet2PtCorr = b_jet1PtCorr;
+            b_jet2PtCorrNeutrino = b_jet1PtCorrNeutrino;	    
 	    b_jet1Pt = jets[l].pt;
             b_jet1Eta = jets[l].eta;
             b_jet1Phi = jets[l].phi;
@@ -3400,6 +3416,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
             b_jet1PtRes = jets[l].PtRes;
             b_jet1PtCorr = jets[l].PtCorr;
             b_jet1PtCorrNeutrino = jets[l].PtCorrNeutrino;
+
 	}else if (jets[l].bT == true){ 
 	    b_jet2Pt = jets[l].pt;
             b_jet2Eta = jets[l].eta;
@@ -3464,7 +3481,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	Dijetsall_Phi = (b1_jet+b2_jet).Phi();
       }
        
-      float minR_Wjets = 999;
+      float minR_Wjets = 9999;
       float dR = -1;
       int Nnb_jets = 0; //Number of non-b jets
       int minI = -1;
@@ -3483,9 +3500,9 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       
       if (jets.size()>=2){
           for (int i = 0; i < jets.size(); ++i) {
-	      if (jets[i].btag_score == true) continue; 
+	      if (jets[i].bT == true) continue; 
               for (int j = i + 1; j < jets.size(); ++j) {
-                  if (jets[i].btag_score == true) continue;
+                  if (jets[j].bT == true) continue;
 		  dR = deltaR(jets[i].eta, jets[i].phi, jets[j].eta, jets[j].phi);
                   if (dR < minR_Wjets) {
                       minR_Wjets = dR;
@@ -3494,45 +3511,47 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
                   }
               }
           }
-          TLorentzVector nonb_jet1;
-          TLorentzVector nonb_jet2;
-	  TLorentzVector W_boson;
-          nonb_jet1.SetPtEtaPhiM(jets[minI].pt, jets[minI].eta, jets[minI].phi, jets[minI].mass);
-	  nonb_jet2.SetPtEtaPhiM(jets[minJ].pt, jets[minJ].eta, jets[minJ].phi, jets[minJ].mass);
-          W_boson = nonb_jet1+ nonb_jet2;
-	  W_mass = W_boson.M(); 
-          W_pt = W_boson.Pt();
-          W_eta = W_boson.Eta();
-	  W_phi = W_boson.Phi();
-          if (b_jet2Pt>0){
-              TLorentzVector top1;
-              if (deltaR(W_eta, W_phi, b_jet1Eta, b_jet1Phi)< deltaR(W_eta, W_phi, b_jet2Eta, b_jet2Phi)){
-	          top1 = W_boson + b1_jet;
-       	          top1_Mass = top1.M();
-                  use_bjet1 = 1;
+          if (minI >= 0 && minJ >= 0){
+
+              TLorentzVector nonb_jet1;
+              TLorentzVector nonb_jet2;
+	      TLorentzVector W_boson;
+              nonb_jet1.SetPtEtaPhiM(jets[minI].pt, jets[minI].eta, jets[minI].phi, jets[minI].mass);
+	      nonb_jet2.SetPtEtaPhiM(jets[minJ].pt, jets[minJ].eta, jets[minJ].phi, jets[minJ].mass);
+              W_boson = nonb_jet1+ nonb_jet2;
+	      W_mass = W_boson.M(); 
+              W_pt = W_boson.Pt();
+              W_eta = W_boson.Eta();
+	      W_phi = W_boson.Phi();
+              if (b_jet2Pt>0){
+                  TLorentzVector top1;
+                  if (deltaR(W_eta, W_phi, b_jet1Eta, b_jet1Phi)< deltaR(W_eta, W_phi, b_jet2Eta, b_jet2Phi)){
+	              top1 = W_boson + b1_jet;
+       	              top1_Mass = top1.M();
+                      use_bjet1 = 1;
 	          
-	      } else{
-                  top1 = W_boson + b2_jet;
-                  top1_Mass = top1.M();
-	          use_bjet1 = 0;
-	      }
-	  } 
+	          } else{
+                      top1 = W_boson + b2_jet;
+                      top1_Mass = top1.M();
+	              use_bjet1 = 0;
+	          }
+	      } 
       
-          chi_t0sq= pow((80.377-W_mass)/(0.1*80.377), 2)+pow((172.76-top1_Mass)/(0.1* 172.76),2);
-      
+              chi_t0sq= pow((80.377-W_mass)/(0.1*80.377), 2)+pow((172.76-top1_Mass)/(0.1* 172.76),2);
+	  }
       }
 
 
       dR = 0;
-      minR_Wjets = 999;
+      minR_Wjets = 9999;
       int minI_2 = -1;
       int minJ_2 = -1;
 
       if (jets.size()>=4){
           for (int i = 0; i < jets.size(); ++i) {
-	      if (i==minI || jets[i].btag_score == true) continue;
+	      if (i==minI || jets[i].bT == true) continue;
               for (int j = i + 1; j < jets.size(); ++j) {
-                  if (j==minJ || jets[j].btag_score == true) continue;
+                  if (j==minJ || jets[j].bT == true) continue;
                   dR = deltaR(jets[i].eta, jets[i].phi, jets[j].eta, jets[j].phi);
                   if (dR < minR_Wjets) {
                       minR_Wjets = dR;
@@ -3541,29 +3560,30 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
                   }
               }
           }
-          TLorentzVector nonb_jet3;
-          TLorentzVector nonb_jet4;
-          TLorentzVector W_boson2;
-          nonb_jet3.SetPtEtaPhiM(jets[minI_2].pt, jets[minI_2].eta, jets[minI_2].phi, jets[minI_2].mass);
-          nonb_jet4.SetPtEtaPhiM(jets[minJ_2].pt, jets[minJ_2].eta, jets[minJ_2].phi, jets[minJ_2].mass);
-          W_boson2 = nonb_jet3+ nonb_jet4;
-          W_mass2 = W_boson2.M();
-          W_pt2 = W_boson2.Pt();
-          W_eta2 = W_boson2.Eta();
-          W_phi2 = W_boson2.Phi();
-          TLorentzVector top2;	  
-          if (use_bjet1==0){
-              top2 = W_boson2 + b1_jet;
-              top2_Mass = top2.M();
-          } else if (use_bjet1==1){
-	      top2 = W_boson2 + b2_jet;
-              top2_Mass = top2.M();
-	  }
+	  if (minI_2>=0 && minJ_2>=0){
+              TLorentzVector nonb_jet3;
+              TLorentzVector nonb_jet4;
+              TLorentzVector W_boson2;
+              nonb_jet3.SetPtEtaPhiM(jets[minI_2].pt, jets[minI_2].eta, jets[minI_2].phi, jets[minI_2].mass);
+              nonb_jet4.SetPtEtaPhiM(jets[minJ_2].pt, jets[minJ_2].eta, jets[minJ_2].phi, jets[minJ_2].mass);
+              W_boson2 = nonb_jet3+ nonb_jet4;
+              W_mass2 = W_boson2.M();
+              W_pt2 = W_boson2.Pt();
+              W_eta2 = W_boson2.Eta();
+              W_phi2 = W_boson2.Phi();
+              TLorentzVector top2;	  
+              if (use_bjet1==0){
+                  top2 = W_boson2 + b1_jet;
+                  top2_Mass = top2.M();
+              } else if (use_bjet1==1){
+	          top2 = W_boson2 + b2_jet;
+                  top2_Mass = top2.M();
+	      }
             
-          chi_t1sq = chi_t0sq + pow((80.377-W_mass2)/(0.1*80.377), 2)+pow((172.76-top2_Mass)/(0.1* 172.76),2); 
-	  chi_t0sq = -99;
+              chi_t1sq = chi_t0sq + pow((80.377-W_mass2)/(0.1*80.377), 2)+pow((172.76-top2_Mass)/(0.1* 172.76),2); 
+	      chi_t0sq = -99;
+	  }
       }
-      
       float R_j1g1 = 1.0;
       float R_j1g2 = 1.0;
       float R_j2g1 = 1.0;
