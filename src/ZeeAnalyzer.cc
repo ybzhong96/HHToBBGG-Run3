@@ -1,4 +1,4 @@
-#include "HHTo2B2GNtupler.h"
+#include "ZeeAnalyzer.h"
 #include <stdlib.h> 
 #include "JetTree.h"
 #include <TFile.h>
@@ -39,7 +39,7 @@ std::map<int, std::vector<std::pair<int, int>>> loadJson(const std::string& file
 }
 
 
-double HHTo2B2GNtupler::getTriggerEff3D( TH2F *triggerEffHist_Xbb0p0To0p9, 
+double ZeeAnalyzer::getTriggerEff3D( TH2F *triggerEffHist_Xbb0p0To0p9, 
 				     TH2F *triggerEffHist_Xbb0p9To0p95, 
 				     TH2F *triggerEffHist_Xbb0p95To0p98, 
 				     TH2F *triggerEffHist_Xbb0p98To1p0, 
@@ -95,7 +95,7 @@ double HHTo2B2GNtupler::getTriggerEff3D( TH2F *triggerEffHist_Xbb0p0To0p9,
 
 
 
-double HHTo2B2GNtupler::getTriggerEff( TH2F *trigEffHist , double pt, double mass ) {
+double ZeeAnalyzer::getTriggerEff( TH2F *trigEffHist , double pt, double mass ) {
   double result = 0.0;
   double tmpMass = 0;
   double tmpPt = 0;
@@ -138,7 +138,7 @@ double HHTo2B2GNtupler::getTriggerEff( TH2F *trigEffHist , double pt, double mas
 /*
 
 //Jet Energy Corrections
-double HHTo2B2GNtupler::JetEnergyCorrectionFactor( double jetRawPt, double jetEta, double jetPhi, double jetE,
+double ZeeAnalyzer::JetEnergyCorrectionFactor( double jetRawPt, double jetEta, double jetPhi, double jetE,
 						 double rho, double jetArea,
 						 int run,
 						 std::vector<std::pair<int,int> > JetCorrectionsIOV,
@@ -191,7 +191,7 @@ double HHTo2B2GNtupler::JetEnergyCorrectionFactor( double jetRawPt, double jetEt
 }
 
 //Jet Energy Corrections
-double HHTo2B2GNtupler::JetEnergyCorrectionFactor( double jetRawPt, double jetEta, double jetPhi, double jetE,
+double ZeeAnalyzer::JetEnergyCorrectionFactor( double jetRawPt, double jetEta, double jetPhi, double jetE,
 						 double rho, double jetArea,
 						 FactorizedJetCorrector *jetcorrector,
 						 int jetCorrectionLevel,
@@ -330,7 +330,7 @@ void processJets(std::vector<Jet>& jets) {
     for (size_t i = 0; i < jets.size(); ++i) {
         for (size_t j = i + 1; j < jets.size(); ++j) {
             double mass = calculateInvariantMass(jets[i], jets[j]);
-            if (mass >= 70 && mass <= 190 && fabs(jets[i].eta)<2.5 && fabs(jets[j].eta)<2.5) {
+            if (mass >= 35 && mass <= 190 && fabs(jets[i].eta)<2.5 && fabs(jets[j].eta)<2.5) {
                 valid_pairs.push_back({(int)i, (int)j, mass, jets[i].btag_score + jets[j].btag_score});
             }
         }
@@ -351,7 +351,7 @@ void processJets(std::vector<Jet>& jets) {
 
 
 
-void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, string year, string pileupWeightName)
+void ZeeAnalyzer::Analyze(bool isData, int Option, int cutConfig, string outputfilename, string year, string pileupWeightName)
 { 
     cout << "Initializing..." << endl;
 
@@ -374,6 +374,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
     TH1F *pileupWeightDownHist = 0;
     
     string CMSSWDir = std::getenv("CMSSW_BASE");
+    
     if (!isData) {
       string triggerEffFilename = "";
       string triggerEffMCFilename = "";
@@ -386,12 +387,13 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       } else if (year == "2018") {
 	triggerEffFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/JetHTTriggerEfficiency_2018.root";
 	triggerEffMCFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/JetHTTriggerEfficiency_Fall18.root";
-      } else if (year == "2022" || year == "2022EE" || year == "2023" || year == "2023BPix" || year == "2024"){
+      } else if (year == "2022" || year == "2022EE" || year == "2023" || year == "2023BPix" || year == "2024" || year == "2025"){
         triggerEffFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/JetHTTriggerEfficiency_2018.root";
         triggerEffMCFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/JetHTTriggerEfficiency_Fall18.root";
       }
+
         else {
-	cout << "[HHTo2B2GNtupler] Warning: year " << year << " is not supported. \n";
+	cout << "[ZeeAnalyzer] Warning: year " << year << " is not supported. \n";
       }
       TFile *triggerEffFile = new TFile(triggerEffFilename.c_str(),"READ");
       TFile *triggerEffMCFile = new TFile(triggerEffMCFilename.c_str(),"READ");
@@ -447,7 +449,10 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	pileupWeightFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/PileupWeights/PileupReweight_Summer23BPix.root";
       } else if (year == "2024") {
 	pileupWeightFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/PileupWeights/PileupReweight_Summer23.root";
+      } else if (year == "2025") {
+	pileupWeightFilename = CMSSWDir + "/src/HHToBBGG-Run3/data/PileupWeights/PileupReweight_Summer23.root";
       }
+
 
 
       TFile *pileupWeightFile = new TFile(pileupWeightFilename.c_str(),"READ");
@@ -511,7 +516,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	float tmp_jms[] = {0.997, 0.993, 1.001};
 	jmsValues = tmp_jms;
       }
-    else if(year == "2022")
+    else if(year == "2022" || year == "2022EE")
       {
 	float tmp_jms[] = {0.997, 0.993, 1.001};
 	jmsValues = tmp_jms;
@@ -521,6 +526,11 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	float tmp_jms[] = {0.997, 0.993, 1.001};
 	jmsValues = tmp_jms;
       }
+    else if(year == "2024" || year == "2025")
+      {
+	float tmp_jms[] = {0.997, 0.993, 1.001};
+	jmsValues = tmp_jms;
+      }      
     else
       {
 	std::cout << "year is not acceptable! Use: 2016, 2017, 2018" << std::endl;
@@ -549,7 +559,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	float tmp_jmr[] = {1.065, 1.031, 1.099}; //Tuned to our Top control region
         jmrValues = tmp_jmr;
       } 
-    else if(year == "2022")
+    else if(year == "2022" || year == "2022EE")
       {
 	//float tmp_jmr[] = {1.24, 1.20, 1.28};
 	float tmp_jmr[] = {1.065, 1.031, 1.099}; //Tuned to our Top control region
@@ -561,7 +571,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
         float tmp_jmr[] = {1.065, 1.031, 1.099}; //Tuned to our Top control region
 	jmrValues = tmp_jmr;
       }
-    else if(year == "2024" )
+    else if(year == "2024"|| year == "2025" )
       {
 	//float tmp_jmr[] = {1.24, 1.20, 1.28};
         float tmp_jmr[] = {1.065, 1.031, 1.099}; //Tuned to our Top control region
@@ -609,7 +619,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       JECUncertaintyFile = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Fall17_17Nov2017_V32_MC/Fall17_17Nov2017_V32_MC_Uncertainty_AK8PFPuppi.txt";
     } else if (year == "2018") {
      JECUncertaintyFile = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Autumn18_V19_MC/Autumn18_V19_MC_Uncertainty_AK8PFPuppi.txt";
-    } else if (year == "2022") {
+    } else if (year == "2022" or year == "2022EE") {
      JECUncertaintyFile = CMSSWDir + "/src/HHToBBGG-Run3/data/JEC/Autumn18_V19_MC/Autumn18_V19_MC_Uncertainty_AK8PFPuppi.txt";
     }
     JetCorrectionUncertainty *jecUnc = new JetCorrectionUncertainty(JECUncertaintyFile.c_str());
@@ -1245,7 +1255,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       outputTree->Branch("vbffatJet2Phi", &vbffatJet2Phi, "vbffatJet2Phi/F");
     }
 
-    if (Option == 0 && (!isData)) {
+    if ((Option == 0 or Option ==1) && (!isData)) {
       outputTree->Branch("genPhoton1Pt", &genPhoton1Pt, "genPhoton1Pt/F");
       outputTree->Branch("genPhoton1Eta", &genPhoton1Eta, "genPhoton1Eta/F");
       outputTree->Branch("genPhoton1Phi", &genPhoton1Phi, "genPhoton1Phi/F");
@@ -1547,7 +1557,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
    //   outputTree->Branch("genZPhi", &genZPhi, "genZPhi/F");
   // }
 
-    if (Option == 0 || Option == 20 || Option == 21) {
+    if (Option == 0 || Option == 20 || Option == 21 || Option == 1) {
       outputTree->Branch("pho1Pt", &pho1Pt, "pho1Pt/F");
       outputTree->Branch("pho1Eta", &pho1Eta, "pho1Eta/F");
       outputTree->Branch("pho1Phi", &pho1Phi, "pho1Phi/F");
@@ -1588,7 +1598,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 
 
     }
-    if (Option == 0 ){ // BDT variables + ttHKiller Variables
+    if (Option == 0 || Option == 1){ // BDT variables + ttHKiller Variables
       outputTree->Branch("pho1_energyErr", &pho1_energyErr, "pho1_energyErr/F");
       outputTree->Branch("pho1_energyRaw", &pho1_energyRaw, "pho1_energyRaw/F");
       outputTree->Branch("pho2_energyErr", &pho2_energyErr, "pho2_energyErr/F");
@@ -1676,7 +1686,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
     
     }
 
-    if (Option == 0 && (!isData) ) {
+    if ((Option == 0 or Option == 1) && (!isData) ) {
       outputTree->Branch("nGenJet", &nGenJet, "nGenJet/I");
       outputTree->Branch("GenJet_eta", &genJetEta, "GenJet_eta[nGenJet]/F");
       outputTree->Branch("GenJet_phi", &genJetPhi, "GenJet_phi[nGenJet]/F");
@@ -1752,21 +1762,35 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
     //-------------------------------
     TRandom3* rnd = new TRandom3(1);
 
-
+    UInt_t NoPass_N = 0; 
     UInt_t NEventsFilled = 0;
- 
+    std::string Golden_jsonFile; 
+
     // Load JSON file
-    std::string jsonFile = CMSSWDir + "/src/HHToBBGG-Run3/data/Run3_2022_2023_Golden.json";
-    auto runLuminosityRanges = loadJson(jsonFile);
+    if (year == "2024" ) {
+        Golden_jsonFile = CMSSWDir + "/src/HHToBBGG-Run3/data/Run3_2024_Golden.json";
+    }
+    if (year == "2025" ) {
+        Golden_jsonFile = CMSSWDir + "/src/HHToBBGG-Run3/data/Run3_2025_Golden_391658_393461.json";
+    }
+    else {
+        Golden_jsonFile = CMSSWDir + "/src/HHToBBGG-Run3/data/Run3_2022_2023_Golden.json";
+    }
+    auto runLuminosityRanges = loadJson(Golden_jsonFile);
+
+    std::cout << "[INFO] Loaded JSON with " << runLuminosityRanges.size() << " runs." << std::endl;
 
     //begin loop
     if (fChain == 0) return;
     UInt_t nentries = fChain->GetEntries();
     Long64_t nbytes = 0, nb = 0;
 
+
+
     cout << "nentries = " << nentries << "\n";
     for (UInt_t jentry=0; jentry<nentries;jentry++) {
       //begin event
+      
       if(jentry % 1000 == 0) cout << "Processing entry " << jentry << endl;
       Long64_t ientry = LoadTree(jentry);
       if (ientry < 0){ 
@@ -1777,6 +1801,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       // Check if the current run is in the JSON data
       auto runIt = runLuminosityRanges.find(run);
       bool isInRange = false;
+
       if (isData && runIt != runLuminosityRanges.end()) {
           // Check if the luminosity block is within any of the ranges for this run
           for (const auto& [start, end] : runIt->second) {
@@ -1786,8 +1811,25 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
               }
           }
       }
+      /*
+      if (isData) {
+          std::cout << "Checking run: " << run << ", lumi: " << luminosityBlock << std::endl;
+
+          if (runIt == runLuminosityRanges.end()) {
+              std::cout << "Run not found in JSON!" << std::endl;
+          } else if (!isInRange) {
+              std::cout << "Run found, but lumi " << luminosityBlock << " not in range." << std::endl;
+          } else {
+              std::cout << "Event is in JSON." << std::endl;
+          }
+      }
+      */    
+            
    //   cout << isInRange << endl;
-      if(isData && !isInRange) continue;
+      if(isData && !isInRange) {
+          NoPass_N++;
+	  continue;
+      }
 
       //Use the non-normalized version because some samples have non-equal genWeights
       weight = genWeight;
@@ -2310,7 +2352,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       std::vector< TLorentzVector > genHiggsVector;
       if (!isData) {
 	for(int i = 0; i < nGenPart; i++) {
-          if ( abs(GenPart_pdgId[i]) == 5 && GenPart_pdgId[GenPart_genPartIdxMother[i]] == 25 && GenPart_status[GenPart_genPartIdxMother[i]]==62 ){
+          if ( abs(GenPart_pdgId[i]) == 5 && GenPart_pdgId[GenPart_genPartIdxMother[i]] == 23 && GenPart_status[GenPart_genPartIdxMother[i]]==62 ){
             if (genbQuark1_Pt < 0){
               genbQuark1_Pt = GenPart_pt[i];
               genbQuark1_Eta = GenPart_eta[i];
@@ -2362,6 +2404,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	      genPhoton2Phi = GenPart_phi[i];
               genPho2_Idx = i;
             }
+
 	    if (toggHiggs_Pt<0){    
               toggHiggs_Pt = GenPart_pt[GenPart_genPartIdxMother[i]];   
               toggHiggs_Eta = GenPart_eta[GenPart_genPartIdxMother[i]];         
@@ -2573,11 +2616,118 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       bool isEE_low_r9 = false;
       bool pho_r9 = false;
       bool pho_ScEta = false;
+      bool passPhotonSelection = true;
 
       std::vector< TLorentzVector > recoPhotonVector;  
-      std::vector<Photon> photons;     
-      
+      std::vector<Photon> photons;   
+
       for(unsigned int i = 0; i < nPhoton; i++ ) {  
+        /*
+        // boolean definitions for the photon passing corrected photon isolation requirements in the EE and EB region
+        pass_phoIso_rho_corr_EB = (
+            (fabs(Photon_eta[i]) > 0.0 && fabs(Photon_eta[i]) < 1.0) &&
+            (
+                Photon_pfPhoIso03[i]
+                - (rho * EA1_EB1)
+                - (rho * rho * EA2_EB1)
+                < max_pho_iso_EB_low_r9
+            )
+        ) || (
+            (fabs(Photon_eta[i]) > 1.0 && fabs(Photon_eta[i]) < 1.4442) &&
+            (
+                Photon_pfPhoIso03[i]
+                - (rho * EA1_EB2)
+                - (rho * rho * EA2_EB2)
+                < max_pho_iso_EB_low_r9
+            )
+        );
+        pass_phoIso_rho_corr_EE = (
+            (fabs(Photon_eta[i]) > 1.566 && fabs(Photon_eta[i]) < 2.0) &&
+            (
+                Photon_pfPhoIso03[i]
+                - (rho * EA1_EE1)
+                - (rho * rho * EA2_EE1)
+                < max_pho_iso_EE_low_r9
+            )
+        ) || (
+            (fabs(Photon_eta[i]) > 2.0 && fabs(Photon_eta[i]) < 2.2) &&
+            (
+                Photon_pfPhoIso03[i]
+                - (rho * EA1_EE2)
+                - (rho * rho * EA2_EE2)
+                < max_pho_iso_EE_low_r9
+            )
+        ) || (
+            (fabs(Photon_eta[i]) > 2.2 && fabs(Photon_eta[i]) < 2.3) &&
+            (
+                Photon_pfPhoIso03[i]
+                - (rho * EA1_EE3)
+                - (rho * rho * EA2_EE3)
+                < max_pho_iso_EE_low_r9
+            )
+        ) || (
+            (fabs(Photon_eta[i]) > 2.3 && fabs(Photon_eta[i]) < 2.4) &&
+            (
+                Photon_pfPhoIso03[i]
+                - (rho * EA1_EE4)
+                - (rho * rho * EA2_EE4)
+                < max_pho_iso_EE_low_r9
+            )
+        ) || (
+            (fabs(Photon_eta[i]) > 2.4 && fabs(Photon_eta[i]) < 2.5) &&
+            (
+                Photon_pfPhoIso03[i]
+                - (rho * EA1_EE5)
+                - (rho * rho * EA2_EE5)
+                < max_pho_iso_EE_low_r9
+            )
+        );
+        isEB_high_r9 = ((Photon_isScEtaEB[i]) && (Photon_r9[i] > min_full5x5_r9_EB_high_r9));
+        isEE_high_r9 = ((Photon_isScEtaEE[i]) && (Photon_r9[i] > min_full5x5_r9_EE_high_r9));
+        isEB_low_r9 = (
+          (Photon_isScEtaEB[i])
+          && (Photon_r9[i] > min_full5x5_r9_EB_low_r9)
+          && (Photon_r9[i] < min_full5x5_r9_EB_high_r9)
+          && (Photon_trkSumPtHollowConeDR03[i] < 6.0)
+          && (Photon_sieie[i] < max_sieie_EB_low_r9)
+          && (pass_phoIso_rho_corr_EB)
+        );
+        isEE_low_r9 = (
+          (Photon_isScEtaEE[i])
+          && (Photon_r9[i] > min_full5x5_r9_EE_low_r9)
+          && (Photon_r9[i] < min_full5x5_r9_EE_high_r9)
+          && (Photon_trkSumPtHollowConeDR03[i] < 6.0)
+          && (Photon_sieie[i] < max_sieie_EE_low_r9)
+          && (pass_phoIso_rho_corr_EE)
+        );
+        pho_r9 = (isEE_low_r9 || isEE_high_r9 || isEB_low_r9 || isEB_high_r9);
+        pho_ScEta = (Photon_isScEtaEB[i] || Photon_isScEtaEE[i]);  
+
+        // The selections are applied here based on the "cutConfig"
+
+        if (Photon_electronVeto[i]) passPhotonSelection = false;
+        if (cutConfig >= 1){
+          if (Photon_pt[i] <= 25) passPhotonSelection = false;
+        }
+        if (cutConfig >= 2){
+          if (fabs(Photon_eta[i]) >= 2.5) passPhotonSelection = false;
+        }
+        if (cutConfig >= 3){
+          if (Photon_r9[i] < 0.8 && Photon_pfRelIso03_chg_quadratic[i] > 0.3 && Photon_pfRelIso03_chg_quadratic[i]*Photon_pt[i]>20) passPhotonSelection = false;
+        }
+        if (cutConfig >= 4){
+          if (Photon_hoe[i] > 0.08) passPhotonSelection = false;
+        }
+        if (cutConfig >= 5){
+          if (Photon_mvaID[i] <= -0.9) passPhotonSelection = false;
+        }
+        if (cutConfig >= 6){
+          if (!(pho_r9&&pho_ScEta)) passPhotonSelection = false;
+        }
+        if (!passPhotonSelection) continue;
+        photons.push_back({Photon_pt[i],Photon_eta[i],Photon_phi[i],Photon_mvaID[i],Photon_seediPhiOriY[i],Photon_seediEtaOriX[i],Photon_pfRelIso03_chg_quadratic[i], Photon_pfRelIso03_all_quadratic[i], Photon_r9[i], Photon_energyErr[i], Photon_energyRaw[i], false});
+
+        */
         if (Photon_pt[i] <= 25) continue;   
         if (fabs(Photon_eta[i]) >= 2.5) continue;  
             // if (fabs(Photon_eta[i]) > 1.442 && fabs(Photon_eta[i]) < 1.566) continue;       
@@ -2586,7 +2736,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
         if (Photon_r9[i] < 0.8 && Photon_pfRelIso03_chg_quadratic[i] > 0.3 && Photon_pfRelIso03_chg_quadratic[i]*Photon_pt[i]>20) continue;
         if (Photon_hoe[i] > 0.08) continue;
         if (Photon_mvaID[i] <= -0.9) continue;
-        if (!Photon_electronVeto[i]) continue;
+        if (Photon_electronVeto[i]) continue; // inverted veto to select photons that are electrons
         pass_phoIso_rho_corr_EB = (
             ((fabs(Photon_eta[i]) > 0.0) && (fabs(Photon_eta[i]) < 1.0))
             && (
@@ -2669,6 +2819,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
         pho_r9 = (isEE_low_r9 || isEE_high_r9 || isEB_low_r9 || isEB_high_r9);
 	pho_ScEta = (Photon_isScEtaEB[i] || Photon_isScEtaEE[i]);
 
+
         if (!(pho_r9&&pho_ScEta)) continue;
 	
         // Only for Fake-Fake samples, 
@@ -2682,6 +2833,8 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 
 
 	photons.push_back({Photon_pt[i],Photon_eta[i],Photon_phi[i],Photon_mvaID[i],Photon_seediPhiOriY[i],Photon_seediEtaOriX[i],Photon_pfRelIso03_chg_quadratic[i], Photon_pfRelIso03_all_quadratic[i], Photon_r9[i], Photon_energyErr[i], Photon_energyRaw[i], false});
+      
+
       } // end Photon loop  
 	
       processPhoton(photons);
@@ -2915,7 +3068,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       //if (year == "2016") btagMediumCut = 0.3033;
       //else if (year == "2017") btagMediumCut = 0.3033 ;
       //else if (year == "2018") btagMediumCut = 0.2770 ;
-      if (year == "2022") btagMediumCut = 0.2605 ;
+      if (year == "2022" || year == "2022EE") btagMediumCut = 0.2605 ;
       for(unsigned int q = 0; q < nJet; q++ ) {       
 	if (Jet_pt[q] > 25 && Jet_btagPNetB[q] > btagMediumCut && 
 	    deltaPhi(fatJet1Phi, Jet_phi[q]) > 2.5
@@ -3335,6 +3488,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       } //end !isData 
 
       std::vector<Jet> jets;
+      /*
       jetCutflow->Fill(0);  
       if (nJet >= 2) {
           int ptPass = 0;
@@ -3379,7 +3533,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       if (!valid_pairs.empty()) {
           jetCutflow->Fill(4);  
       }
-
+      */
     
        // Farjet = 1;
        // if (GenBJet1_idx != -1 && Jet_genJetIdx[i] == GenBJet1_idx){
@@ -3437,14 +3591,13 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
 	
 	*/
 
-        /*
+      for(int i = 0; i < nJet; i++){     
         // Read the properties for each jet
         if(Jet_pt[i] > 20 && fabs(Jet_eta[i]) < 4.7 && deltaR(Jet_eta[i], Jet_phi[i], pho1Eta, pho1Phi) > 0.4 && deltaR(Jet_eta[i], Jet_phi[i], pho2Eta, pho2Phi) > 0.4){
         // Add the new jet to the list with default bT value as false
           jets.push_back({Jet_pt[i], Jet_btagPNetB[i], false, Jet_mass[i], Jet_eta[i], Jet_phi[i], Jet_PNetRegPtRawRes[i], Jet_PNetRegPtRawCorr[i], Jet_PNetRegPtRawCorrNeutrino[i]});
         }
-        */  
-
+      }    
       processJets(jets);
 
       NJets = jets.size();
@@ -3669,11 +3822,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
       if (
 	  Option == 100 || 
 	  Option == 0 || 
-	  (Option == 5 && fatJet1Pt > 250 && fatJet2Pt > 250 && fatJet1MassSD > 50 
-	   && fatJet2MassSD > 50 && fatJet1PNetXbb > 0.8) || 
-	  (Option == 10 && ( (fatJet1Pt > 250 && fatJet2Pt > 250) || (fatJet1Pt > 250 && lep1Id != 0)) ) || 
-	  (Option == 20 && fatJet1Pt > 250 && fatJet1MassSD > 30 && lep1Id == 0) ||
-	  (Option == 21 && fatJet1Pt > 250 && fatJet1MassSD > 30 )
+    (Option == 1 && pho1Pt>35 && pho2Pt>25)
 	  ) {
 	 
 
@@ -3738,6 +3887,7 @@ void HHTo2B2GNtupler::Analyze(bool isData, int Option, string outputfilename, st
     }//end of event loop
     
     cout << "Filled Total of " << NEventsFilled << " Events\n";
+    cout << "No Pass :" << NoPass_N << " Events\n";
     cout << "Writing output trees..." << endl;
     outFile->Write();
     outFile->Close();
